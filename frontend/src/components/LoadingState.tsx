@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { Search, Map, ShoppingBag, Loader2 } from 'lucide-react';
+import { Search, Map, ShoppingBag, ShoppingBasket, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface LoadingProps {
@@ -10,31 +10,34 @@ interface LoadingProps {
 /**
  * Dynamic Loading State - Multi-phase AI experience
  */
-// Custom animated icons
-const RadarIcon = ({ className }: { className?: string }) => (
-    <div className={clsx("relative flex items-center justify-center", className)}>
-        <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-20 animate-ping"></span>
-        <Map className="relative z-10 w-8 h-8 text-white" />
-    </div>
-);
 
-const ScanningIcon = ({ className }: { className?: string }) => (
-    <div className={clsx("relative", className)}>
-        <Search className="w-8 h-8 text-white animate-[spin_3s_linear_infinite]" />
-    </div>
-);
+// Custom "Scanner inside a Box" Animation
+const ScannerBoxAnimation = ({ className }: { className?: string }) => (
+    <div className={clsx("relative flex items-center justify-center overflow-hidden h-16 w-16", className)}>
+        {/* The Box/Basket */}
+        <ShoppingBasket className="w-12 h-12 text-primary" />
 
-const BouncingBagIcon = ({ className }: { className?: string }) => (
-    <ShoppingBag className={clsx("w-8 h-8 text-white animate-bounce", className)} />
+        {/* The Scanner Line */}
+        <div className="absolute top-0 w-full h-1 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-[scan_1.5s_linear_infinite]"
+            style={{ animationName: 'scan' }}
+        />
+        <style>{`
+            @keyframes scan {
+                0% { top: 0%; opacity: 0; }
+                50% { opacity: 1; }
+                100% { top: 100%; opacity: 0; }
+            }
+        `}</style>
+    </div>
 );
 
 export function DynamicLoading({ step, className }: { step: 'comparing' | 'optimizing' | 'locating', className?: string }) {
     const { t } = useTranslation();
 
     const steps = [
-        { id: 'locating', label: t('common.locating_you'), icon: RadarIcon, color: 'text-blue-500', bg: 'bg-blue-500' },
-        { id: 'comparing', label: t('common.comparing'), icon: ScanningIcon, color: 'text-primary', bg: 'bg-primary' },
-        { id: 'optimizing', label: t('common.finding_best_route'), icon: BouncingBagIcon, color: 'text-secondary', bg: 'bg-secondary' }
+        { id: 'locating', label: t('common.locating_you'), icon: Map, color: 'text-blue-500', bg: 'bg-blue-500' },
+        { id: 'comparing', label: t('common.comparing'), icon: Search, color: 'text-primary', bg: 'bg-primary' },
+        { id: 'optimizing', label: t('common.finding_best_route'), icon: ShoppingBag, color: 'text-secondary', bg: 'bg-secondary' }
     ];
 
     const currentStepIndex = steps.findIndex(s => s.id === step);
@@ -60,7 +63,7 @@ export function DynamicLoading({ step, className }: { step: 'comparing' | 'optim
                     {steps.map((s, idx) => {
                         const isCompleted = idx <= currentStepIndex;
                         const isActive = idx === currentStepIndex;
-                        // const Icon = s.icon; // Removed simple icon reference
+                        const Icon = s.icon;
 
                         return (
                             <div key={s.id} className="flex flex-col items-center gap-4 relative">
@@ -72,15 +75,7 @@ export function DynamicLoading({ step, className }: { step: 'comparing' | 'optim
                                             isCompleted ? `${s.bg} text-white` : "bg-gray-50 text-gray-300"
                                     )}
                                 >
-                                    {/* Render Custom Animated Components if active, else static icon */}
-                                    {isActive ? (
-                                        <s.icon />
-                                    ) : (
-                                        // Fallback static icons for inactive states
-                                        idx === 0 ? <Map className="w-6 h-6" /> :
-                                            idx === 1 ? <Search className="w-6 h-6" /> :
-                                                <ShoppingBag className="w-6 h-6" />
-                                    )}
+                                    <Icon className={clsx("w-6 h-6", isActive && "animate-pulse")} />
                                 </div>
                                 <span className={clsx(
                                     "text-xs font-bold uppercase tracking-wider transition-colors duration-300 absolute -bottom-8 whitespace-nowrap",
@@ -98,13 +93,10 @@ export function DynamicLoading({ step, className }: { step: 'comparing' | 'optim
             <div className="space-y-4 max-w-sm mx-auto mt-8 animate-reveal">
                 <div className="h-16 flex items-center justify-center">
                     {step === 'locating' && (
-                        <div className="relative">
-                            <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-20 animate-ping"></span>
-                            <Map className="relative inline-flex rounded-full h-16 w-16 text-blue-500" />
-                        </div>
+                        <Map className="w-16 h-16 text-blue-500 animate-pulse" />
                     )}
                     {step === 'comparing' && (
-                        <Search className="w-16 h-16 text-primary animate-[spin_3s_linear_infinite]" />
+                        <ScannerBoxAnimation />
                     )}
                     {step === 'optimizing' && (
                         <ShoppingBag className="w-16 h-16 text-secondary animate-bounce" />
