@@ -149,6 +149,30 @@ cd backend && npm run build
 2. Ensure tests pass (`npm test`).
 3. Submit a Pull Request.
 
+## 🔧 Troubleshooting
+
+### Common Issues
+
+1.  **API Connection Failed**
+    -   **Issue**: Backend cannot connect to Kassalapp or Gemini AI.
+    -   **Solution**: Check your `.env` file in the `backend/` directory. Ensure `KASSALAPP_API_KEY` and `GEMINI_API_KEY` are set correctly.
+
+2.  **AI Response Error (500/502)**
+    -   **Issue**: The search fails to parse your list.
+    -   **Solution**: The AI model might be overloaded. Try again in a few seconds. If persistent, check your Gemini API quota.
+
+3.  **Map Not Loading**
+    -   **Issue**: Map tiles are blank or gray.
+    -   **Solution**: Check your internet connection. If you are using a custom Mapbox token, verify it in `frontend/.env.local`.
+
+4.  **"Too Many Requests"**
+    -   **Issue**: You are being rate-limited.
+    -   **Solution**: Wait for 1 minute before trying again. The API has strict rate limits to prevent abuse.
+
+5.  **CORS Errors**
+    -   **Issue**: Frontend cannot talk to Backend.
+    -   **Solution**: Ensure both servers are running. Default ports are `3000` (Frontend) and `3001` (Backend).
+
 ## 📄 License
 This project is licensed under the MIT License.
 

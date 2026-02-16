@@ -11,9 +11,3 @@
         "numReplicas": 1
     }
 }
-/**
- * Instructions:
- * 1. Connect your repo to Railway.app.
- * 2. Ensure VITE_API_URL and other secrets are set in Railway Variables.
- * 3. Railway will use this file to determine how to build and health-check the app.
- */
