@@ -152,7 +152,17 @@ router.post(
             typeof i === 'string' ? { name: i, quantity: 1 } : i
         );
 
-        const stores = await kassalService.getStoresNearby(userLocation);
+        let stores: Store[] = [];
+        try {
+            stores = await kassalService.getStoresNearby(userLocation);
+        } catch (error) {
+            console.error('[Calculate-Savings] Kassal API failed. Returning empty comparison.');
+        }
+
+        if (stores.length === 0) {
+            return res.json({ success: true, data: { items: [], totalSavings: 0, stores: [] } });
+        }
+
         const comparison = await comparisonService.compareProductPrices(shoppingItems, stores);
 
         res.json({

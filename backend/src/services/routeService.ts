@@ -85,11 +85,16 @@ class RouteService {
             // Optimization: We could filter products by chain here too, but checking store match later is safer
             const itemToProductsMap: Record<string, Product[]> = {};
             for (const item of items) {
-                const products = await kassalService.searchProducts(item.name, {
-                    suggestedCategory: item.suggestedCategory,
-                    location: userLocation,
-                    radius: (options.maxDistance || 10000) / 1000 // Convert meters to km
-                });
+                let products: Product[] = [];
+                try {
+                    products = await kassalService.searchProducts(item.name, {
+                        suggestedCategory: item.suggestedCategory,
+                        location: userLocation,
+                        radius: (options.maxDistance || 10000) / 1000 // Convert meters to km
+                    });
+                } catch (error) {
+                    console.warn(`[RouteService] Failed to search for "${item.name}", skipping. Error:`, (error as any)?.message || error);
+                }
                 // Filter products to only include those from valid chains/stores
                 itemToProductsMap[item.name] = products.filter(p => {
                     const productStoreName = p.store.toLowerCase();

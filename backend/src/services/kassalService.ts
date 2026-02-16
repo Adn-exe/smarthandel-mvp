@@ -309,6 +309,7 @@ class KassalService {
      * Standard error handler for API calls
      */
     private handleError(error: any, context: string): never {
+        console.error(`[KassalService] Error in ${context}:`, error?.message || error);
         if (axios.isAxiosError(error)) {
             const axiosError = error as AxiosError<any>;
             const status = axiosError.response?.status || 502;
