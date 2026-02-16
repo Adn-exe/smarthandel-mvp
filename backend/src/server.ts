@@ -2,6 +2,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
+import helmet from 'helmet';
+import hpp from 'hpp';
 import config from './config/index.js';
 import productsRouter from './routes/products.js';
 import storesRouter from './routes/stores.js';
@@ -17,6 +19,8 @@ const app = express();
 const PORT = config.port || 3001;
 
 // 1. Basic Middleware
+app.use(helmet()); // Security Headers
+app.use(hpp()); // HTTP Parameter Pollution Protection
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

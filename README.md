@@ -7,6 +7,8 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 - **AI-Powered Search**: Natural language processing to understand your shopping list.
 - **Price Comparison**: Real-time integration with Norwegian grocery data (Kassalapp API).
 - **Route Optimization**: Intelligent logic to find the cheapest single-store or multi-store options.
+- **Smart Route Cost Breakdown**: Detailed analysis of groceries vs. travel costs.
+- **Dynamic Loading UI**: Engaging visual feedback during complex backend operations.
 - **Interactive Maps**: Visualized store locations and optimized routes (Mapbox).
 - **Performance Optimized**: Lazily loaded components, code splitting, and memoization for a smooth experience.
 - **Error Boundaries**: Robust error handling with granular recovery logic.
@@ -25,9 +27,10 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 ### Backend
 - **Node.js** & **Express**
 - **TypeScript**
-- **Anthropic AI** (Claude 3.5 Sonnet) for list parsing
+- **Google Gemini AI** (Flash Preview) for list parsing
 - **Kassalapp API** for grocery pricing and store data
 - **Node-Cache** for performance
+- **Helmet & HPP** for security
 
 ## 🚀 Getting Started
 
@@ -36,7 +39,7 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 - NPM 9+
 - API Keys:
   - Kassalapp API Key
-  - Anthropic API Key
+  - Gemini API Key
   - Mapbox Token (Optional)
 
 ### Installation Steps
