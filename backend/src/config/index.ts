@@ -42,7 +42,7 @@ export const config: Config = {
     port: parseInt(process.env.PORT || '3001', 10),
 
     // Required API keys with validation
-    kassalApiKey: getRequiredEnv('KASSAL_API_KEY'),
+    kassalApiKey: getRequiredEnv('KASSAL_API_KEY').trim(),
     geminiApiKey: process.env.GEMINI_API_KEY || (() => {
         console.warn('⚠️  WARNING: GEMINI_API_KEY is not set. AI features will be unavailable.');
         return '';
