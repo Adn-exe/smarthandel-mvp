@@ -7,6 +7,7 @@ import comparisonService from '../services/comparisonService.js';
 import kassalService from '../services/kassalService.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import cache from '../utils/cache.js';
+import { Store } from '../types/index.js';
 
 const router = Router();
 
@@ -55,7 +56,7 @@ router.post(
         // Get nearby stores for consideration
         console.log(`[Optimize] Request for location: ${JSON.stringify(userLocation)}, preferences: ${JSON.stringify(preferences)}`);
 
-        let stores = [];
+        let stores: Store[] = [];
         try {
             stores = await kassalService.getStoresNearby(
                 userLocation,
