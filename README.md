@@ -34,6 +34,10 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 
 ## 🚀 Getting Started
 
+### 🌍 International Usage
+**Important:** If you are outside Norway, you **must** connect to a VPN server located in **Norway** to use this application (specifically for Kassalapp API data).
+- **Recommended:** [Urban VPN](https://www.urban-vpn.com/) (Browser Extension or App)
+
 ### Prerequisites
 - Node.js 18+
 - NPM 9+
