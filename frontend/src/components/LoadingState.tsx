@@ -45,49 +45,6 @@ export function DynamicLoading({ step, className }: { step: 'comparing' | 'optim
 
     return (
         <div className={clsx("flex flex-col items-center justify-center p-12 text-center min-h-[400px]", className)}>
-            <div className="relative w-full max-w-md mb-16">
-                {/* Progress Bar Container */}
-                <div className="absolute top-8 left-0 w-full h-1 bg-gray-100 rounded-full z-0"></div>
-
-                {/* Active Progress Fill */}
-                <div
-                    className="absolute top-8 left-0 h-1 rounded-full z-0 transition-all duration-700 ease-out"
-                    style={{
-                        width: `${((currentStepIndex) / (steps.length - 1)) * 100}%`,
-                        background: 'linear-gradient(90deg, #FF4757, #2EC4B6)'
-                    }}
-                ></div>
-
-                {/* Steps */}
-                <div className="relative z-10 flex justify-between w-full">
-                    {steps.map((s, idx) => {
-                        const isCompleted = idx <= currentStepIndex;
-                        const isActive = idx === currentStepIndex;
-                        const Icon = s.icon;
-
-                        return (
-                            <div key={s.id} className="flex flex-col items-center gap-4 relative">
-                                <div
-                                    className={clsx(
-                                        "w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 border-4 bg-white z-10",
-                                        isActive ? "scale-110 shadow-lg border-white ring-4 ring-opacity-20" : "scale-100 border-white",
-                                        isActive ? `text-white ${s.bg} ring-${s.bg.replace('bg-', '')}` :
-                                            isCompleted ? `${s.bg} text-white` : "bg-gray-50 text-gray-300"
-                                    )}
-                                >
-                                    <Icon className={clsx("w-6 h-6", isActive && "animate-pulse")} />
-                                </div>
-                                <span className={clsx(
-                                    "text-xs font-bold uppercase tracking-wider transition-colors duration-300 absolute -bottom-8 whitespace-nowrap",
-                                    isActive ? "text-dark" : "text-gray-300"
-                                )}>
-                                    {s.label}
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
 
             {/* Central Main Message */}
             <div className="space-y-4 max-w-sm mx-auto mt-8 animate-reveal">
