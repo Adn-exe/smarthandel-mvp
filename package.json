@@ -1,0 +1,18 @@
+{
+    "name": "smarthandel-mvp",
+    "version": "1.0.0",
+    "description": "SmartHandel MVP Root Workspace",
+    "private": true,
+    "scripts": {
+        "dev": "npm run dev --prefix backend",
+        "build": "npm run build --prefix backend",
+        "start": "npm run start --prefix backend",
+        "test": "npm run test --prefix backend",
+        "lint": "npm run lint --prefix backend",
+        "format": "npm run format --prefix backend"
+    },
+    "workspaces": [
+        "backend",
+        "frontend"
+    ]
+}

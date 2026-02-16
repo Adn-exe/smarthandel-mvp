@@ -1,0 +1,11 @@
+{
+    "watch": [
+        "src"
+    ],
+    "ext": "ts",
+    "ignore": [
+        "dist"
+    ],
+    "delay": "2",
+    "exec": "tsx src/server.ts"
+}

@@ -1,0 +1,260 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #FF4757;
+  --color-secondary: #2EC4B6;
+  --color-dark: #1A1A2E;
+  --color-accent: #FFD700;
+  --color-light: #F8F9FA;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Poppins', 'Inter', sans-serif;
+
+  /* Animation Durations */
+  --duration-fast: 200ms;
+  --duration-normal: 400ms;
+  --duration-slow: 700ms;
+
+  --shadow-glow: 0 0 20px rgba(255, 71, 87, 0.3);
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-100vh) translateX(40px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes morph {
+
+  0%,
+  100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: rotate(0deg) scale(1);
+  }
+
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    transform: rotate(45deg) scale(1.05);
+  }
+
+  50% {
+    border-radius: 50% 60% 40% 60% / 30% 70% 40% 60%;
+    transform: rotate(90deg) scale(0.95);
+  }
+
+  75% {
+    border-radius: 40% 50% 60% 40% / 60% 40% 50% 70%;
+    transform: rotate(135deg) scale(1.02);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    filter: blur(80px);
+  }
+
+  50% {
+    opacity: 0.7;
+    filter: blur(100px);
+  }
+}
+
+@layer base {
+  :root {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  body {
+    @apply bg-gray-100 text-dark min-h-screen;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-semibold tracking-tight text-dark;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl mb-6;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl mb-4;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl mb-3;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-red-600 focus:ring-primary;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-white hover:bg-teal-600 focus:ring-secondary;
+  }
+
+  .btn-outline {
+    @apply border-2 border-dark text-dark hover:bg-dark hover:text-white focus:ring-dark;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all;
+  }
+
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+
+  .glass-dark {
+    @apply bg-dark/40 backdrop-blur-lg border border-white/10 shadow-2xl;
+  }
+
+  .animate-reveal {
+    animation: reveal var(--duration-slow) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-fadeSlideIn {
+    animation: fadeSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+
+  .shimmer-text {
+    @apply relative overflow-hidden;
+  }
+
+  .shimmer-text::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+
+  .hover-glow:hover {
+    @apply shadow-glow border-primary/30;
+  }
+}
+
+/* Leaflet Map Styles */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}

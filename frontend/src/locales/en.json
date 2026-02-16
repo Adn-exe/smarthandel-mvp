@@ -1,0 +1,286 @@
+{
+    "seo": {
+        "defaultTitle": "SmartHandel - Save money on groceries",
+        "defaultDescription": "AI-powered price comparison and route optimization for your grocery shopping. Save time and money every day.",
+        "homeTitle": "Home",
+        "resultsTitle": "Search Results",
+        "aboutTitle": "About Us",
+        "notFoundTitle": "Page Not Found"
+    },
+    "common": {
+        "loading": "Loading...",
+        "search": "Search",
+        "cheapest": "💰 Cheapest",
+        "closest": "📍 Closest",
+        "share": "Share",
+        "back": "Back",
+        "retry": "Retry",
+        "cancel": "Cancel",
+        "home": "Home",
+        "about": "About Us",
+        "contact": "Contact",
+        "newSearch": "New Search",
+        "startOver": "Start Over",
+        "total": "Total",
+        "shop": "Shop",
+        "thinking": "Thinking...",
+        "store": "Store",
+        "describe_need": "Describe what you need",
+        "press_enter": "Press <0>Enter</0> to search",
+        "meters": "m",
+        "kilometers": "km",
+        "share_title": "SmartHandel Results",
+        "share_text": "Check out these prices for: {{query}}",
+        "copy_alert": "Link copied to clipboard!",
+        "locating_you": "Searching for position...",
+        "fetching_nearby": "Finding nearby stores...",
+        "analyzing": "Analyzing your request...",
+        "comparing": "Comparing prices...",
+        "checking_stores": "Checking stores...",
+        "finding_best_route": "Calculating route...",
+        "something_went_wrong": "Something went wrong",
+        "unexpected_error": "An unexpected error occurred.",
+        "list_coming_soon": "List creation coming soon!",
+        "loading_map": "Loading Map...",
+        "show_details": "Show technical details",
+        "hide_details": "Hide details"
+    },
+    "home": {
+        "title": "Shop <1>smarter</1>, not harder",
+        "subtitle": "Tell us what you need. Our AI scans every store nearby and finds where to shop for the least.",
+        "placeholder": "e.g. milk, eggs, chicken for dinner tonight...",
+        "howItWorks": {
+            "title": "How it works",
+            "subtitle": "SmartHandel makes it easy to save money on your daily shopping.",
+            "step1": {
+                "title": "1. Write what you need",
+                "description": "Tell us what you want, just like you would tell a friend."
+            },
+            "step2": {
+                "title": "2. We find the best prices",
+                "description": "Our AI checks prices in all stores near you instantly."
+            },
+            "step3": {
+                "title": "3. Save money",
+                "description": "Choose the cheapest store or the smartest route to save the most."
+            }
+        },
+        "stats": {
+            "priceDiff": "Price difference between stores",
+            "savings": "NOK saved per year (avg)",
+            "stores": "Stores compared instantly"
+        },
+        "cta": {
+            "title": "Ready to shop smarter?",
+            "button": "Start saving now"
+        },
+        "tips": {
+            "title": "Shopping Tips",
+            "tip1": "Check store apps for extra member deals.",
+            "tip2": "Prices may vary slightly in-store.",
+            "tip3": "Best time to shop is usually Tuesday mornings."
+        },
+        "location_error": "We need your location to find stores near you.",
+        "geolocation_not_supported": "Your browser does not support geolocation.",
+        "allow_location_alert": "Please allow location access to search.",
+        "using_default_location": "Using default location: Oslo",
+        "search_placeholders": [
+            "I need milk and bread...",
+            "I need chicken for dinner...",
+            "2 liters of milk, eggs, cheese for under 200kr",
+            "Taco Friday with the family",
+            "Healthy breakfast for the whole week"
+        ],
+        "quickSearch": {
+            "heading": "Try something popular",
+            "essentials": "🥛 Milk, bread & eggs",
+            "taco": "🌮 Taco Friday",
+            "chicken": "🍗 Chicken & rice",
+            "produce": "🥬 Fruits & veggies",
+            "breakfast": "☀️ Weekly breakfast"
+        }
+    },
+    "results": {
+        "title": "Results for",
+        "itemCount": "{{count}} items found",
+        "foundBestOptions": "Best options found",
+        "foundBestStore": "Best Store found",
+        "foundBestRoute": "Optimized Route found",
+        "foundAlternatives": "Check these <0>OTHER STORES</0> nearby",
+        "comparisonResults": "Comparison Results",
+        "savePercent": "Save {{amount}} ({{percent}}%)",
+        "bestOption": "Best Option",
+        "simplerChoice": "Simpler Choice",
+        "oneStore": "1 Store",
+        "everythingInOnePlace": "Get everything in one place",
+        "otherOptions": "Other Single-Store Options",
+        "bestStoreTagline": "One stop, total convenience",
+        "alternativesTagline": "Explore other local options",
+        "smartRouteTagline": "Maximum savings, multiple stops",
+        "bestSavings": "Best Savings",
+        "smartRoute": "Smart Route",
+        "multipleStores": "{{count}} Stores",
+        "splitYourList": "Split your list to save <1>{{amount}}</1>.",
+        "stop": "Stop {{count}}",
+        "itemsCost": "Items Cost",
+        "travelEst": "Travel (Est.)",
+        "totalRouteCost": "Total Route Cost",
+        "breakdownItems": "{{amount}} items",
+        "breakdownTravel": "{{amount}} travel",
+        "viewOnMap": "View on Map",
+        "createShoppingList": "Create Shopping List",
+        "savingsComparison": {
+            "title": "Smart Route Comparison",
+            "singleStoreLabel": "{{store}}",
+            "multiStoreLabel": "Smart Route ({{count}} stores)",
+            "youSave": "You save"
+        },
+        "instruction": {
+            "buyAt": "Buy at {{store}}",
+            "itemsToBuy": "Items to buy here"
+        },
+        "noRoutesTitle": "No routes found",
+        "noRoutesDescription": "We couldn't find any stores carrying all your items within range.",
+        "tryDifferentItems": "Try different items",
+        "summaries": {
+            "bestSingle": "We found a single store that has <1>{{percent}}%</1> of your items! It's the most convenient way to shop today.",
+            "greatAlternatives": "There are <1>{{count}} other stores</1> nearby that carry most of your items. Check them out below.",
+            "smartRouteBetter": "By visiting <1>{{count}} stores</1>, you can save an extra <3>{{amount}}</3> compared to the best single store.",
+            "closedWarning": "⚠️ Some recommended stores are currently closed. Check opening hours before you go."
+        },
+        "bestSingleStoreHeader": "Best Single Store",
+        "smartRouteHeader": "Smart Route",
+        "bestChoice": "Best Choice",
+        "bestAlternative": "Best Alternative",
+        "anotherConvenientOption": "Another convenient option",
+        "itemsCost": "Groceries",
+        "travelCost": "Est. Travel",
+        "totalExpense": "Total Expense",
+        "smartSummaryTitle": "Smart Summary",
+        "smartSummaryTemplate": "Splitting your trip saves you <bold>{{savings}}</bold> on groceries. Even with <bold>{{travel}}</bold> in estimated travel costs, you save <bold>{{net}}</bold> compared to the single store option.",
+        "smartSummarySingle": "The single store option is your best bet! Splitting the trip would cost you <bold>{{extra}}</bold> more in travel than you'd save on groceries.",
+        "cheapestTotal": "Lowest Total Cost",
+        "recommended": "Recommended",
+        "optimizedPath": "Optimized Path",
+        "aiInsights": {
+            "title": "SmartHandel Insights",
+            "highAvailability": "Availability is high for your items in this area right now.",
+            "priceTrend": "Prices seem stable today across most major chains.",
+            "realTimeStatus": "All status indicators (Open/Closed) are verified in real-time."
+        },
+        "tips": {
+            "title": "Shopping Tips",
+            "tip1": "Prices are estimates and may vary in store",
+            "tip2": "Check store opening hours before leaving",
+            "tip3": "Savings are calculated against the most expensive single store"
+        }
+    },
+    "filters": {
+        "filterByChain": "Filter by Chain",
+        "sortCheapest": "Cheapest Total",
+        "sortClosest": "Closest Distance",
+        "sortFewestStops": "Fewest Stops"
+    },
+    "about": {
+        "hero": {
+            "title": "We help people <1>save money</1> on groceries",
+            "description": "SmartHandel is your personal shopping assistant that uses artificial intelligence to find the cheapest items and the smartest route choices."
+        },
+        "howItWorks": {
+            "title": "How it works",
+            "subtitle": "Technology meets grocery shopping.",
+            "aiSearch": {
+                "title": "AI-Powered Search",
+                "description": "Our advanced language model understands what you need, whether you write 'ingredients for taco' or a specific shopping list."
+            },
+            "comparison": {
+                "title": "Price Comparison",
+                "description": "We fetch real-time prices from all major grocery chains in Norway and find the cheapest combination for you."
+            },
+            "privacy": {
+                "title": "Privacy First",
+                "description": "We only store data necessary to provide you with the results. Your position is used only to find nearby stores."
+            }
+        },
+        "stats": {
+            "users": "Active users",
+            "saved": "Total saved (NOK)",
+            "coverage": "Chain coverage"
+        },
+        "faq": {
+            "title": "Frequently Asked Questions",
+            "q1": {
+                "question": "Is it free to use?",
+                "answer": "Yes, SmartHandel is 100% free for consumers. We want to make price comparison accessible to everyone."
+            },
+            "q2": {
+                "question": "How do you make money?",
+                "answer": "We explore partnerships with grocery chains and brands for featured content that does not affect the price comparison, as well as potential premium features in the future."
+            },
+            "q3": {
+                "question": "Is my data safe?",
+                "answer": "Absolutely. We do not sell your personal data. Search history and location data are used only to generate your results and improve the service anonymously."
+            }
+        },
+        "team": {
+            "title": "Meet the team",
+            "description": "SmartHandel is developed by a small group of technology enthusiasts in Oslo who are passionate about making everyday life easier.",
+            "contact": "Contact us"
+        }
+    },
+    "storeCard": {
+        "yourCartItems": "Your items",
+        "viewDetails": "View details",
+        "noItemsFound": "No items found in this store",
+        "missingItemsWarning": "Some items might be missing or prices are unavailable.",
+        "openNow": "Open Now",
+        "closed": "Closed",
+        "fullStock": "Full Stock",
+        "missingItems": "{{count}} items missing",
+        "getDirections": "Get Directions",
+        "items": "items"
+    },
+    "errors": {
+        "generic_title": "Something went wrong",
+        "generic_message": "Sorry, we encountered a problem. Please try again.",
+        "network_title": "Connection Error",
+        "network_message": "Please check your internet connection and try again.",
+        "timeout_title": "Request Timeout",
+        "timeout_message": "The request took too long. The server might be busy.",
+        "validation_title": "Invalid Input",
+        "validation_message": "We couldn't understand the request. Please check your input.",
+        "searchFailed": "Search failed. We couldn't process your request.",
+        "locationsDisabled": "Location services are disabled. Please enable them to find nearby stores.",
+        "invalidBudget": "Please enter a valid budget.",
+        "failedSearch": "Failed to search products",
+        "failedStores": "Failed to fetch nearby stores",
+        "failedOptimize": "Failed to optimize route",
+        "failedParse": "Failed to parse shopping list",
+        "failedSavings": "Failed to calculate savings"
+    },
+    "layout": {
+        "tagline": "Your smart shopping assistant that finds the best prices and saves you time and money.",
+        "services": "Services",
+        "company": "Company",
+        "legal": "Legal",
+        "rights": "All rights reserved.",
+        "price_comparison": "Price Comparison",
+        "route_planner": "Route Planner",
+        "shopping_lists": "Shopping Lists",
+        "careers": "Careers",
+        "privacy_policy": "Privacy Policy",
+        "terms_of_service": "Terms of Service",
+        "cookies": "Cookies",
+        "loading_page": "Loading page..."
+    },
+    "notFound": {
+        "title": "404 - Page Not Found",
+        "description": "Sorry, we couldn't find the page you're looking for. It might have been moved or deleted.",
+        "searchPrompt": "Maybe you were looking for an item?",
+        "searchPlaceholder": "Search for groceries...",
+        "orGoTo": "Or go directly to:",
+        "home": "Home",
+        "search": "Search",
+        "about": "About Us"
+    }
+}

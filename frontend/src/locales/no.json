@@ -1,0 +1,286 @@
+{
+    "seo": {
+        "defaultTitle": "SmartHandel - Spar penger på dagligvarer",
+        "defaultDescription": "AI-drevet prissammenligning og ruteoptimalisering for din dagligvarehandel. Spar tid og penger hver dag.",
+        "homeTitle": "Hjem",
+        "resultsTitle": "Søkeresultater",
+        "aboutTitle": "Om oss",
+        "notFoundTitle": "Siden ble ikke funnet"
+    },
+    "common": {
+        "loading": "Laster...",
+        "search": "Søk",
+        "cheapest": "💰 Billigst",
+        "closest": "📍 Nærmest",
+        "share": "Del",
+        "back": "Tilbake",
+        "retry": "Prøv igjen",
+        "cancel": "Avbryt",
+        "home": "Hjem",
+        "about": "Om oss",
+        "contact": "Kontakt",
+        "newSearch": "Nytt søk",
+        "startOver": "Start på nytt",
+        "total": "Sum",
+        "shop": "Søk",
+        "thinking": "Tenker...",
+        "store": "Butikk",
+        "describe_need": "Beskriv hva du trenger",
+        "press_enter": "Trykk <0>Enter</0> for å søke",
+        "meters": "m",
+        "kilometers": "km",
+        "share_title": "SmartHandel-resultater",
+        "share_text": "Sjekk ut disse prisene for: {{query}}",
+        "copy_alert": "Lenke kopiert til utklippstavlen!",
+        "locating_you": "Søker etter posisjon...",
+        "fetching_nearby": "Finner butikker...",
+        "analyzing": "Analyserer forespørselen...",
+        "comparing": "Sammenligner priser...",
+        "checking_stores": "Sjekker butikker...",
+        "finding_best_route": "Beregner rute...",
+        "something_went_wrong": "Noe gikk galt",
+        "unexpected_error": "En uventet feil oppstod.",
+        "list_coming_soon": "Oppretting av handleliste kommer snart!",
+        "loading_map": "Laster kart...",
+        "show_details": "Vis tekniske detaljer",
+        "hide_details": "Skjul detaljer"
+    },
+    "home": {
+        "title": "Handle <1>smartere</1>, ikke dyrere",
+        "subtitle": "Fortell oss hva du trenger. Vår AI skanner alle butikker i nærheten og finner hvor du handler billigst.",
+        "placeholder": "f.eks. melk, egg, kylling til middag...",
+        "howItWorks": {
+            "title": "Slik fungerer det",
+            "subtitle": "SmartHandel gjør det enkelt å spare penger på hverdagshandelen.",
+            "step1": {
+                "title": "1. Skriv hva du trenger",
+                "description": "Fortell oss hva du skal ha, akkurat som du ville sagt det til en venn."
+            },
+            "step2": {
+                "title": "2. Vi finner beste priser",
+                "description": "Vår AI sjekker priser i alle butikker i nærheten av deg umiddelbart."
+            },
+            "step3": {
+                "title": "3. Spar penger",
+                "description": "Velg den billigste butikken eller den smarteste ruten for å spare mest."
+            }
+        },
+        "stats": {
+            "priceDiff": "Prisforskjell mellom butikker",
+            "savings": "Kroner spart i året (snitt)",
+            "stores": "Butikker sammenlignet umiddelbart"
+        },
+        "cta": {
+            "title": "Klar for å handle smartere?",
+            "button": "Start å spare nå"
+        },
+        "tips": {
+            "title": "Handletips",
+            "tip1": "Sjekk butikk-apper for ekstra medlemstilbud.",
+            "tip2": "Prisene kan variere noe i butikk.",
+            "tip3": "Beste tid å handle er vanligvis tirsdag morgen."
+        },
+        "location_error": "Vi trenger din posisjon for å finne butikker i nærheten.",
+        "geolocation_not_supported": "Nettleseren din støtter ikke geolokasjon.",
+        "allow_location_alert": "Vennligst tillat posisjonstilgang for å søke.",
+        "using_default_location": "Bruker standard plassering: Oslo",
+        "search_placeholders": [
+            "Jeg trenger melk og brød...",
+            "Jeg trenger kylling til middag...",
+            "2 liter melk, egg, ost for under 200kr",
+            "Tacofredag med familien",
+            "Sunn frokost til hele uken"
+        ],
+        "quickSearch": {
+            "heading": "Prøv noe populært",
+            "essentials": "🥛 Melk, brød og egg",
+            "taco": "🌮 Taco fredag",
+            "chicken": "🍗 Kylling og ris",
+            "produce": "🥬 Frukt og grønt",
+            "breakfast": "☀️ Frokost til uken"
+        }
+    },
+    "results": {
+        "title": "Resultater for",
+        "itemCount": "{{count}} varer funnet",
+        "foundBestOptions": "Beste alternativer funnet",
+        "foundBestStore": "Beste Butikk funnet",
+        "foundBestRoute": "Optimalisert Rute funnet",
+        "foundAlternatives": "Se disse <0>ANDRE BUTIKKENE</0> i nærheten",
+        "comparisonResults": "Sammenligningsresultater",
+        "savePercent": "Spar {{amount}} ({{percent}}%)",
+        "bestOption": "Beste Alternativ",
+        "simplerChoice": "Enklere Valg",
+        "oneStore": "1 Butikk",
+        "everythingInOnePlace": "Få alt på ett sted",
+        "otherOptions": "Andre enkeltbutikker",
+        "bestStoreTagline": "Ett stopp, total bekvemmelighet",
+        "alternativesTagline": "Utforsk andre lokale alternativer",
+        "smartRouteTagline": "Maksimal sparing, flere stopp",
+        "bestSavings": "Beste Besparelse",
+        "smartRoute": "Smart Rute",
+        "multipleStores": "{{count}} Butikker",
+        "splitYourList": "Del opp listen for å spare <1>{{amount}}</1>.",
+        "stop": "Stopp {{count}}",
+        "itemsCost": "Varekostnader",
+        "travelEst": "Reiseutgifter (Est.)",
+        "totalRouteCost": "Total Rutekostnad",
+        "breakdownItems": "{{amount}} varer",
+        "breakdownTravel": "{{amount}} reise",
+        "viewOnMap": "Vis på Kart",
+        "createShoppingList": "Lag Handleliste",
+        "savingsComparison": {
+            "title": "Sammenligning av smart rute",
+            "singleStoreLabel": "{{store}}",
+            "multiStoreLabel": "Smart rute ({{count}} butikker)",
+            "youSave": "Du sparer"
+        },
+        "instruction": {
+            "buyAt": "Kjøp hos {{store}}",
+            "itemsToBuy": "Varer å kjøpe her"
+        },
+        "noRoutesTitle": "Ingen ruter funnet",
+        "noRoutesDescription": "Vi kunne ikke finne noen butikker som har alle varene dine innen rekkevidde.",
+        "tryDifferentItems": "Prøv andre varer",
+        "summaries": {
+            "bestSingle": "Vi fant en butikk som har <1>{{percent}}%</1> av varene dine! Dette er den enkleste måten å handle på i dag.",
+            "greatAlternatives": "Det er <1>{{count}} andre butikker</1> i nærheten som har de fleste varene dine. Se dem nedenfor.",
+            "smartRouteBetter": "Ved å dra til <1>{{count}} butikker</1>, kan du spare <3>{{amount}}</3> ekstra sammenlignet med den beste enkeltbutikken.",
+            "closedWarning": "⚠️ Noen av butikkene er stengt nå. Sjekk åpningstidene før du drar."
+        },
+        "bestSingleStoreHeader": "Beste Enkeltbutikk",
+        "smartRouteHeader": "Smart Rute",
+        "bestChoice": "Beste Valg",
+        "bestAlternative": "Beste alternativ",
+        "anotherConvenientOption": "Et annet praktisk alternativ",
+        "itemsCost": "Dagligvarer",
+        "travelCost": "Est. reise",
+        "totalExpense": "Total kostnad",
+        "smartSummaryTitle": "Smart Oppsummering",
+        "smartSummaryTemplate": "Ved å dele opp handleturen sparer du <bold>{{savings}}</bold> på dagligvarer. Selv med <bold>{{travel}}</bold> i estimerte reisekostnader, sparer du <bold>{{net}}</bold> totalt sammenlignet med enkeltbutikken.",
+        "smartSummarySingle": "Enkeltbutikken er ditt beste valg! Å dele opp turen ville kostet <bold>{{extra}}</bold> mer i reiseutgifter enn du ville spart på dagligvarene.",
+        "cheapestTotal": "Lavest totalpris",
+        "recommended": "Anbefalt",
+        "optimizedPath": "Optimalisert Rute",
+        "aiInsights": {
+            "title": "SmartHandel Innsikt",
+            "highAvailability": "Det er god tilgjengelighet på varene i dette området akkurat nå.",
+            "priceTrend": "Prisene virker stabile i dag på tvers av de største kjedene.",
+            "realTimeStatus": "Alle statusindikatorer (Åpen/Stengt) er verifisert i sanntid."
+        },
+        "tips": {
+            "title": "Handletips",
+            "tip1": "Prisene er estimater og kan variere i butikk",
+            "tip2": "Sjekk åpningstider før du drar",
+            "tip3": "Besparelser beregnes mot den dyreste enkeltbutikken"
+        }
+    },
+    "filters": {
+        "filterByChain": "Filtrer etter kjede",
+        "sortCheapest": "Billigste Totalt",
+        "sortClosest": "Kortest Avstand",
+        "sortFewestStops": "Færrest Stopp"
+    },
+    "about": {
+        "hero": {
+            "title": "Vi hjelper nordmenn <1>spare penger</1> på mat",
+            "description": "SmartHandel er din personlige shoppingassistent som bruker kunstig intelligens til å finne de billigste varene og de smarteste rutevalgene."
+        },
+        "howItWorks": {
+            "title": "Hvordan det fungerer",
+            "subtitle": "Teknologi møter dagligvarehandel.",
+            "aiSearch": {
+                "title": "AI-Drevet Søk",
+                "description": "Vår avanserte språkmodell forstår hva du trenger, enten du skriver 'ingredienser til taco' eller en spesifikk handleliste."
+            },
+            "comparison": {
+                "title": "Prissammenligning",
+                "description": "Vi henter priser i sanntid fra alle store dagligvarekjeder i Norge og finner den billigste kombinasjonen for deg."
+            },
+            "privacy": {
+                "title": "Personvern Først",
+                "description": "Vi lagrer kun data som er nødvendig for å gi deg resultatene. Din posisjon brukes kun til å finne butikker i nærheten."
+            }
+        },
+        "stats": {
+            "users": "Aktive brukere",
+            "saved": "Kroner spart totalt",
+            "coverage": "Dekning av kjeder"
+        },
+        "faq": {
+            "title": "Ofte stilte spørsmål",
+            "q1": {
+                "question": "Er det gratis å bruke?",
+                "answer": "Ja, SmartHandel er 100% gratis for forbrukere. Vi ønsker å gjøre prissammenligning tilgjengelig for alle."
+            },
+            "q2": {
+                "question": "Hvordan tjener dere penger?",
+                "answer": "Vi utforsker partnerskap med dagligvarekjeder og merkevarer for fremhevet innhold som ikke påvirker prissammenligningen, samt potensielle premium-funksjoner i fremtiden."
+            },
+            "q3": {
+                "question": "Er mine data trygge?",
+                "answer": "Absolutt. Vi selger ikke dine personopplysninger. Søkehistorikk og lokasjonsdata brukes kun til å generere resultatene dine og forbedre tjenesten anonymt."
+            }
+        },
+        "team": {
+            "title": "Møt teamet",
+            "description": "SmartHandel utvikles av en liten gruppe teknologi-entusiaster i Oslo som brenner for å gjøre hverdagen enklere.",
+            "contact": "Kontakt oss"
+        }
+    },
+    "storeCard": {
+        "yourCartItems": "Dine varer",
+        "viewDetails": "Se detaljer",
+        "noItemsFound": "Ingen varer funnet i denne butikken",
+        "missingItemsWarning": "Noen varer kan mangle eller priser er utilgjengelige.",
+        "openNow": "Åpent nå",
+        "closed": "Stengt",
+        "fullStock": "Full beholdning",
+        "missingItems": "{{count}} varer mangler",
+        "getDirections": "Få veibeskrivelse",
+        "items": "varer"
+    },
+    "errors": {
+        "generic_title": "Noe gikk galt",
+        "generic_message": "Beklager, vi støtte på et problem. Vennligst prøv igjen.",
+        "network_title": "Tilkoblingsfeil",
+        "network_message": "Sjekk internettforbindelsen din og prøv igjen.",
+        "timeout_title": "Tidsavbrudd",
+        "timeout_message": "Forespørselen tok for lang tid. Serveren kan være opptatt.",
+        "validation_title": "Ugyldig input",
+        "validation_message": "Vi kunne ikke forstå forespørselen. Vennligst sjekk input.",
+        "searchFailed": "Søket mislyktes. Vi kunne ikke behandle forespørselen din.",
+        "locationsDisabled": "Stedstjenester er deaktivert. Vennligst aktiver dem for å finne butikker i nærheten.",
+        "invalidBudget": "Vennligst oppgi et gyldig budsjett.",
+        "failedSearch": "Kunne ikke søke etter produkter",
+        "failedStores": "Kunne ikke hente butikker i nærheten",
+        "failedOptimize": "Kunne ikke optimalisere rute",
+        "failedParse": "Kunne ikke tolke handlelisten",
+        "failedSavings": "Kunne ikke beregne besparelser"
+    },
+    "layout": {
+        "tagline": "Din smarte handleassistent som finner de beste prisene og sparer deg for tid og penger.",
+        "services": "Tjenester",
+        "company": "Selskap",
+        "legal": "Juridisk",
+        "rights": "Alle rettigheter reservert.",
+        "price_comparison": "Prissammenligning",
+        "route_planner": "Ruteplanlegger",
+        "shopping_lists": "Handlelister",
+        "careers": "Karriere",
+        "privacy_policy": "Personvern",
+        "terms_of_service": "Vilkår",
+        "cookies": "Cookies",
+        "loading_page": "Laster side..."
+    },
+    "notFound": {
+        "title": "404 - Siden finnes ikke",
+        "description": "Vi finner dessverre ikke siden du leter etter. Den kan ha blitt flyttet eller slettet.",
+        "searchPrompt": "Kanskje du leter etter en vare?",
+        "searchPlaceholder": "Søk etter dagligvarer...",
+        "orGoTo": "Eller gå direkte til:",
+        "home": "Forsiden",
+        "search": "Søk",
+        "about": "Om oss"
+    }
+}
