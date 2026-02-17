@@ -1,7 +1,8 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { ShoppingBag, Menu, X, ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { clsx } from 'clsx';
 
 export function Layout() {
     const { t, i18n } = useTranslation();
@@ -9,10 +10,6 @@ export function Layout() {
     const location = useLocation();
 
     const closeMenu = () => setIsMenuOpen(false);
-    const changeLanguage = (lng: string) => {
-        i18n.changeLanguage(lng);
-        closeMenu();
-    };
 
     // Scroll lock when menu is open
     useEffect(() => {
@@ -73,53 +70,77 @@ export function Layout() {
                             </div>
                         </nav>
 
-                        {/* Mobile Menu Button */}
-                        <button
-                            className="md:hidden p-2 text-gray-600 focus:outline-none"
-                            aria-label="Toggle menu"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        >
-                            {isMenuOpen ? <X className="w-6 h-6 animate-scaleIn" /> : <Menu className="w-6 h-6 animate-scaleIn" />}
-                        </button>
+                        {/* Mobile Controls */}
+                        <div className="flex items-center gap-2 md:hidden">
+                            {/* Language Switcher (Now outside burger) */}
+                            <div className="flex items-center gap-1.5 mr-2">
+                                <button
+                                    onClick={() => i18n.changeLanguage('en')}
+                                    className={`text-[10px] font-black transition-all px-2 py-1 rounded-md border ${currentLang === 'en' ? 'bg-dark text-white border-dark' : 'text-gray-400 border-gray-100 hover:text-dark'}`}
+                                >
+                                    EN
+                                </button>
+                                <button
+                                    onClick={() => i18n.changeLanguage('no')}
+                                    className={`text-[10px] font-black transition-all px-2 py-1 rounded-md border ${currentLang === 'no' ? 'bg-dark text-white border-dark' : 'text-gray-400 border-gray-100 hover:text-dark'}`}
+                                >
+                                    NO
+                                </button>
+                            </div>
+
+                            {/* Mobile Menu Button */}
+                            <button
+                                className="p-2 text-gray-600 focus:outline-none bg-gray-50 rounded-xl border border-gray-100"
+                                aria-label="Toggle menu"
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            >
+                                {isMenuOpen ? <X className="w-6 h-6 animate-scaleIn" /> : <Menu className="w-6 h-6 animate-scaleIn" />}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 {/* Mobile Menu Overlay */}
                 <div className={`
-                    fixed inset-0 top-16 bg-white z-40 md:hidden transition-all duration-300 ease-in-out
+                    fixed inset-0 top-16 bg-white z-[60] md:hidden transition-all duration-300 ease-out
                     ${isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full pointer-events-none'}
                 `}>
-                    <div className="px-6 py-8 space-y-6">
-                        <Link
-                            to="/"
-                            className={`block text-2xl font-bold ${location.pathname === '/' ? 'text-primary' : 'text-dark'}`}
-                            onClick={closeMenu}
-                        >
-                            {t('common.home')}
-                        </Link>
-                        <Link
-                            to="/about"
-                            className={`block text-2xl font-bold ${location.pathname === '/about' ? 'text-primary' : 'text-dark'}`}
-                            onClick={closeMenu}
-                        >
-                            {t('common.about')}
-                        </Link>
+                    {/* Background Backdrop Blur for depth */}
+                    <div className="absolute inset-0 bg-white/95 backdrop-blur-xl -z-10" />
 
-                        <div className="pt-8 border-t border-gray-100 flex flex-col gap-4">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('layout.language')}</p>
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={() => changeLanguage('en')}
-                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'en' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-500'}`}
-                                >
-                                    English
-                                </button>
-                                <button
-                                    onClick={() => changeLanguage('no')}
-                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'no' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-500'}`}
-                                >
-                                    Norsk
-                                </button>
+                    <div className="px-6 py-12 space-y-8 h-full flex flex-col">
+                        <div className="space-y-4">
+                            <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-6">{t('layout.navigation', 'Navigation')}</p>
+                            <Link
+                                to="/"
+                                className={`flex items-center justify-between py-4 border-b border-gray-50 text-2xl font-black tracking-tight ${location.pathname === '/' ? 'text-primary' : 'text-dark hover:text-primary transition-colors'}`}
+                                onClick={closeMenu}
+                            >
+                                {t('common.home')}
+                                <ArrowRight className={clsx("w-6 h-6", location.pathname === '/' ? 'opacity-100' : 'opacity-20')} />
+                            </Link>
+                            <Link
+                                to="/about"
+                                className={`flex items-center justify-between py-4 border-b border-gray-50 text-2xl font-black tracking-tight ${location.pathname === '/about' ? 'text-primary' : 'text-dark hover:text-primary transition-colors'}`}
+                                onClick={closeMenu}
+                            >
+                                {t('common.about')}
+                                <ArrowRight className={clsx("w-6 h-6", location.pathname === '/about' ? 'opacity-100' : 'opacity-20')} />
+                            </Link>
+                        </div>
+
+                        {/* Aesthetic Footer for Mobile Menu */}
+                        <div className="mt-auto pb-20">
+                            <div className="p-6 bg-gray-50 rounded-[32px] border border-gray-100/50">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center">
+                                        <Sparkles className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <span className="font-black text-dark tracking-tight">SmartHandel</span>
+                                </div>
+                                <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                                    {t('layout.tagline')}
+                                </p>
                             </div>
                         </div>
                     </div>
