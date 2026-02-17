@@ -60,10 +60,39 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
    npm install
    ```
 
-3. **Environment Setup**:
-   - Backend: Copy `backend/.env.example` to `backend/.env` and add your keys.
-   - Frontend: Copy `frontend/.env.example` to `frontend/.env.local` and add your keys.
+### Environment Setup
 
+#### Backend Environment Variables (`backend/.env`)
+Copy `backend/.env.example` to `backend/.env` and configure the following:
+
+```bash
+# Server Configuration
+export PORT=3001
+export NODE_ENV=development
+
+# API Keys
+export KASSAL_API_KEY=your_kassal_api_key_here
+export GEMINI_API_KEY=your_gemini_api_key_here
+
+# Caching & Security
+export CACHE_TTL=3600
+export ALLOWED_ORIGINS=http://localhost:3000
+```
+
+#### Frontend Environment Variables (`frontend/.env.local`)
+Copy `frontend/.env.example` to `frontend/.env.local` and configure the following:
+
+```bash
+# API Configuration
+export VITE_API_URL=http://localhost:3001
+
+# Services
+export VITE_MAPBOX_TOKEN=pk.placeholder_token
+
+# Feature Flags & Env
+export VITE_ENABLE_ANALYTICS=true
+export VITE_ENV=development
+```
 4. **Run the application**:
    ```bash
    # Start backend and frontend concurrently (requires individual setup usually)
