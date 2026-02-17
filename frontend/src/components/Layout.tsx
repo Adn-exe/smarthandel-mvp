@@ -1,8 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, ArrowRight, Sparkles } from 'lucide-react';
+import { ShoppingBag, Menu, X, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { clsx } from 'clsx';
 
 export function Layout() {
     const { t, i18n } = useTranslation();
@@ -25,7 +24,10 @@ export function Layout() {
     return (
         <div className="flex flex-col min-h-screen">
             {/* Header */}
-            <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+            <header className={`
+                fixed top-0 inset-x-0 z-50 border-b border-gray-100 transition-all duration-300
+                ${isMenuOpen ? 'bg-white' : 'bg-white/80 backdrop-blur-md'}
+            `}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
 
@@ -72,17 +74,17 @@ export function Layout() {
 
                         {/* Mobile Controls */}
                         <div className="flex items-center gap-2 md:hidden">
-                            {/* Language Switcher (Now outside burger) */}
-                            <div className="flex items-center gap-1.5 mr-2">
+                            {/* Language Switcher (Outside burger) */}
+                            <div className="flex items-center gap-2 mr-1">
                                 <button
                                     onClick={() => i18n.changeLanguage('en')}
-                                    className={`text-[10px] font-black transition-all px-2 py-1 rounded-md border ${currentLang === 'en' ? 'bg-dark text-white border-dark' : 'text-gray-400 border-gray-100 hover:text-dark'}`}
+                                    className={`text-[10px] font-bold transition-all px-2.5 py-1.5 rounded-lg border ${currentLang === 'en' ? 'bg-dark text-white border-dark' : 'bg-white text-gray-500 border-gray-200'}`}
                                 >
                                     EN
                                 </button>
                                 <button
                                     onClick={() => i18n.changeLanguage('no')}
-                                    className={`text-[10px] font-black transition-all px-2 py-1 rounded-md border ${currentLang === 'no' ? 'bg-dark text-white border-dark' : 'text-gray-400 border-gray-100 hover:text-dark'}`}
+                                    className={`text-[10px] font-bold transition-all px-2.5 py-1.5 rounded-lg border ${currentLang === 'no' ? 'bg-dark text-white border-dark' : 'bg-white text-gray-500 border-gray-200'}`}
                                 >
                                     NO
                                 </button>
@@ -90,11 +92,11 @@ export function Layout() {
 
                             {/* Mobile Menu Button */}
                             <button
-                                className="p-2 text-gray-600 focus:outline-none bg-gray-50 rounded-xl border border-gray-100"
+                                className="p-2 text-dark focus:outline-none bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-100 transition-colors"
                                 aria-label="Toggle menu"
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                             >
-                                {isMenuOpen ? <X className="w-6 h-6 animate-scaleIn" /> : <Menu className="w-6 h-6 animate-scaleIn" />}
+                                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                             </button>
                         </div>
                     </div>
@@ -102,45 +104,40 @@ export function Layout() {
 
                 {/* Mobile Menu Overlay */}
                 <div className={`
-                    fixed inset-0 top-16 bg-white z-[60] md:hidden transition-all duration-300 ease-out
+                    fixed inset-0 top-16 bg-white z-40 md:hidden transition-all duration-300 ease-in-out
                     ${isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full pointer-events-none'}
                 `}>
-                    {/* Background Backdrop Blur for depth */}
-                    <div className="absolute inset-0 bg-white/95 backdrop-blur-xl -z-10" />
-
-                    <div className="px-6 py-12 space-y-8 h-full flex flex-col">
-                        <div className="space-y-4">
-                            <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-6">{t('layout.navigation', 'Navigation')}</p>
+                    <div className="px-6 py-8 space-y-6 h-full flex flex-col overflow-y-auto pb-24">
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Menu</p>
                             <Link
                                 to="/"
-                                className={`flex items-center justify-between py-4 border-b border-gray-50 text-2xl font-black tracking-tight ${location.pathname === '/' ? 'text-primary' : 'text-dark hover:text-primary transition-colors'}`}
+                                className={`flex items-center justify-between p-4 rounded-2xl transition-all ${location.pathname === '/' ? 'bg-primary/5 text-primary font-bold' : 'text-dark font-semibold hover:bg-gray-50'}`}
                                 onClick={closeMenu}
                             >
-                                {t('common.home')}
-                                <ArrowRight className={clsx("w-6 h-6", location.pathname === '/' ? 'opacity-100' : 'opacity-20')} />
+                                <span className="text-xl">{t('common.home')}</span>
+                                {location.pathname === '/' && <div className="w-2 h-2 rounded-full bg-primary" />}
                             </Link>
                             <Link
                                 to="/about"
-                                className={`flex items-center justify-between py-4 border-b border-gray-50 text-2xl font-black tracking-tight ${location.pathname === '/about' ? 'text-primary' : 'text-dark hover:text-primary transition-colors'}`}
+                                className={`flex items-center justify-between p-4 rounded-2xl transition-all ${location.pathname === '/about' ? 'bg-primary/5 text-primary font-bold' : 'text-dark font-semibold hover:bg-gray-50'}`}
                                 onClick={closeMenu}
                             >
-                                {t('common.about')}
-                                <ArrowRight className={clsx("w-6 h-6", location.pathname === '/about' ? 'opacity-100' : 'opacity-20')} />
+                                <span className="text-xl">{t('common.about')}</span>
+                                {location.pathname === '/about' && <div className="w-2 h-2 rounded-full bg-primary" />}
                             </Link>
                         </div>
 
-                        {/* Aesthetic Footer for Mobile Menu */}
-                        <div className="mt-auto pb-20">
-                            <div className="p-6 bg-gray-50 rounded-[32px] border border-gray-100/50">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center">
-                                        <Sparkles className="w-5 h-5 text-primary" />
-                                    </div>
-                                    <span className="font-black text-dark tracking-tight">SmartHandel</span>
+                        {/* Mobile Menu Footer */}
+                        <div className="mt-auto pt-8 border-t border-gray-100">
+                            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl">
+                                <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary">
+                                    <Sparkles className="w-5 h-5" />
                                 </div>
-                                <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                                    {t('layout.tagline')}
-                                </p>
+                                <div>
+                                    <p className="font-bold text-dark text-sm">SmartHandel</p>
+                                    <p className="text-xs text-gray-500">Din smarte handleassistent</p>
+                                </div>
                             </div>
                         </div>
                     </div>
