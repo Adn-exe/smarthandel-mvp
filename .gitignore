@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+.npm/
+
+# Build and IDE
+dist/
+.vscode/
+.idea/
+.DS_Store
+
+# Environment
+.env
+.env.local
+*.local
+
+# System generated
+.gemini/
+.system_generated/
+backend/src/data/*.json
+!backend/src/data/item_mismatch_reports.json
+backend/response.json

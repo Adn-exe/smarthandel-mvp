@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Github, Twitter } from 'lucide-react';
-import { useState } from 'react';
+import { ShoppingBag, Menu, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export function Layout() {
@@ -14,21 +14,30 @@ export function Layout() {
         closeMenu();
     };
 
+    // Scroll lock when menu is open
+    useEffect(() => {
+        if (isMenuOpen) {
+            document.body.classList.add('no-scroll');
+        } else {
+            document.body.classList.remove('no-scroll');
+        }
+    }, [isMenuOpen]);
+
     const currentLang = i18n.language.split('-')[0];
 
     return (
         <div className="flex flex-col min-h-screen">
             {/* Header */}
-            <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+            <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
 
                         {/* Logo */}
                         <Link to="/" className="flex items-center gap-2 group" onClick={closeMenu}>
-                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white transform group-hover:rotate-12 transition-transform">
+                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white transform group-hover:rotate-12 transition-transform shadow-lg shadow-primary/20">
                                 <ShoppingBag className="w-5 h-5" />
                             </div>
-                            <span className="font-heading font-bold text-xl text-dark">
+                            <span className="font-heading font-bold text-xl text-dark tracking-tight">
                                 Smart<span className="text-primary">Handel</span>
                             </span>
                         </Link>
@@ -37,13 +46,13 @@ export function Layout() {
                         <nav className="hidden md:flex items-center gap-8">
                             <Link
                                 to="/"
-                                className={`font-medium transition-colors ${location.pathname === '/' ? 'text-primary' : 'text-gray-600 hover:text-dark'}`}
+                                className={`font-semibold text-sm transition-colors ${location.pathname === '/' ? 'text-primary' : 'text-gray-600 hover:text-dark'}`}
                             >
                                 {t('common.home')}
                             </Link>
                             <Link
                                 to="/about"
-                                className={`font-medium transition-colors ${location.pathname === '/about' ? 'text-primary' : 'text-gray-600 hover:text-dark'}`}
+                                className={`font-semibold text-sm transition-colors ${location.pathname === '/about' ? 'text-primary' : 'text-gray-600 hover:text-dark'}`}
                             >
                                 {t('common.about')}
                             </Link>
@@ -51,14 +60,13 @@ export function Layout() {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => i18n.changeLanguage('en')}
-                                    className={`text-sm transition-colors ${currentLang === 'en' ? 'font-bold text-dark' : 'font-medium text-gray-500 hover:text-dark'}`}
+                                    className={`text-xs transition-colors px-2 py-1 rounded ${currentLang === 'en' ? 'bg-dark text-white font-bold' : 'font-medium text-gray-400 hover:text-dark'}`}
                                 >
                                     EN
                                 </button>
-                                <span className="text-gray-300">/</span>
                                 <button
                                     onClick={() => i18n.changeLanguage('no')}
-                                    className={`text-sm transition-colors ${currentLang === 'no' ? 'font-bold text-dark' : 'font-medium text-gray-500 hover:text-dark'}`}
+                                    className={`text-xs transition-colors px-2 py-1 rounded ${currentLang === 'no' ? 'bg-dark text-white font-bold' : 'font-medium text-gray-400 hover:text-dark'}`}
                                 >
                                     NO
                                 </button>
@@ -67,49 +75,55 @@ export function Layout() {
 
                         {/* Mobile Menu Button */}
                         <button
-                            className="md:hidden p-2 text-gray-600"
+                            className="md:hidden p-2 text-gray-600 focus:outline-none"
+                            aria-label="Toggle menu"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                         >
-                            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                            {isMenuOpen ? <X className="w-6 h-6 animate-scaleIn" /> : <Menu className="w-6 h-6 animate-scaleIn" />}
                         </button>
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
-                {isMenuOpen && (
-                    <div className="md:hidden border-t border-gray-100 bg-white absolute w-full shadow-lg">
-                        <div className="px-4 py-4 space-y-4">
-                            <Link
-                                to="/"
-                                className="block font-medium text-dark py-2"
-                                onClick={closeMenu}
-                            >
-                                {t('common.home')}
-                            </Link>
-                            <Link
-                                to="/about"
-                                className="block font-medium text-dark py-2"
-                                onClick={closeMenu}
-                            >
-                                {t('common.about')}
-                            </Link>
-                            <div className="border-t border-gray-100 my-2 pt-2 flex gap-4">
+                {/* Mobile Menu Overlay */}
+                <div className={`
+                    fixed inset-0 top-16 bg-white z-40 md:hidden transition-all duration-300 ease-in-out
+                    ${isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full pointer-events-none'}
+                `}>
+                    <div className="px-6 py-8 space-y-6">
+                        <Link
+                            to="/"
+                            className={`block text-2xl font-bold ${location.pathname === '/' ? 'text-primary' : 'text-dark'}`}
+                            onClick={closeMenu}
+                        >
+                            {t('common.home')}
+                        </Link>
+                        <Link
+                            to="/about"
+                            className={`block text-2xl font-bold ${location.pathname === '/about' ? 'text-primary' : 'text-dark'}`}
+                            onClick={closeMenu}
+                        >
+                            {t('common.about')}
+                        </Link>
+
+                        <div className="pt-8 border-t border-gray-100 flex flex-col gap-4">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('layout.language')}</p>
+                            <div className="flex gap-4">
                                 <button
                                     onClick={() => changeLanguage('en')}
-                                    className={`text-sm transition-colors ${currentLang === 'en' ? 'font-bold text-primary' : 'text-gray-500'}`}
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'en' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-500'}`}
                                 >
                                     English
                                 </button>
                                 <button
                                     onClick={() => changeLanguage('no')}
-                                    className={`text-sm transition-colors ${currentLang === 'no' ? 'font-bold text-primary' : 'text-gray-500'}`}
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'no' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-500'}`}
                                 >
                                     Norsk
                                 </button>
                             </div>
                         </div>
                     </div>
-                )}
+                </div>
             </header>
 
             {/* Main Content */}
@@ -153,10 +167,10 @@ export function Layout() {
 
                         <div>
                             <h3 className="font-semibold text-dark mb-4">{t('layout.legal')}</h3>
-                            <ul className="space-y-2 text-sm text-gray-500">
-                                <li><a href="#" className="hover:text-primary">{t('layout.privacy_policy')}</a></li>
-                                <li><a href="#" className="hover:text-primary">{t('layout.terms_of_service')}</a></li>
-                                <li><a href="#" className="hover:text-primary">{t('layout.cookies')}</a></li>
+                            <ul className="space-y-2 text-sm text-gray-400">
+                                <li><span className="cursor-default">{t('layout.privacy_policy')}</span></li>
+                                <li><span className="cursor-default">{t('layout.terms_of_service')}</span></li>
+                                <li><span className="cursor-default">{t('layout.cookies')}</span></li>
                             </ul>
                         </div>
                     </div>
@@ -166,12 +180,7 @@ export function Layout() {
                             © {new Date().getFullYear()} SmartHandel AS. {t('layout.rights')}
                         </p>
                         <div className="flex gap-4">
-                            <a href="#" className="text-gray-400 hover:text-dark transition-colors">
-                                <Github className="w-4 h-4" />
-                            </a>
-                            <a href="#" className="text-gray-400 hover:text-dark transition-colors">
-                                <Twitter className="w-4 h-4" />
-                            </a>
+                            {/* Social icons removed */}
                         </div>
                     </div>
                 </div>

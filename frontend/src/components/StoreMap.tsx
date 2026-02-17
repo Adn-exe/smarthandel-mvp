@@ -4,6 +4,7 @@ import { divIcon, type LatLngTuple } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Store, User, ShoppingBag, Navigation } from 'lucide-react';
 import { renderToString } from 'react-dom/server';
+import { formatDistance } from '../utils/format';
 import type { Store as StoreType, Location } from '../types';
 
 interface StoreMapProps {
@@ -145,9 +146,7 @@ export function StoreMap({
                                     <p className="text-xs text-gray-500 mb-2">{store.name}</p>
                                     <div className="flex items-center gap-1 text-xs font-medium text-primary">
                                         <Navigation className="w-3 h-3" />
-                                        {store.distance < 1000
-                                            ? `${Math.round(store.distance)}m`
-                                            : `${(store.distance / 1000).toFixed(1)}km`} away
+                                        {formatDistance(store.distance)} away
                                     </div>
                                 </div>
                             </Popup>

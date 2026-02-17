@@ -150,14 +150,12 @@ describe('ResultsDisplay Component', () => {
         store: { id: 1, name: 'Store A', chain: 'REMA', address: '', location: { lat: 0, lng: 0 }, distance: 100, open_now: true },
         items: [],
         totalCost: 100,
-        travelCost: 15,
         distance: 100
     };
 
     const mockMulti = {
         stores: [],
         totalCost: 80,
-        travelCost: 35,
         totalDistance: 200,
         savings: 20,
         savingsPercent: 20

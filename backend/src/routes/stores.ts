@@ -2,8 +2,9 @@ import { Router, Request, Response } from 'express';
 import { query, param, validationResult } from 'express-validator';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { generalLimiter } from '../middleware/rateLimiter.js';
-import kassalService from '../services/kassalService.js';
+import dataAggregator from '../services/providers/DataAggregator.js';
 import { ApiError } from '../middleware/errorHandler.js';
+import { ensureInRegion } from '../utils/locationUtils.js';
 
 const router = Router();
 
@@ -30,7 +31,12 @@ router.get(
         const lng = parseFloat(req.query.lng as string);
         const radius = req.query.radius ? parseFloat(req.query.radius as string) : 5;
 
-        const stores = await kassalService.getStoresNearby({ lat, lng }, radius);
+        const { location: searchLocation, radius: searchRadius } = ensureInRegion(
+            { lat, lng },
+            radius
+        );
+
+        const stores = await dataAggregator.getStoresNearby(searchLocation, searchRadius);
 
         res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
         res.json({

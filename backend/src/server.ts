@@ -9,6 +9,7 @@ import productsRouter from './routes/products.js';
 import storesRouter from './routes/stores.js';
 import routeRouter from './routes/route.js';
 import aiRouter from './routes/ai.js';
+import reportRouter from './routes/report.js';
 import healthRouter from './routes/health.js';
 import { errorHandler, ApiError } from './middleware/errorHandler.js';
 
@@ -45,6 +46,7 @@ app.use('/api/products', productsRouter);
 app.use('/api/stores', storesRouter);
 app.use('/api/route', routeRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/reports', reportRouter);
 app.use('/api/health', healthRouter);
 
 // Legacy/Health Alias
@@ -63,12 +65,13 @@ app.use(errorHandler);
 // 7. Start Server
 let server: any;
 if (process.env.NODE_ENV !== 'test') {
-    server = app.listen(PORT, () => {
+    server = app.listen(PORT, '0.0.0.0', () => {
         console.log('==========================================');
         console.log(`🚀 SmartHandel Backend is running!`);
         console.log(`📡 Port: ${PORT}`);
         console.log(`🌍 Environment: ${config.nodeEnv}`);
-        console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+        console.log(`🔗 Local lookup: http://localhost:${PORT}/api/health`);
+        console.log(`🔗 Network access: http://0.0.0.0:${PORT}/api/health`);
         console.log('==========================================');
     });
 }

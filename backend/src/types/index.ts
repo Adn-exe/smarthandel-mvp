@@ -12,6 +12,7 @@ export interface Product {
     image_url: string;
     unit: string;
     relevanceScore?: number;
+    originalQueryName?: string;
     priceHistory?: Array<{ price: number; date: string }>;
 }
 
@@ -22,7 +23,7 @@ export interface Store {
     address: string;
     location: Location;
     distance: number;
-    open_now: boolean;
+    open_now?: boolean;
 }
 
 export interface ShoppingItem {

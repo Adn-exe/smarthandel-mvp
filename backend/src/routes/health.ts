@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
-import kassalService from '../services/kassalService.js';
+import dataAggregator from '../services/providers/DataAggregator.js';
 import aiService from '../services/aiService.js';
 import cache from '../utils/cache.js';
 import { readFileSync } from 'fs';
@@ -44,10 +44,10 @@ router.get(
 router.get(
     '/ready',
     asyncHandler(async (req: Request, res: Response) => {
-        const [kassalOk, aiOk] = await Promise.all([
-            kassalService.checkHealth(),
-            aiService.checkHealth()
-        ]);
+        const health = await dataAggregator.checkHealth();
+        const kassalOk = health['Kassal API'];
+        const offlineOk = health['Weekly Offers (Trondheim)'];
+        const aiOk = await aiService.checkHealth();
 
         // Test cache
         let cacheOk = false;
@@ -64,6 +64,7 @@ router.get(
             ready,
             services: {
                 kassal: kassalOk ? 'ok' : 'error',
+                offline: offlineOk ? 'ok' : 'error',
                 anthropic: aiOk ? 'ok' : 'error',
                 cache: cacheOk ? 'ok' : 'error'
             }

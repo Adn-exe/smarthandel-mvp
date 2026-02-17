@@ -1,4 +1,4 @@
-import kassalService from './kassalService.js';
+import dataAggregator from './providers/DataAggregator.js';
 import cache from '../utils/cache.js';
 import { Product, Store, ShoppingItem } from '../types/index.js';
 import { ApiError } from '../middleware/errorHandler.js';
@@ -68,7 +68,15 @@ class ComparisonService {
         });
 
         // Populate comparisons
-        for (const shoppingItem of items) {
+        for (const rawItem of items) {
+            // Capitalize for professional display
+            const shoppingItem = {
+                ...rawItem,
+                name: rawItem.name.charAt(0).toUpperCase() + rawItem.name.slice(1), // Capitalize for display and search
+                originalName: rawItem.name, // Preserve original user input
+                englishName: rawItem.englishName ? rawItem.englishName.charAt(0).toUpperCase() + rawItem.englishName.slice(1) : undefined, // Capitalize English translation
+            };
+
             const itemComp: ItemComparison = {
                 itemName: shoppingItem.name,
                 cheapest: null,
@@ -77,14 +85,14 @@ class ComparisonService {
 
             // Search for the product in the Kassal API
             // In a real scenario, we might want to filter search by vendor/store if possible
-            const products = await kassalService.searchProducts(shoppingItem.name, {
+            const products = await dataAggregator.searchProducts(shoppingItem.name, {
                 suggestedCategory: shoppingItem.suggestedCategory
             });
 
             for (const store of stores) {
                 // Find the specific product offered by this store/chain
                 // Kassal API maps stores to products via p.store.name or p.vendor
-                const matchingProduct = products.find(p => {
+                const matchingProduct = products.find((p: Product) => {
                     const productStore = p.store.toLowerCase().replace(/_/g, ' ');
                     const chain = store.chain.toLowerCase().replace(/_/g, ' ');
                     const name = store.name.toLowerCase().replace(/_/g, ' ');
@@ -150,15 +158,15 @@ class ComparisonService {
         const deals: Deal[] = [];
 
         for (const item of items) {
-            const products = await kassalService.searchProducts(item.name, {
+            const products = await dataAggregator.searchProducts(item.name, {
                 suggestedCategory: item.suggestedCategory
             });
             if (products.length < 2) continue;
 
-            const prices = products.map(p => p.price).filter(p => p > 0);
-            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const prices = products.map((p: Product) => p.price).filter((p: number) => p > 0);
+            const avgPrice = prices.reduce((a: number, b: number) => a + b, 0) / prices.length;
 
-            products.forEach(p => {
+            products.forEach((p: Product) => {
                 if (p.price > 0 && p.price < avgPrice) {
                     const savingsPercentage = ((avgPrice - p.price) / avgPrice) * 100;
                     deals.push({

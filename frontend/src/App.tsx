@@ -12,6 +12,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { trackPageView } from './utils/analytics';
 
 // Lazy Loaded Pages
+const Selection = lazy(() => import('./pages/Selection').then(m => ({ default: m.Selection })));
 const Results = lazy(() => import('./pages/Results'));
 const About = lazy(() => import('./pages/About').then(m => ({ default: m.About })));
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
@@ -39,6 +40,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Layout />}>
                   <Route index element={<Home />} />
+                  <Route path="selection" element={<Selection />} />
                   <Route path="results" element={<Results />} />
                   <Route path="about" element={<About />} />
                   <Route path="*" element={<NotFound />} />

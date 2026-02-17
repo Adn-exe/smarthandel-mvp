@@ -105,6 +105,7 @@
         "itemCount": "{{count}} items found",
         "foundBestOptions": "Best options found",
         "foundBestStore": "Best Store found",
+        "bestStore": "Best Store",
         "foundBestRoute": "Optimized Route found",
         "foundAlternatives": "Check these <0>OTHER STORES</0> nearby",
         "comparisonResults": "Comparison Results",
@@ -122,19 +123,18 @@
         "multipleStores": "{{count}} Stores",
         "splitYourList": "Split your list to save <1>{{amount}}</1>.",
         "stop": "Stop {{count}}",
-        "itemsCost": "Items Cost",
-        "travelEst": "Travel (Est.)",
-        "totalRouteCost": "Total Route Cost",
+        "itemsCost": "Groceries",
         "breakdownItems": "{{amount}} items",
-        "breakdownTravel": "{{amount}} travel",
         "viewOnMap": "View on Map",
         "createShoppingList": "Create Shopping List",
         "savingsComparison": {
             "title": "Smart Route Comparison",
             "singleStoreLabel": "{{store}}",
             "multiStoreLabel": "Smart Route ({{count}} stores)",
-            "youSave": "You save"
+            "youSave": "Net Savings"
         },
+        "youSave": "Total Savings:",
+        "vsBestSingle": "vs. best single store",
         "instruction": {
             "buyAt": "Buy at {{store}}",
             "itemsToBuy": "Items to buy here"
@@ -153,12 +153,10 @@
         "bestChoice": "Best Choice",
         "bestAlternative": "Best Alternative",
         "anotherConvenientOption": "Another convenient option",
-        "itemsCost": "Groceries",
-        "travelCost": "Est. Travel",
         "totalExpense": "Total Expense",
         "smartSummaryTitle": "Smart Summary",
-        "smartSummaryTemplate": "Splitting your trip saves you <bold>{{savings}}</bold> on groceries. Even with <bold>{{travel}}</bold> in estimated travel costs, you save <bold>{{net}}</bold> compared to the single store option.",
-        "smartSummarySingle": "The single store option is your best bet! Splitting the trip would cost you <bold>{{extra}}</bold> more in travel than you'd save on groceries.",
+        "smartSummaryTemplate": "Splitting your trip saves you <bold>{{savings}}</bold> compared to the best single store. Your total for all groceries is <bold>{{total}}</bold>.",
+        "smartSummarySingle": "The single store option is your best bet! Splitting the trip wouldn't save you enough on groceries.",
         "cheapestTotal": "Lowest Total Cost",
         "recommended": "Recommended",
         "optimizedPath": "Optimized Path",
@@ -174,6 +172,13 @@
             "tip2": "Check store opening hours before leaving",
             "tip3": "Savings are calculated against the most expensive single store"
         }
+    },
+    "selection": {
+        "title": "Review your list",
+        "subtitle": "We identified these items from your search. Adjust quantities or remove items you don't need.",
+        "empty": "Your shopping list is empty.",
+        "confirm": "Confirm and Compare",
+        "startOver": "Start over"
     },
     "filters": {
         "filterByChain": "Filter by Chain",

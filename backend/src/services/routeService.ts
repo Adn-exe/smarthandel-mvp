@@ -1,4 +1,4 @@
-import kassalService from './kassalService.js';
+import dataAggregator from './providers/DataAggregator.js';
 import { calculateDistance } from '../utils/distance.js';
 import { Product, Store, ShoppingItem, Location } from '../types/index.js';
 import { ApiError } from '../middleware/errorHandler.js';
@@ -12,7 +12,6 @@ interface SingleStoreOption {
     store: Store;
     items: ProductWithPrice[];
     totalCost: number;
-    travelCost: number;
     distance: number;
 }
 
@@ -24,7 +23,6 @@ interface MultiStoreOption {
         distance: number;
     }>;
     totalCost: number;
-    travelCost: number;
     totalDistance: number;
     savings: number;
     savingsPercent: number;
@@ -87,7 +85,7 @@ class RouteService {
             for (const item of items) {
                 let products: Product[] = [];
                 try {
-                    products = await kassalService.searchProducts(item.name, {
+                    products = await dataAggregator.searchProducts(item.name, {
                         suggestedCategory: item.suggestedCategory,
                         location: userLocation,
                         radius: (options.maxDistance || 10000) / 1000 // Convert meters to km
@@ -95,18 +93,14 @@ class RouteService {
                 } catch (error) {
                     console.warn(`[RouteService] Failed to search for "${item.name}", skipping. Error:`, (error as any)?.message || error);
                 }
-                // Filter products to only include those from valid chains/stores
-                itemToProductsMap[item.name] = products.filter(p => {
-                    const productStoreName = p.store.toLowerCase();
-                    return validStores.some(s => {
-                        const chain = s.chain.toLowerCase();
-                        const name = s.name.toLowerCase();
-                        return productStoreName.includes(chain) || productStoreName.includes(name) || chain.includes(productStoreName);
-                    });
-                });
+                // Keep ALL products (no chain-filtering) — products from the Kassal API
+                // have chain-level store names (Joker, SPAR, Meny etc.) that don't match
+                // physical store chains (Rema 1000, Kiwi, Bunnpris etc.).
+                // Each physical store will be assigned the cheapest available product.
+                itemToProductsMap[item.name] = products;
             }
 
-            // 2. Calculate Single-Store Options (Get Top 5)
+            // 2. Calculate Single-Store Options (Get Top 8)
             const singleStoreCandidates = this.calculateBestSingleStores(items, userLocation, validStores, itemToProductsMap, options);
             const bestSingleStore = singleStoreCandidates.length > 0 ? singleStoreCandidates[0] : null;
 
@@ -134,21 +128,6 @@ class RouteService {
         }
     }
 
-    /**
-     * Estimates fuel and time cost for a given distance.
-     */
-    public estimateTravelCost(distanceMeters: number): number {
-        const distanceKm = distanceMeters / 1000;
-        const FuelCostPerKm = 12; // NOK
-        const AvgSpeedKmh = 40; // km/h
-        const TimeValuePerMin = 5; // NOK (approx. 300 NOK/hr)
-
-        const fuelCost = distanceKm * FuelCostPerKm;
-        const travelTimeMin = (distanceKm / AvgSpeedKmh) * 60;
-        const timeCost = travelTimeMin * TimeValuePerMin;
-
-        return fuelCost + timeCost;
-    }
 
     private calculateBestSingleStores(
         items: ShoppingItem[],
@@ -167,27 +146,17 @@ class RouteService {
                 const products = itemToProductsMap[shoppingItem.name];
                 if (!products || products.length === 0) continue;
 
-                const matchingProduct = products.find(p => {
-                    const productStore = p.store.toLowerCase().replace(/_/g, ' ').trim();
-                    const chain = store.chain.toLowerCase().replace(/_/g, ' ').trim();
-                    const name = store.name.toLowerCase().replace(/_/g, ' ').trim();
+                // Pick the cheapest product available (no chain-matching needed)
+                const cheapest = products.reduce((best, p) => p.price < best.price ? p : best);
 
-                    // Direct chain or name inclusion
-                    if (productStore.includes(chain) || productStore.includes(name) || chain.includes(productStore)) return true;
-
-                    // Handle "Coop" specific cases (Coop Prix, Coop Mega etc)
-                    if (chain.startsWith('coop') && productStore.startsWith('coop')) return true;
-
-                    return false;
-                });
-
-                if (matchingProduct) {
-                    const totalPrice = matchingProduct.price * shoppingItem.quantity;
+                if (cheapest) {
+                    const totalPrice = cheapest.price * shoppingItem.quantity;
                     storeItems.push({
-                        ...matchingProduct,
+                        ...cheapest,
                         totalPrice,
                         quantity: shoppingItem.quantity,
-                        englishName: shoppingItem.englishName
+                        englishName: shoppingItem.englishName,
+                        originalQueryName: shoppingItem.name
                     });
                     storeTotalCost += totalPrice;
                 }
@@ -205,14 +174,13 @@ class RouteService {
                     store,
                     items: storeItems,
                     totalCost: storeTotalCost,
-                    travelCost: this.estimateTravelCost(distance),
                     distance
                 });
             }
         }
 
         // Sort by coverage (number of items) descending, then by open status (open first), then by total cost ascending
-        return results.sort((a, b) => {
+        const sorted = results.sort((a, b) => {
             if (b.items.length !== a.items.length) {
                 return b.items.length - a.items.length;
             }
@@ -220,8 +188,22 @@ class RouteService {
             if (a.store.open_now !== b.store.open_now) {
                 return b.store.open_now ? 1 : -1;
             }
-            return (a.totalCost + a.travelCost) - (b.totalCost + b.travelCost);
-        }).slice(0, 5); // Return top 5 candidates
+            return a.totalCost - b.totalCost;
+        });
+
+        // Deduplicate stores by ID (defensive)
+        const seenStoreIds = new Set<string>();
+        const uniqueCandidates: SingleStoreOption[] = [];
+
+        for (const candidate of sorted) {
+            const id = String(candidate.store.id);
+            if (!seenStoreIds.has(id)) {
+                seenStoreIds.add(id);
+                uniqueCandidates.push(candidate);
+            }
+        }
+
+        return uniqueCandidates.slice(0, 8); // Return top 8 unique candidates for better variety
     }
 
     private calculateBestMultiStore(
@@ -231,12 +213,15 @@ class RouteService {
         itemToProductsMap: Record<string, Product[]>,
         options: { maxStores: number; maxDistance: number; sortBy?: 'cheapest' | 'closest' | 'stops' }
     ): MultiStoreOption | null {
-        // 1. For each item, find the absolute cheapest store within maxDistance
-        const itemAssignments = new Map<string, { product: Product, store: Store, price: number }>();
+        // 1. For each item, find ALL viable store options within maxDistance
+        //    Store the top 2 cheapest options per item for diversification
+        const itemOptions = new Map<string, { product: Product, store: Store, price: number, distance: number }[]>();
 
         for (const shoppingItem of items) {
             const products = itemToProductsMap[shoppingItem.name] || [];
-            let cheapestOption: { product: Product, store: Store, price: number } | null = null;
+
+            // Track best option per store (nearest store of each chain)
+            const bestPerStore = new Map<string, { product: Product, store: Store, price: number, distance: number }>();
 
             for (const store of availableStores) {
                 const distance = calculateDistance(
@@ -248,28 +233,50 @@ class RouteService {
 
                 if (distance > options.maxDistance) continue;
 
-                const matchingProduct = products.find(p => {
-                    const productStore = p.store.toLowerCase().replace(/_/g, ' ');
-                    const chain = store.chain.toLowerCase().replace(/_/g, ' ');
-                    const name = store.name.toLowerCase().replace(/_/g, ' ');
-                    return productStore.includes(chain) || productStore.includes(name) || chain.includes(productStore);
-                });
+                // Pick the cheapest product available (no chain-matching needed)
+                const cheapest = products.length > 0
+                    ? products.reduce((best, p) => p.price < best.price ? p : best)
+                    : null;
 
-                if (matchingProduct) {
-                    if (!cheapestOption || matchingProduct.price < cheapestOption.price) {
-                        cheapestOption = { product: matchingProduct, store, price: matchingProduct.price };
+                if (cheapest) {
+                    const chainKey = store.chain.toLowerCase().trim();
+                    const existing = bestPerStore.get(chainKey);
+                    // Keep only the nearest store per chain
+                    if (!existing || distance < existing.distance) {
+                        bestPerStore.set(chainKey, { product: cheapest, store, price: cheapest.price, distance });
                     }
                 }
             }
 
-            if (cheapestOption) {
-                itemAssignments.set(shoppingItem.name, cheapestOption);
+            // Collect best per chain, sorted by price
+            const sorted = Array.from(bestPerStore.values()).sort((a, b) => a.price - b.price);
+            if (sorted.length > 0) {
+                itemOptions.set(shoppingItem.name, sorted);
             }
         }
 
-        if (itemAssignments.size === 0) return null;
+        if (itemOptions.size === 0) return null;
 
-        // 2. Group items by store
+        // 2. Greedy assignment: assign each item to cheapest store
+        const itemAssignments = new Map<string, { product: Product, store: Store, price: number }>();
+        itemOptions.forEach((opts, itemName) => {
+            itemAssignments.set(itemName, opts[0]);
+        });
+
+        // 3. Diversification: if all items mapped to one store, split some to 2nd-cheapest
+        const assignedStoreIds = new Set(Array.from(itemAssignments.values()).map(a => a.store.id.toString()));
+        if (assignedStoreIds.size === 1 && items.length >= 2) {
+            // Try to move some items to alternate stores for a genuine multi-store route
+            for (const [itemName, opts] of itemOptions.entries()) {
+                if (opts.length > 1) {
+                    // Assign this item to the 2nd cheapest chain
+                    itemAssignments.set(itemName, opts[1]);
+                    break; // Only move one item to create 2-store route
+                }
+            }
+        }
+
+        // 4. Group items by store
         const storeGroups = new Map<string, { store: Store, items: ProductWithPrice[], cost: number, distance: number }>();
         let totalProductCost = 0;
 
@@ -296,14 +303,13 @@ class RouteService {
             storeGroups.set(storeId, group);
         });
 
-        // 3. Sort stores by distance from user
+        // 5. Sort stores by distance from user
         const sortedStores = Array.from(storeGroups.values()).sort((a, b) => a.distance - b.distance);
         const totalDistance = sortedStores.reduce((acc, s) => acc + s.distance, 0);
 
         return {
             stores: sortedStores,
             totalCost: totalProductCost,
-            travelCost: this.estimateTravelCost(totalDistance),
             totalDistance,
             savings: 0,
             savingsPercent: 0
@@ -341,48 +347,37 @@ class RouteService {
         const singleCount = single.items.length;
         const multiCount = multi.stores.reduce((acc, s) => acc + s.items.length, 0);
 
-        const singleTotalWithTravel = single.totalCost + single.travelCost;
-        const multiTotalWithTravel = multi.totalCost + multi.travelCost;
-        const absoluteSavings = singleTotalWithTravel - multiTotalWithTravel;
+        const absoluteSavings = single.totalCost - multi.totalCost;
 
         multi.savings = Math.max(0, absoluteSavings);
-        multi.savingsPercent = Math.max(0, (absoluteSavings / singleTotalWithTravel) * 100);
+        multi.savingsPercent = Math.max(0, (absoluteSavings / single.totalCost) * 100);
 
         // 1. Coverage check: If multi finds many more items, it's usually better
-        // Be more lenient - if single has >= 80% of what multi has, it's still a strong contender
         if (multiCount > singleCount && (singleCount < multiCount * 0.8 || multiCount - singleCount >= 2)) {
-            const multiReasoning = `Get ${multiCount} items across ${multi.stores.length} stops for ${multiTotalWithTravel.toFixed(0)} NOK. ${single.store.name} only has ${singleCount} items.`;
+            const multiReasoning = `Get ${multiCount} items across ${multi.stores.length} stops for ${multi.totalCost.toFixed(0)} NOK. ${single.store.name} only has ${singleCount} items.`;
             return {
                 singleStore: single,
                 multiStore: multi,
                 recommendation: 'multi',
                 reasoning: multiReasoning,
-                singleStoreReasoning: `Convenient one-stop shop for ${singleCount} items at ${singleTotalWithTravel.toFixed(0)} NOK.`,
+                singleStoreReasoning: `Convenient one-stop shop for ${singleCount} items at ${single.totalCost.toFixed(0)} NOK.`,
                 multiStoreReasoning: multiReasoning
             };
         }
 
-        // 2. Compare cost + travel according to specific thresholds
-        // Net Benefit = (Single Total + Single Travel) - (Multi Total + Multi Travel)
-        // If Net Benefit > 20 NOK -> recommend multi
-        // If Net Benefit < 0 (actual loss) -> recommend single
-        // If Net Benefit between 0 and 20 -> recommend single for convenience
-        if (absoluteSavings > 20) {
-            const multiReasoning = `Save ${absoluteSavings.toFixed(0)} NOK net by splitting your trip (including travel costs and time)! Total combined cost: ${multiTotalWithTravel.toFixed(0)} NOK.`;
+        // 2. Compare cost
+        if (absoluteSavings > 0) {
+            const multiReasoning = `Save ${absoluteSavings.toFixed(0)} NOK on groceries by splitting your trip! Total combined cost: ${multi.totalCost.toFixed(0)} NOK.`;
             return {
                 singleStore: single,
                 multiStore: multi,
                 recommendation: 'multi',
                 reasoning: multiReasoning,
-                singleStoreReasoning: `Convenient one-stop shop at ${single.store.name} for ${singleTotalWithTravel.toFixed(0)} NOK.`,
+                singleStoreReasoning: `Convenient one-stop shop at ${single.store.name} for ${single.totalCost.toFixed(0)} NOK.`,
                 multiStoreReasoning: multiReasoning
             };
         } else {
-            const diffMsg = absoluteSavings > 0
-                ? `While splitting saves a tiny ${absoluteSavings.toFixed(0)} NOK net, the convenience of one store outweighs small savings under 20 NOK.`
-                : `Splitting your trip would actually cost an extra ${Math.abs(absoluteSavings).toFixed(0)} NOK after considering travel and time.`;
-
-            const singleReasoning = `Best choice for convenience: Buy everything at ${single.store.name} for ${singleTotalWithTravel.toFixed(0)} NOK. ${diffMsg}`;
+            const singleReasoning = `Best choice for value: Buy everything at ${single.store.name} for ${single.totalCost.toFixed(0)} NOK.`;
 
             return {
                 singleStore: single,
@@ -390,9 +385,7 @@ class RouteService {
                 recommendation: 'single',
                 reasoning: singleReasoning,
                 singleStoreReasoning: singleReasoning,
-                multiStoreReasoning: absoluteSavings > 0
-                    ? `Save a small ${absoluteSavings.toFixed(0)} NOK net by visiting ${multi.stores.length} stores.`
-                    : `Multi-store route is more expensive after travel costs.`
+                multiStoreReasoning: `Multi-store route would cost an extra ${Math.abs(absoluteSavings).toFixed(0)} NOK.`
             };
         }
     }

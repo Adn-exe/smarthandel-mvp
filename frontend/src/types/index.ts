@@ -11,6 +11,7 @@ export interface Product {
     store: string;
     image_url: string;
     unit: string;
+    originalQueryName?: string;
     priceHistory?: Array<{ price: number; date: string }>;
 }
 
@@ -21,7 +22,7 @@ export interface Store {
     address: string;
     location: Location;
     distance: number;
-    open_now: boolean;
+    open_now?: boolean;
 }
 
 export interface ShoppingItem {
@@ -86,7 +87,6 @@ export interface SingleStoreOption {
     store: Store;
     items: ProductWithPrice[];
     totalCost: number;
-    travelCost: number;
     distance: number;
     missingItems?: string[];
 }
@@ -99,7 +99,6 @@ export interface MultiStoreOption {
         distance: number;
     }>;
     totalCost: number;
-    travelCost: number;
     totalDistance: number;
     savings: number;
     savingsPercent: number;
@@ -114,6 +113,7 @@ export interface RouteResponse {
     multiStoreReasoning?: string;
     singleStoreCandidates?: SingleStoreOption[];
     allNearbyStores?: Store[];
+    searchLocation?: Location;
 }
 
 // --- API Responses ---

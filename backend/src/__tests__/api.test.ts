@@ -8,7 +8,7 @@ const mockAi = {
     getSuggestions: jest.fn(),
 };
 
-const mockKassal = {
+const mockAggregator = {
     searchProducts: jest.fn(),
     getStoresNearby: jest.fn(),
     checkHealth: jest.fn(),
@@ -21,15 +21,15 @@ jest.unstable_mockModule('../services/aiService.js', () => ({
     default: mockAi,
 }));
 
-jest.unstable_mockModule('../services/kassalService.js', () => ({
-    kassalService: mockKassal,
-    default: mockKassal,
+jest.unstable_mockModule('../services/providers/DataAggregator.js', () => ({
+    dataAggregator: mockAggregator,
+    default: mockAggregator,
 }));
 
 // ─── Dynamic Imports (must come after mocks) ───────────────────────
 const { default: app } = await import('../server.js');
 const { aiService } = (await import('../services/aiService.js')) as any;
-const { kassalService } = (await import('../services/kassalService.js')) as any;
+const { dataAggregator } = (await import('../services/providers/DataAggregator.js')) as any;
 const { default: cache } = await import('../utils/cache.js');
 
 // ─── Shared Test Data ──────────────────────────────────────────────
@@ -89,8 +89,8 @@ describe('SmartHandel API Integration Tests', () => {
                 items: [{ name: 'melk', quantity: 1, unit: 'l' }],
                 budget: 100,
             });
-            kassalService.getStoresNearby.mockResolvedValue([mockStores[0]]);
-            kassalService.searchProducts.mockResolvedValue([mockProducts[0]]);
+            dataAggregator.getStoresNearby.mockResolvedValue([mockStores[0]]);
+            dataAggregator.searchProducts.mockResolvedValue([mockProducts[0]]);
         };
 
         it('should return products for a valid search query', async () => {
@@ -109,7 +109,7 @@ describe('SmartHandel API Integration Tests', () => {
 
             // Verify service call chain
             expect(aiService.parseShoppingQuery).toHaveBeenCalledWith('kjøp melk og brød');
-            expect(kassalService.getStoresNearby).toHaveBeenCalledWith(osloLocation);
+            expect(dataAggregator.getStoresNearby).toHaveBeenCalledWith(osloLocation);
         });
 
         it('should return 400 for invalid location coordinates', async () => {
@@ -162,7 +162,7 @@ describe('SmartHandel API Integration Tests', () => {
     describe('GET /api/stores/nearby', () => {
 
         it('should return stores for valid coordinates', async () => {
-            kassalService.getStoresNearby.mockResolvedValue(mockStores);
+            dataAggregator.getStoresNearby.mockResolvedValue(mockStores);
 
             const res = await request(app)
                 .get('/api/stores/nearby')
@@ -179,7 +179,7 @@ describe('SmartHandel API Integration Tests', () => {
             // Return stores in shuffled order — route should still return them as-is from the service
             // (The service is responsible for sorting, but we verify the mock reaches the response)
             const sortedStores = [...mockStores].sort((a, b) => a.distance - b.distance);
-            kassalService.getStoresNearby.mockResolvedValue(sortedStores);
+            dataAggregator.getStoresNearby.mockResolvedValue(sortedStores);
 
             const res = await request(app)
                 .get('/api/stores/nearby')
@@ -194,7 +194,7 @@ describe('SmartHandel API Integration Tests', () => {
         });
 
         it('should pass radius filter to service', async () => {
-            kassalService.getStoresNearby.mockResolvedValue([mockStores[0]]);
+            dataAggregator.getStoresNearby.mockResolvedValue([mockStores[0]]);
 
             const res = await request(app)
                 .get('/api/stores/nearby')
@@ -205,7 +205,7 @@ describe('SmartHandel API Integration Tests', () => {
             expect(res.body.stores).toHaveLength(1);
 
             // Verify the service was called with the radius
-            expect(kassalService.getStoresNearby).toHaveBeenCalledWith(
+            expect(dataAggregator.getStoresNearby).toHaveBeenCalledWith(
                 { lat: osloLocation.lat, lng: osloLocation.lng },
                 1
             );
@@ -217,14 +217,14 @@ describe('SmartHandel API Integration Tests', () => {
                 .query({ lat: 'abc', lng: 'def' });
 
             expect(res.status).toBe(400);
-            expect(kassalService.getStoresNearby).not.toHaveBeenCalled();
+            expect(dataAggregator.getStoresNearby).not.toHaveBeenCalled();
         });
 
         it('should return 400 for missing coordinates', async () => {
             const res = await request(app).get('/api/stores/nearby');
 
             expect(res.status).toBe(400);
-            expect(kassalService.getStoresNearby).not.toHaveBeenCalled();
+            expect(dataAggregator.getStoresNearby).not.toHaveBeenCalled();
         });
     });
 
@@ -235,8 +235,8 @@ describe('SmartHandel API Integration Tests', () => {
     describe('POST /api/route/optimize', () => {
 
         const setupOptimizeMocks = (stores = [mockStores[0]], products = mockProducts.slice(0, 1)) => {
-            kassalService.getStoresNearby.mockResolvedValue(stores);
-            kassalService.searchProducts.mockResolvedValue(products);
+            dataAggregator.getStoresNearby.mockResolvedValue(stores);
+            dataAggregator.searchProducts.mockResolvedValue(products);
         };
 
         it('should return single and multi-store options', async () => {
@@ -267,9 +267,9 @@ describe('SmartHandel API Integration Tests', () => {
 
         it('should calculate savings correctly in multi-store mode', async () => {
             // Two stores with different prices so multi-store can calculate savings
-            kassalService.getStoresNearby.mockResolvedValue([mockStores[0], mockStores[1]]);
+            dataAggregator.getStoresNearby.mockResolvedValue([mockStores[0], mockStores[1]]);
             // Return different prices per call — first for 'Melk', second for 'Brød'
-            kassalService.searchProducts
+            dataAggregator.searchProducts
                 .mockResolvedValueOnce([
                     { id: 'p1', name: 'Melk', price: 15, store: 'REMA 1000 Grünerløkka', chain: 'REMA', unit: 'l' },
                     { id: 'p2', name: 'Melk', price: 25, store: 'KIWI Tøyen', chain: 'KIWI', unit: 'l' },
@@ -308,9 +308,9 @@ describe('SmartHandel API Integration Tests', () => {
         });
 
         it('should handle items not found in any store gracefully', async () => {
-            kassalService.getStoresNearby.mockResolvedValue([mockStores[0]]);
+            dataAggregator.getStoresNearby.mockResolvedValue([mockStores[0]]);
             // Return empty array — no products found for the item
-            kassalService.searchProducts.mockResolvedValue([]);
+            dataAggregator.searchProducts.mockResolvedValue([]);
 
             const res = await request(app)
                 .post('/api/route/optimize')
@@ -351,8 +351,8 @@ describe('SmartHandel API Integration Tests', () => {
             expect(res2.status).toBe(200);
             expect(res2.headers['x-cache']).toBe('HIT');
 
-            // kassalService should only be called once (first request)
-            expect(kassalService.getStoresNearby).toHaveBeenCalledTimes(1);
+            // dataAggregator should only be called once (first request)
+            expect(dataAggregator.getStoresNearby).toHaveBeenCalledTimes(1);
         });
 
         it('should return 400 for missing items array', async () => {

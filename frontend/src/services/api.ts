@@ -107,6 +107,7 @@ export const api = {
                 singleStoreReasoning: response.data.singleStoreReasoning,
                 multiStoreReasoning: response.data.multiStoreReasoning,
                 allNearbyStores: response.data.allNearbyStores,
+                searchLocation: response.data.searchLocation,
             };
         } catch (error: any) {
             throw new Error(error.response?.data?.message || 'errors.failedOptimize');
@@ -152,6 +153,18 @@ export const api = {
             return true;
         } catch (error) {
             return false;
+        }
+    },
+
+    /**
+     * Submit a product mismatch report
+     */
+    submitReport: async (reportData: any): Promise<void> => {
+        try {
+            await apiClient.post('/api/reports/mismatch', reportData);
+        } catch (error: any) {
+            console.error('[API Report Error]', error.response?.data || error.message);
+            throw new Error(error.response?.data?.message || 'errors.failedReport');
         }
     }
 };

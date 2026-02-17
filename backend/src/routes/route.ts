@@ -4,12 +4,15 @@ import { asyncHandler } from '../middleware/errorHandler.js';
 import { strictLimiter } from '../middleware/rateLimiter.js';
 import routeService from '../services/routeService.js';
 import comparisonService from '../services/comparisonService.js';
-import kassalService from '../services/kassalService.js';
+import dataAggregator from '../services/providers/DataAggregator.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import cache from '../utils/cache.js';
-import { Store } from '../types/index.js';
+import { Store, Location } from '../types/index.js';
+import { ensureInRegion } from '../utils/locationUtils.js';
 
 const router = Router();
+
+// Geographic configuration moved to LocationUtils
 
 /**
  * @route   POST /api/routes/optimize
@@ -53,58 +56,29 @@ router.post(
         // Get nearby stores for consideration
         console.log(`[Optimize] Request for location: ${JSON.stringify(userLocation)}, preferences: ${JSON.stringify(preferences)}`);
 
-        // Get nearby stores for consideration
-        console.log(`[Optimize] Request for location: ${JSON.stringify(userLocation)}, preferences: ${JSON.stringify(preferences)}`);
+        // GEOGRAPHIC RESTRICTION: TRONDHEIM ONLY
+        const { location: searchLocation, radius: searchRadius } = ensureInRegion(
+            userLocation,
+            (preferences?.maxDistance || 5000) / 1000
+        );
 
         let stores: Store[] = [];
         try {
-            stores = await kassalService.getStoresNearby(
-                userLocation,
-                (preferences?.maxDistance || 10000) / 1000 // Convert m to km
+            stores = await dataAggregator.getStoresNearby(
+                searchLocation,
+                searchRadius
             );
         } catch (error) {
-            console.error('[Optimize] Kassal API failed (likely Invalid Key or Quota). Using MOCK data fallback.');
+            console.error('[Optimize] Data fetching failed:', error);
         }
 
-        // Fallback Mock Data if API fails or returns no stores
         if (stores.length === 0) {
-            console.warn(`[Optimize] No stores found or API failed. activating Demo Mode with Mock Data.`);
-
-            // Hardcoded Mock Stores to prevent 500 Error
-            stores = [
-                {
-                    id: 9991,
-                    name: 'Rema 1000 Sentrum',
-                    chain: 'Rema 1000',
-                    address: 'Torggata 1, Oslo',
-                    location: { lat: 59.9139, lng: 10.7522 },
-                    distance: 0.5,
-                    open_now: true
-                },
-                {
-                    id: 9992,
-                    name: 'Kiwi Storgata',
-                    chain: 'Kiwi',
-                    address: 'Storgata 10, Oslo',
-                    location: { lat: 59.9145, lng: 10.7530 },
-                    distance: 0.7,
-                    open_now: true
-                },
-                {
-                    id: 9993,
-                    name: 'Coop Extra Grønland',
-                    chain: 'Extra',
-                    address: 'Grønlandsleiret 25, Oslo',
-                    location: { lat: 59.9120, lng: 10.7600 },
-                    distance: 1.2,
-                    open_now: true
-                }
-            ];
+            console.warn(`[Optimize] No results found for location. Check coverage.`);
         }
 
         const optimization = await routeService.calculateOptimalRoute(
             items,
-            userLocation,
+            searchLocation,
             stores,
             {
                 maxStores: preferences?.maxStores || 3,
@@ -115,6 +89,7 @@ router.post(
 
         const response = {
             success: true,
+            searchLocation: searchLocation, // Expose actual search location used (e.g. override if remote)
             ...optimization,
             metadata: {
                 calculatedAt: new Date(),
@@ -154,9 +129,9 @@ router.post(
 
         let stores: Store[] = [];
         try {
-            stores = await kassalService.getStoresNearby(userLocation);
+            stores = await dataAggregator.getStoresNearby(userLocation);
         } catch (error) {
-            console.error('[Calculate-Savings] Kassal API failed. Returning empty comparison.');
+            console.error('[Calculate-Savings] DataAggregator failed. Returning empty comparison.');
         }
 
         if (stores.length === 0) {

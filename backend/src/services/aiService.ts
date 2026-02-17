@@ -40,7 +40,7 @@ class AIService {
         if (cached) return cached;
 
         const systemPrompt = `You are a Norwegian grocery shopping assistant. Extract items from user input.
-Normalize item names to common Norwegian grocery terms in their base form for the 'name' field, preserve the user's original term in the 'originalName' field, and provide a clear English translation in the 'englishName' field.
+Normalize item names to common Norwegian grocery terms in their base form for the 'name' field (Always capitalize the first letter, e.g., "Melk"), preserve the user's original term in the 'originalName' field, and provide a clear English translation in the 'englishName' field (Always capitalize the first letter, e.g., "Milk").
 Also, provide a 'suggestedCategory' field that identifies the core category of the product (e.g., 'melk', 'meieri', 'bakeri', 'brød', 'frukt', 'grønt', 'kjøtt', 'egg', 'godteri').
 
 **Intelligence & Typo Correction:**

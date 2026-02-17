@@ -105,6 +105,7 @@
         "itemCount": "{{count}} varer funnet",
         "foundBestOptions": "Beste alternativer funnet",
         "foundBestStore": "Beste Butikk funnet",
+        "bestStore": "Beste butikk",
         "foundBestRoute": "Optimalisert Rute funnet",
         "foundAlternatives": "Se disse <0>ANDRE BUTIKKENE</0> i nærheten",
         "comparisonResults": "Sammenligningsresultater",
@@ -122,19 +123,18 @@
         "multipleStores": "{{count}} Butikker",
         "splitYourList": "Del opp listen for å spare <1>{{amount}}</1>.",
         "stop": "Stopp {{count}}",
-        "itemsCost": "Varekostnader",
-        "travelEst": "Reiseutgifter (Est.)",
-        "totalRouteCost": "Total Rutekostnad",
+        "itemsCost": "Dagligvarer",
         "breakdownItems": "{{amount}} varer",
-        "breakdownTravel": "{{amount}} reise",
         "viewOnMap": "Vis på Kart",
         "createShoppingList": "Lag Handleliste",
         "savingsComparison": {
             "title": "Sammenligning av smart rute",
             "singleStoreLabel": "{{store}}",
             "multiStoreLabel": "Smart rute ({{count}} butikker)",
-            "youSave": "Du sparer"
+            "youSave": "Hva du sparer"
         },
+        "youSave": "Total besparelse:",
+        "vsBestSingle": "mot beste enkeltbutikk",
         "instruction": {
             "buyAt": "Kjøp hos {{store}}",
             "itemsToBuy": "Varer å kjøpe her"
@@ -153,12 +153,10 @@
         "bestChoice": "Beste Valg",
         "bestAlternative": "Beste alternativ",
         "anotherConvenientOption": "Et annet praktisk alternativ",
-        "itemsCost": "Dagligvarer",
-        "travelCost": "Est. reise",
         "totalExpense": "Total kostnad",
         "smartSummaryTitle": "Smart Oppsummering",
-        "smartSummaryTemplate": "Ved å dele opp handleturen sparer du <bold>{{savings}}</bold> på dagligvarer. Selv med <bold>{{travel}}</bold> i estimerte reisekostnader, sparer du <bold>{{net}}</bold> totalt sammenlignet med enkeltbutikken.",
-        "smartSummarySingle": "Enkeltbutikken er ditt beste valg! Å dele opp turen ville kostet <bold>{{extra}}</bold> mer i reiseutgifter enn du ville spart på dagligvarene.",
+        "smartSummaryTemplate": "Ved å dele opp handleturen sparer du <bold>{{savings}}</bold> sammenlignet med den beste enkeltbutikken. Din totalpris for alle varene blir <bold>{{total}}</bold>.",
+        "smartSummarySingle": "Enkeltbutikken er ditt beste valg! Å dele opp turen ville ikke spart deg for nok på varene.",
         "cheapestTotal": "Lavest totalpris",
         "recommended": "Anbefalt",
         "optimizedPath": "Optimalisert Rute",
@@ -174,6 +172,13 @@
             "tip2": "Sjekk åpningstider før du drar",
             "tip3": "Besparelser beregnes mot den dyreste enkeltbutikken"
         }
+    },
+    "selection": {
+        "title": "Se over listen",
+        "subtitle": "Vi fant disse varene basert på søket ditt. Juster antall eller fjern varer du ikke trenger.",
+        "empty": "Handlelisten din er tom.",
+        "confirm": "Bekreft og sammenlign",
+        "startOver": "Start på nytt"
     },
     "filters": {
         "filterByChain": "Filtrer etter kjede",

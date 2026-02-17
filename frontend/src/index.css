@@ -175,15 +175,20 @@
   }
 
   h1 {
-    @apply text-4xl md:text-5xl mb-6;
+    @apply text-3xl sm:text-4xl md:text-5xl mb-6 leading-tight;
   }
 
   h2 {
-    @apply text-3xl md:text-4xl mb-4;
+    @apply text-2xl sm:text-3xl md:text-4xl mb-4 leading-snug;
   }
 
   h3 {
-    @apply text-2xl md:text-3xl mb-3;
+    @apply text-xl sm:text-2xl md:text-3xl mb-3 leading-snug;
+  }
+
+  /* Utility for disabling scroll when mobile menu is open */
+  .no-scroll {
+    @apply overflow-hidden;
   }
 }
 

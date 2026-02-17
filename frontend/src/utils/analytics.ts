@@ -4,7 +4,7 @@
  * Can be easily integrated with Google Analytics, Mixpanel, or Plausible later.
  */
 
-type AnalyticsEvent = 'search_performed' | 'route_optimized' | 'store_selected' | 'share_clicked' | 'error_occurred';
+type AnalyticsEvent = 'search_performed' | 'selection_confirmed' | 'route_optimized' | 'store_selected' | 'share_clicked' | 'error_occurred';
 
 interface AnalyticsProperties {
     [key: string]: string | number | boolean | null | undefined;

@@ -1,0 +1,48 @@
+[
+  {
+    "store_id": "test_store",
+    "store_name": "Test Store",
+    "requested_item_name": "Test Item",
+    "matched_item_name": "Test Item",
+    "report_reason": "Other",
+    "session_id": "test_session",
+    "id": "7d9c3a26-af7d-4ee0-b942-c51a073d9103",
+    "created_at": "2026-02-17T17:26:10.180Z"
+  },
+  {
+    "store_id": 3064,
+    "store_name": "Bunnpris Prinsen",
+    "requested_item_name": "Milk",
+    "matched_item_name": "Choco-Melk Lavkalori 2pos Confecta",
+    "matched_item_id": "6886",
+    "report_reason": "Wrong product matched",
+    "optional_note": "",
+    "session_id": "3e3fkj1nr",
+    "id": "233470f1-1c1c-40a6-aa13-63e53e26272b",
+    "created_at": "2026-02-17T17:27:12.367Z"
+  },
+  {
+    "store_id": "3822",
+    "store_name": "Rema 1000 Torvet",
+    "requested_item_name": "Melk",
+    "matched_item_name": "Choco-Melk Lavkalori 2pos Confecta",
+    "matched_item_id": "6886",
+    "report_reason": "Wrong product matched",
+    "optional_note": "I told milk diary one",
+    "session_id": "2rwkv18sm",
+    "id": "9d6471dc-ea4c-406d-8137-feed105d1c4d",
+    "created_at": "2026-02-17T17:37:11.721Z"
+  },
+  {
+    "store_id": "3822",
+    "store_name": "Rema 1000 Torvet",
+    "requested_item_name": "Brokkoli",
+    "matched_item_name": "Toro Rett i Koppen Blomkål- & Brokkolisuppe 20g",
+    "matched_item_id": "7736",
+    "report_reason": "Wrong price",
+    "optional_note": "",
+    "session_id": "1f793bo0x",
+    "id": "b82a940d-cbb9-4c9e-b219-cd398441546c",
+    "created_at": "2026-02-17T17:39:51.338Z"
+  }
+]
