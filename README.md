@@ -4,15 +4,15 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 
 ## ✨ Features
 
+- **Mobile-First Experience**: Swipable store columns, sticky price footers, and touch-optimized interactions.
+- **Multilingual Support**: Fully localized in English and Norwegian (Bokmål).
+- **Price Mismatch Reporting**: Community-driven data accuracy with a built-in reporting system.
+- **Smart Distance Logic**: Automatic switching between meters (m) and kilometers (km) based on proximity.
 - **AI-Powered Search**: Natural language processing to understand your shopping list.
 - **Price Comparison**: Real-time integration with Norwegian grocery data (Kassalapp API).
 - **Route Optimization**: Intelligent logic to find the cheapest single-store or multi-store options.
-- **Smart Route Cost Breakdown**: Detailed analysis of groceries vs. travel costs.
-- **Dynamic Loading UI**: Engaging visual feedback during complex backend operations.
-- **Interactive Maps**: Visualized store locations and optimized routes (Mapbox).
-- **Performance Optimized**: Lazily loaded components, code splitting, and memoization for a smooth experience.
-- **Error Boundaries**: Robust error handling with granular recovery logic.
-- **Analytics Tracking**: Insights into user behavior and application health.
+- **Interactive Maps**: Visualized store locations and optimized routes (Mapbox/Leaflet).
+- **Performance Optimized**: Lazily loaded components, code splitting, and memoization.
 
 ## 🛠️ Tech Stack
 
@@ -23,6 +23,7 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 - **TanStack Query** (React Query)
 - **Lucide React** (Icons)
 - **React Router**
+- **i18next** (Multilingual Support)
 
 ### Backend
 - **Node.js** & **Express**
@@ -95,13 +96,18 @@ export VITE_ENV=development
 ```
 4. **Run the application**:
    ```bash
-   # Start backend and frontend concurrently (requires individual setup usually)
-   # Run Backend
-   npm run dev --prefix backend
-   
-   # Run Frontend in a separate terminal
-   npm run dev --prefix frontend
-   ```
+    # Run Backend
+    npm run dev --prefix backend
+    
+    # Run Frontend
+    npm run dev --prefix frontend
+    ```
+
+### 📱 Mobile Development
+To test the app on a mobile device on the same network:
+1. The frontend Vite server is configured to expose the host (`--host`).
+2. Update `frontend/.env.local` to use your computer's local IP address (e.g., `VITE_API_URL=http://192.168.1.14:3001`).
+3. Access the app via `http://<YOUR_LOCAL_IP>:5173`.
 
 ## 📁 Project Structure
 
