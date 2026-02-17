@@ -187,50 +187,37 @@
         "sortFewestStops": "Fewest Stops"
     },
     "about": {
-        "hero": {
-            "title": "We help people <1>save money</1> on groceries",
-            "description": "SmartHandel is your personal shopping assistant that uses artificial intelligence to find the cheapest items and the smartest route choices."
-        },
-        "howItWorks": {
-            "title": "How it works",
-            "subtitle": "Technology meets grocery shopping.",
-            "aiSearch": {
-                "title": "AI-Powered Search",
-                "description": "Our advanced language model understands what you need, whether you write 'ingredients for taco' or a specific shopping list."
-            },
-            "comparison": {
-                "title": "Price Comparison",
-                "description": "We fetch real-time prices from all major grocery chains in Norway and find the cheapest combination for you."
-            },
-            "privacy": {
-                "title": "Privacy First",
-                "description": "We only store data necessary to provide you with the results. Your position is used only to find nearby stores."
-            }
-        },
-        "stats": {
-            "users": "Active users",
-            "saved": "Total saved (NOK)",
-            "coverage": "Chain coverage"
-        },
-        "faq": {
-            "title": "Frequently Asked Questions",
-            "q1": {
-                "question": "Is it free to use?",
-                "answer": "Yes, SmartHandel is 100% free for consumers. We want to make price comparison accessible to everyone."
-            },
-            "q2": {
-                "question": "How do you make money?",
-                "answer": "We explore partnerships with grocery chains and brands for featured content that does not affect the price comparison, as well as potential premium features in the future."
-            },
-            "q3": {
-                "question": "Is my data safe?",
-                "answer": "Absolutely. We do not sell your personal data. Search history and location data are used only to generate your results and improve the service anonymously."
-            }
-        },
+        "badge": "Our Story",
+        "heroTitle": "We help people",
+        "heroSubtitle": "save money on groceries",
+        "heroDescription": "SmartHandel is your personal shopping assistant that uses artificial intelligence to find the cheapest items and the smartest route choices available in your neighborhood.",
+        "ourMission": "Our Mission",
+        "missionDescription1": "We believe that grocery pricing should be transparent and accessible to everyone. Our platform was born out of the frustration of seeing the same basket of goods cost significantly more depending on where you shop.",
+        "missionDescription2": "By leveraging real-time data and advanced route optimization, we empower shoppers to make informed decisions that save them thousands of kroner every year without sacrificing quality or convenience.",
+        "viewPartners": "Our Partners",
+        "transparency": "Commitment to Data Transparency",
+        "howItWorks": "How It Works",
+        "threeSimpleSteps": "Save money in three simple steps",
+        "step1Title": "Input Your List",
+        "step1Desc": "Use natural language to tell us what you need. Our AI understands everything from specific brands to general dinner ideas.",
+        "step2Title": "Compare Instantly",
+        "step2Desc": "We scan every major grocery chain near your current location to find the exact prices and availability for your items.",
+        "step3Title": "Choose Best Path",
+        "step3Desc": "Pick the most convenient single store or follow our 'Smart Route' to split your list across stores for maximum savings.",
+        "faq": "Frequently Asked Questions",
+        "answersToQuestions": "Answers to your common inquiries",
+        "faqQ1": "Is it completely free to use?",
+        "faqA1": "Yes! SmartHandel is 100% free for consumers. We want to make price comparison accessible to every household in Norway.",
+        "faqQ2": "How accurate are the prices shown?",
+        "faqA2": "We fetch data in real-time from store systems. While we aim for 100% accuracy, prices can occasionally change in-store or vary by location.",
+        "faqQ3": "Which stores do you support?",
+        "faqA3": "We support all major Norwegian chains including REMA 1000, Kiwi, Coop, Meny, and more. If a store is near you, we likely compare it.",
+        "faqQ4": "Is my location data private?",
+        "faqA4": "Absolutely. We only use your location to find nearby stores. We do not store your precise movement history or sell your data to third parties.",
         "team": {
-            "title": "Meet the team",
-            "description": "SmartHandel is developed by a small group of technology enthusiasts in Oslo who are passionate about making everyday life easier.",
-            "contact": "Contact us"
+            "title": "Meet the Team",
+            "description": "SmartHandel is built by a dedicated team of engineers and data scientists in Oslo who believe technology can make everyday life significantly more affordable.",
+            "contact": "Contact Us"
         }
     },
     "storeCard": {

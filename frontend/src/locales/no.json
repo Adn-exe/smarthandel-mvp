@@ -187,50 +187,37 @@
         "sortFewestStops": "Færrest Stopp"
     },
     "about": {
-        "hero": {
-            "title": "Vi hjelper nordmenn <1>spare penger</1> på mat",
-            "description": "SmartHandel er din personlige shoppingassistent som bruker kunstig intelligens til å finne de billigste varene og de smarteste rutevalgene."
-        },
-        "howItWorks": {
-            "title": "Hvordan det fungerer",
-            "subtitle": "Teknologi møter dagligvarehandel.",
-            "aiSearch": {
-                "title": "AI-Drevet Søk",
-                "description": "Vår avanserte språkmodell forstår hva du trenger, enten du skriver 'ingredienser til taco' eller en spesifikk handleliste."
-            },
-            "comparison": {
-                "title": "Prissammenligning",
-                "description": "Vi henter priser i sanntid fra alle store dagligvarekjeder i Norge og finner den billigste kombinasjonen for deg."
-            },
-            "privacy": {
-                "title": "Personvern Først",
-                "description": "Vi lagrer kun data som er nødvendig for å gi deg resultatene. Din posisjon brukes kun til å finne butikker i nærheten."
-            }
-        },
-        "stats": {
-            "users": "Aktive brukere",
-            "saved": "Kroner spart totalt",
-            "coverage": "Dekning av kjeder"
-        },
-        "faq": {
-            "title": "Ofte stilte spørsmål",
-            "q1": {
-                "question": "Er det gratis å bruke?",
-                "answer": "Ja, SmartHandel er 100% gratis for forbrukere. Vi ønsker å gjøre prissammenligning tilgjengelig for alle."
-            },
-            "q2": {
-                "question": "Hvordan tjener dere penger?",
-                "answer": "Vi utforsker partnerskap med dagligvarekjeder og merkevarer for fremhevet innhold som ikke påvirker prissammenligningen, samt potensielle premium-funksjoner i fremtiden."
-            },
-            "q3": {
-                "question": "Er mine data trygge?",
-                "answer": "Absolutt. Vi selger ikke dine personopplysninger. Søkehistorikk og lokasjonsdata brukes kun til å generere resultatene dine og forbedre tjenesten anonymt."
-            }
-        },
+        "badge": "Vår Historie",
+        "heroTitle": "Vi hjelper folk med å",
+        "heroSubtitle": "spare penger på mat",
+        "heroDescription": "SmartHandel er din personlige handleassistent som bruker kunstig intelligens til å finne de billigste varene og de smarteste rutevalgene i ditt nabolag.",
+        "ourMission": "Vårt Oppdrag",
+        "missionDescription1": "Vi mener at dagligvarepriser skal være gjennomsiktige og tilgjengelige for alle. Vår plattform ble født ut av frustrasjonen over å se samme varekurv koste betydelig mer avhengig av hvor du handler.",
+        "missionDescription2": "Ved å utnytte sanntidsdata og avansert ruteoptimalisering, gir vi kunder muligheten til å ta informerte valg som sparer dem tusenvis av kroner hvert år uten å ofre kvalitet eller bekvemmelighet.",
+        "viewPartners": "Våre Partnere",
+        "transparency": "Forpliktelse til Datagjennomsiktighet",
+        "howItWorks": "Slik fungerer det",
+        "threeSimpleSteps": "Spar penger i tre enkle steg",
+        "step1Title": "Skriv inn listen din",
+        "step1Desc": "Bruk naturlig språk for å fortelle oss hva du trenger. Vår AI forstår alt fra spesifikke merker til generelle middagsideer.",
+        "step2Title": "Sammenlign umiddelbart",
+        "step2Desc": "Vi skanner alle store dagligvarekjeder i nærheten av deg for å finne nøyaktige priser og tilgjengelighet for dine varer.",
+        "step3Title": "Velg beste rute",
+        "step3Desc": "Velg den mest praktiske enkeltbutikken eller følg vår 'Smart Rute' for å dele opp listen din for maksimal sparing.",
+        "faq": "Ofte stilte spørsmål",
+        "answersToQuestions": "Svar på dine vanligste spørsmål",
+        "faqQ1": "Er det helt gratis å bruke?",
+        "faqA1": "Ja! SmartHandel er 100% gratis for forbrukere. Vi ønsker å gjøre prissammenligning tilgjengelig for alle husstander i Norge.",
+        "faqQ2": "Hvor nøyaktige er prisene som vises?",
+        "faqA2": "Vi henter data i sanntid fra butikkenes systemer. Selv om vi tilstreber 100% nøyaktighet, kan priser av og til endres i butikk eller variere per sted.",
+        "faqQ3": "Hvilke butikker støtter dere?",
+        "faqA3": "Vi støtter alle store norske kjeder inkludert REMA 1000, Kiwi, Coop, Meny, og flere. Hvis det er en butikk nær deg, sammenligner vi sannsynligvis prisen.",
+        "faqQ4": "Er mine posisjonsdata private?",
+        "faqA4": "Absolutt. Vi bruker kun posisjonen din til å finne butikker i nærheten. Vi lagrer ikke bevegelseshistorikken din eller selger dataene dine til tredjeparter.",
         "team": {
-            "title": "Møt teamet",
-            "description": "SmartHandel utvikles av en liten gruppe teknologi-entusiaster i Oslo som brenner for å gjøre hverdagen enklere.",
-            "contact": "Kontakt oss"
+            "title": "Møt Teamet",
+            "description": "SmartHandel er bygget av et dedikert team av ingeniører og dataeksperter i Oslo som mener teknologi kan gjøre hverdagen betydelig rimeligere.",
+            "contact": "Kontakt Oss"
         }
     },
     "storeCard": {
