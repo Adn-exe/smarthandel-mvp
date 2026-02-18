@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { List, AlertCircle } from 'lucide-react';
+import { List, AlertCircle, Car, ShoppingCart, ArrowRight, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { SingleStoreOption, MultiStoreOption } from '../types';
 import { StoreCard } from './StoreCard';
@@ -49,11 +49,10 @@ export const ResultsDisplay = memo(function ResultsDisplay({
     const formatPrice = useMemo(() => {
         const locale = i18n.language.startsWith('no') ? 'no-NO' : 'en-GB';
         const formatter = new Intl.NumberFormat(locale, {
-            style: 'currency',
-            currency: 'NOK',
+            style: 'decimal',
             maximumFractionDigits: 0
         });
-        return (price: number) => formatter.format(price);
+        return (price: number) => `${formatter.format(price)} NOK`;
     }, [i18n.language]);
 
     const minDistance = useMemo(() => {
@@ -233,102 +232,103 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                         })()}
                     </div>
                 ) : activeView === 'multi' ? (
-                    /* Smart Multi-Store Route View */
-                    <div className="space-y-4 md:space-y-6">
+                    /* Smart Multi-Store Route View - Redesigned Timeline */
+                    <div className="space-y-6 md:space-y-10 px-2 lg:px-0">
                         {multiStore && (
-                            <div className="relative p-4 md:p-6 rounded-2xl md:rounded-3xl border-2 border-secondary bg-secondary/[0.02] shadow-lg md:shadow-xl shadow-secondary/5 transition-all duration-500">
-                                <div className="mb-4 md:mb-6">
-                                    <h3 className="text-lg md:text-xl font-bold text-dark flex items-center justify-between gap-2">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <span className="truncate">{t('results.optimizedPath')}</span>
-                                            <span className="text-[8px] md:text-[10px] font-bold bg-secondary text-white px-2 py-0.5 rounded-full uppercase tracking-tighter shrink-0">
-                                                {t('results.cheapestTotal', 'Lowest Aggregate Cost')}
-                                            </span>
-                                        </div>
-                                        <div className="text-right shrink-0">
-                                            <span className="text-xl md:text-2xl font-black text-secondary block">
-                                                {formatPrice(multiStore.totalCost || 0)}
-                                            </span>
-                                            <span className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                                                {t('results.totalExpense', 'Aggregate Estimated Expenditure')}
-                                            </span>
-                                        </div>
-                                    </h3>
-                                </div>
-
-                                {/* Trip Metrics Grid */}
-                                <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-6">
-                                    <div className="bg-white p-2 md:p-3 rounded-xl border border-gray-100 text-center shadow-sm">
-                                        <div className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">{t('results.stops', 'Stops')}</div>
-                                        <div className="font-black text-dark text-sm md:text-lg">{multiStore.stores.length}</div>
-                                    </div>
-                                    <div className="bg-white p-2 md:p-3 rounded-xl border border-gray-100 text-center shadow-sm">
-                                        <div className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">{t('common.distance', 'Distance')}</div>
-                                        <div className="font-black text-dark text-sm md:text-lg">{formatDistance(multiStore.totalDistance)}</div>
-                                    </div>
-                                    <div className="bg-white p-2 md:p-3 rounded-xl border border-gray-100 text-center shadow-sm">
-                                        <div className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">{t('storeCard.items', 'Items')}</div>
-                                        <div className="font-black text-dark text-sm md:text-lg">{multiStore.stores.reduce((acc, s) => acc + s.items.length, 0)}</div>
-                                    </div>
-                                </div>
-
-                                {/* Contextual Savings Banner */}
-                                {routeSavings > 0 ? (
-                                    <div className="bg-green-50 p-3 rounded-xl border border-green-100 text-center mb-6 md:mb-8">
-                                        <p className="text-green-800 text-xs md:text-sm font-medium flex items-center justify-center gap-1.5">
-                                            <span>{t('results.saveMoney', 'Save an extra')}</span>
-                                            <span className="font-black text-base md:text-lg bg-green-100 px-2 py-0.5 rounded text-green-700">{formatPrice(routeSavings)}</span>
-                                            <span className="opacity-75">{t('results.vsBestSingle', 'vs. single store')}</span>
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center mb-6 md:mb-8">
-                                        <p className="text-gray-400 text-xs font-medium italic">
-                                            {t('results.priceMatch', 'Matches the best single store price')}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Stops */}
-                                <div className="space-y-6">
-                                    {multiStore.stores.map((stop, idx) => (
-                                        <div key={stop.store.id || idx} className="relative">
-                                            {idx < multiStore.stores.length - 1 && (
-                                                <div className="absolute left-[1.65rem] top-12 bottom-0 w-0.5 bg-gray-100 -z-10"></div>
-                                            )}
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <div className="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center text-sm font-black shadow-lg ring-4 ring-white shrink-0">
-                                                    {idx + 1}
-                                                </div>
-                                                <div className="flex-grow flex justify-between items-center">
-                                                    <span className="text-sm font-bold text-dark italic">
-                                                        {stop.store.name}
-                                                    </span>
-                                                    <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
-                                                        {stop.items.length} items • {formatDistance(stop.distance)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div
-                                                className="cursor-pointer"
-                                                onClick={() => onSelectStore?.(stop.store.id)}
-                                            >
-                                                <StoreCard
-                                                    store={stop.store}
-                                                    items={stop.items}
-                                                    totalCost={stop.cost}
-                                                    distance={stop.distance}
-                                                    variant="default"
-                                                    selected={selectedStoreId === stop.store.id}
-                                                    reasoningTag={t('results.instruction.itemsToBuy')}
-                                                    totalRequestedItems={stop.items.length}
-                                                    userLocation={userLocation}
-                                                />
+                            <>
+                                {/* Trip Header: Calm & Efficient */}
+                                <div className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 p-5 md:p-8 shadow-sm mb-8 md:mb-12">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                        <div>
+                                            <h3 className="text-sm md:text-base font-black text-gray-400 uppercase tracking-widest mb-1">
+                                                {t('results.smartRoute', 'Smart Route Strategy')}
+                                            </h3>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-3xl md:text-4xl font-black text-dark tabular-nums">
+                                                    {formatPrice(multiStore.totalCost || 0)}
+                                                </span>
+                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">
+                                                    {t('results.totalExpense', 'Aggregate')}
+                                                </span>
                                             </div>
                                         </div>
-                                    ))}
+
+                                        {/* Metrics Row */}
+                                        <div className="flex items-center gap-3 sm:gap-6 bg-gray-50/50 p-2 rounded-2xl border border-gray-50">
+                                            <div className="text-center px-4 py-2">
+                                                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">{t('results.stops', 'Stops')}</div>
+                                                <div className="font-black text-dark text-lg">{multiStore.stores.length}</div>
+                                            </div>
+                                            <div className="w-px h-8 bg-gray-200"></div>
+                                            <div className="text-center px-4 py-2">
+                                                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">{t('common.distance', 'Distance')}</div>
+                                                <div className="font-black text-dark text-lg">{formatDistance(multiStore.totalDistance)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Savings Tag */}
+                                    {routeSavings > 0 && (
+                                        <div className="mt-6 flex items-center gap-2 text-green-600 bg-green-50/50 w-fit px-4 py-2 rounded-xl border border-green-100 font-bold text-xs md:text-sm">
+                                            <Sparkles className="w-4 h-4" />
+                                            {t('results.saveExtra', 'Save {{amount}} extra vs. best single stop', { amount: formatPrice(routeSavings) })}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
+
+                                <div className="relative ml-2 mr-2 md:ml-4 md:mr-0">
+                                    {/* Vertical Spine - Left Aligned */}
+                                    <div className="absolute left-[20px] top-4 bottom-4 w-0.5 bg-gray-100 -z-10 rounded-full"></div>
+
+                                    <div className="space-y-0">
+                                        {multiStore.stores.map((stop, idx) => (
+                                            <div key={stop.store.id || idx}>
+                                                {/* Stop Marker & Card Row */}
+                                                <div className="flex items-start gap-6 md:gap-10">
+                                                    {/* Stop Marker - 40px Circle */}
+                                                    <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 ring-4 ring-white shrink-0 z-10 transition-transform hover:scale-110 duration-300">
+                                                        <ShoppingCart className="w-5 h-5" />
+                                                    </div>
+
+                                                    {/* Right Aligned Card */}
+                                                    <div
+                                                        className="flex-grow min-w-0 cursor-pointer pb-8 md:pb-12"
+                                                        onClick={() => onSelectStore?.(stop.store.id)}
+                                                    >
+                                                        <StoreCard
+                                                            store={stop.store}
+                                                            items={stop.items}
+                                                            totalCost={stop.cost}
+                                                            distance={stop.distance}
+                                                            variant="default"
+                                                            selected={selectedStoreId === stop.store.id}
+                                                            reasoningTag={t('results.instruction.itemsToBuy')}
+                                                            totalRequestedItems={stop.items.length}
+                                                            userLocation={userLocation}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Travel Indicator (Between Stops) */}
+                                                {idx < multiStore.stores.length - 1 && (
+                                                    <div className="flex items-center gap-4 py-2 ml-[8px] md:ml-[12px] mb-8 md:mb-12">
+                                                        <div className="w-4 flex flex-col items-center">
+                                                            <div className="w-2 h-2 rounded-full bg-gray-200"></div>
+                                                        </div>
+                                                        <div className="flex items-center gap-3 text-gray-400 font-bold bg-white/40 backdrop-blur-sm px-4 py-2 rounded-2xl border border-gray-50/50 shadow-sm ml-8">
+                                                            <Car className="w-4 h-4 text-primary/40" />
+                                                            <span className="text-[10px] md:text-xs uppercase tracking-[0.1em]">
+                                                                {Math.round(multiStore.stores[idx + 1].distance * 2.5)} min drive ({formatDistance(multiStore.stores[idx + 1].distance)})
+                                                            </span>
+                                                            <ArrowRight className="w-3 h-3 ml-1 opacity-30" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </div>
                 ) : (

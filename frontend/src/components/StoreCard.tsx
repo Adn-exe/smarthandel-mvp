@@ -242,34 +242,64 @@ export const StoreCard = memo(function StoreCard({
                             {items.map((item, idx) => (
                                 <div key={idx} className="flex justify-between items-center gap-3">
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                                        <div className="flex items-center bg-gray-50 rounded-lg p-0.5 border border-gray-100 shrink-0">
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
-                                                className="p-1 hover:bg-white rounded transition-all"
-                                            >
-                                                <Minus className="w-3 h-3 text-gray-400" />
-                                            </button>
-                                            <span className="px-1.5 text-[10px] font-black text-dark min-w-[20px] text-center">
-                                                {(localQuantities[String(item.id)] || item.quantity)}x
-                                            </span>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
-                                                className="p-1 hover:bg-white rounded transition-all"
-                                            >
-                                                <Plus className="w-3 h-3 text-gray-400" />
-                                            </button>
+                                        {/* Product Image */}
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                            {item.image_url ? (
+                                                <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1" />
+                                            ) : (
+                                                <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-gray-200" />
+                                            )}
                                         </div>
-                                        <p className="text-sm font-medium text-gray-900 truncate">
-                                            {item.name}
-                                        </p>
+
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-medium text-gray-900 truncate">
+                                                    {item.name}
+                                                </p>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setReportingItem({
+                                                            storeId: String(store.id),
+                                                            storeName: store.name,
+                                                            itemId: item.id,
+                                                            itemName: item.name,
+                                                            requestedName: item.originalQueryName
+                                                        });
+                                                    }}
+                                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors group/report"
+                                                    title={t('common.reportIssue', 'Report issue')}
+                                                >
+                                                    <Flag className="w-3 h-3 text-gray-300 group-hover/report:text-red-400" />
+                                                </button>
+                                            </div>
+
+                                            <div className="flex items-center bg-gray-50 rounded-md p-0.5 border border-gray-100 shrink-0 w-fit mt-1">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
+                                                    className="p-1 hover:bg-white rounded transition-all"
+                                                >
+                                                    <Minus className="w-2.5 h-2.5 text-gray-400" />
+                                                </button>
+                                                <span className="px-1.5 text-[9px] font-black text-dark min-w-[18px] text-center">
+                                                    {(localQuantities[String(item.id)] || item.quantity)}x
+                                                </span>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
+                                                    className="p-1 hover:bg-white rounded transition-all"
+                                                >
+                                                    <Plus className="w-2.5 h-2.5 text-gray-400" />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="text-right shrink-0">
-                                        <span className="text-sm font-bold text-gray-900">
+                                        <div className="text-sm font-bold text-gray-900">
                                             {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
-                                        </span>
-                                        <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">
-                                            {formatPriceParts(item.price).currency}
-                                        </span>
+                                            <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">
+                                                {formatPriceParts(item.price).currency}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

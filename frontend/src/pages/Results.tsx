@@ -399,7 +399,8 @@ export default function Results() {
                                                 // Helper to format price
                                                 const formatPrice = (price: number) => {
                                                     const locale = i18n.language.startsWith('no') ? 'no-NO' : 'en-GB';
-                                                    return new Intl.NumberFormat(locale, { style: 'currency', currency: 'NOK', maximumFractionDigits: 0 }).format(price);
+                                                    const amount = new Intl.NumberFormat(locale, { style: 'decimal', maximumFractionDigits: 0 }).format(price);
+                                                    return `${amount} NOK`;
                                                 };
 
                                                 if (currentV === 'multi' && routeData?.multiStore && routeData.singleStore) {
@@ -432,23 +433,23 @@ export default function Results() {
 
                 {/* Mobile Floating Navigation Bar */}
                 <div
-                    className="fixed bottom-8 left-1/2 -translate-x-1/2 lg:hidden z-[60] flex items-center bg-white/70 backdrop-blur-2xl p-1.5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-white/40 animate-in slide-in-from-bottom-8 duration-700"
+                    className="fixed bottom-6 left-1/2 -translate-x-1/2 lg:hidden z-[60] flex items-center bg-white/30 backdrop-blur-xl p-1.5 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-white/20 animate-in slide-in-from-bottom-8 duration-700"
                 >
                     <button
                         onClick={() => navigate('/')}
-                        className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-dark transition-all flex items-center gap-2"
+                        className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-dark transition-all flex items-center gap-2"
                     >
                         <Search className="w-4 h-4" />
                         {t('common.new', 'New')}
                     </button>
 
-                    <div className="w-px h-6 bg-gray-200/50 mx-1"></div>
+                    <div className="w-px h-6 bg-gray-900/5 mx-1"></div>
 
                     <button
                         onClick={() => setMobileActiveTab('list')}
                         className={clsx(
                             "px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
-                            mobileActiveTab === 'list' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-400 hover:text-gray-600"
+                            mobileActiveTab === 'list' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-500 hover:text-gray-700"
                         )}
                     >
                         <List className="w-4 h-4" />
@@ -459,7 +460,7 @@ export default function Results() {
                         onClick={() => setMobileActiveTab('map')}
                         className={clsx(
                             "px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
-                            mobileActiveTab === 'map' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-400 hover:text-gray-600"
+                            mobileActiveTab === 'map' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-500 hover:text-gray-700"
                         )}
                     >
                         <MapPin className="w-4 h-4" />
@@ -467,35 +468,6 @@ export default function Results() {
                     </button>
                 </div>
             </main>
-
-            {/* Mobile Sticky Total Price Footer */}
-            {routeData && (activeView === 'single' || activeView === 'multi') && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 p-4 md:hidden z-50 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] animate-in slide-in-from-bottom-full duration-500">
-                    <div className="flex items-center justify-center gap-4 max-w-sm mx-auto">
-                        <div className="flex flex-col items-center">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">
-                                {activeView === 'multi' ? t('results.smartRoute') : t('results.selectedStore')}
-                            </span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-black text-dark tabular-nums">
-                                    {(() => {
-                                        const locale = i18n.language.startsWith('no') ? 'no-NO' : 'en-GB';
-                                        const total = activeView === 'multi'
-                                            ? routeData.multiStore?.totalCost
-                                            : (routeData.singleStoreCandidates?.find(c => String(c.store.id) === String(selectedStoreId))?.totalCost || routeData.singleStore?.totalCost);
-                                        return new Intl.NumberFormat(locale, { style: 'currency', currency: 'NOK', maximumFractionDigits: 0 }).format(total || 0);
-                                    })()}
-                                </span>
-                                {activeView === 'multi' && routeData.singleStore && (
-                                    <span className="text-[11px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-lg">
-                                        -{Math.round(((routeData.singleStore.totalCost - routeData.multiStore!.totalCost) / routeData.singleStore.totalCost) * 100)}% saved
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div >
     );
 }
