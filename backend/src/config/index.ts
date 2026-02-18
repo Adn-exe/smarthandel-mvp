@@ -56,7 +56,12 @@ export const config: Config = {
     // Convert comma-separated string to array
     allowedOrigins: process.env.ALLOWED_ORIGINS
         ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
-        : ['http://localhost:3000']
+        : [
+            'http://localhost:3000',
+            'https://smarthandel-mvp-frontend.vercel.app',
+            'https://smarthandel.no',
+            'https://www.smarthandel.no'
+        ]
 };
 
 export default config;
