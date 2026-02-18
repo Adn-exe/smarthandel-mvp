@@ -76,12 +76,12 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
 
     return (
         <div className="w-full overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="p-5 md:p-8 border-b border-gray-100/50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
+            <div className="p-4 md:p-8 border-b border-gray-100/50 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white">
                 <div>
-                    <h3 className="text-xl md:text-2xl font-heading font-black text-dark tracking-tight mb-1">
+                    <h3 className="text-lg md:text-2xl font-heading font-black text-dark tracking-tight">
                         {t('results.priceComparison', 'Price Comparison')}
                     </h3>
-                    <p className="text-sm md:text-base text-gray-500 font-medium max-w-md leading-relaxed">
+                    <p className="text-[11px] md:text-base text-gray-400 font-medium leading-tight mt-0.5">
                         {t('results.compareText', { count: requestedItemsCount, defaultValue: `Compare prices for your ${requestedItemsCount} items.` })}
                     </p>
                 </div>
@@ -109,21 +109,23 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
             </div>
 
             <div className="relative border-t border-gray-100">
-                {/* Mobile Scroll Hint */}
-                <div className="md:hidden flex items-center justify-end gap-1.5 px-4 py-2 bg-gray-50/80 border-b border-gray-100">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Scroll</span>
-                    <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                <div className="md:hidden flex items-center justify-between px-4 py-1.5 bg-gray-50/50 border-b border-gray-100">
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{t('results.priceMatrix', 'Price Matrix')}</span>
+                    <div className="flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Scroll</span>
+                        <svg className="w-3 h-3 text-gray-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                    </div>
                 </div>
 
                 <div className="relative">
                     {/* Right-edge fade gradient on mobile */}
                     <div className="md:hidden pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent z-30" />
 
-                    <div className="overflow-x-auto snap-x snap-mandatory no-scrollbar md:max-h-[calc(100vh-300px)] relative">
+                    <div className="overflow-x-auto snap-x snap-mandatory no-scrollbar md:max-h-[calc(100vh-320px)] relative">
                         <table className="w-full text-sm text-left border-collapse min-w-[340px]">
-                            <thead className="sticky top-28 md:top-0 z-40 shadow-[0_2px_5px_-2px_rgba(0,0,0,0.05)]">
+                            <thead className="sticky top-0 z-40 shadow-[0_2px_5px_rgba(0,0,0,0.05)]">
                                 <tr className="bg-gray-50 border-b border-gray-100">
-                                    <th className="py-4 px-4 md:px-6 font-black text-gray-500 uppercase tracking-widest text-[10px] w-1/3 min-w-[120px] md:min-w-[150px] sticky top-28 md:top-0 left-0 bg-white md:bg-gray-50 z-50 shadow-[2px_2px_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-100/50">
+                                    <th className="py-2.5 px-4 md:px-6 font-black text-gray-500 uppercase tracking-widest text-[9px] w-1/3 min-w-[100px] md:min-w-[150px] sticky left-0 bg-white md:bg-gray-50 z-50 shadow-[1px_0_3px_rgba(0,0,0,0.05)] border-r border-gray-100/50">
                                         {t('common.item', 'Item')}
                                     </th>
                                     {displayCandidates.map((candidate: SingleStoreOption) => {
@@ -132,24 +134,24 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
 
                                         return (
                                             <th key={candidate.store.id} className={clsx(
-                                                "py-4 px-4 min-w-[140px] md:min-w-[160px] align-top snap-center",
-                                                isSmartRoute ? "bg-blue-50/50 border-x border-blue-100" :
-                                                    (isBestValue ? "bg-green-50/50 border-x border-green-100" : "bg-gray-50")
+                                                "py-2.5 px-3 min-w-[120px] md:min-w-[160px] align-middle snap-center text-center",
+                                                isSmartRoute ? "bg-blue-50/70 border-x border-blue-100" :
+                                                    (isBestValue ? "bg-green-50/70 border-x border-green-100" : "bg-gray-50")
                                             )}>
-                                                <div className="flex flex-col gap-1">
+                                                <div className="flex flex-col items-center gap-0.5">
                                                     <span className={clsx(
-                                                        "font-heading font-black text-xs md:text-sm tracking-tight",
+                                                        "font-heading font-black text-[10px] md:text-xs tracking-tight truncate w-full",
                                                         isSmartRoute ? "text-blue-900" :
                                                             (isBestValue ? "text-green-900" : "text-dark")
                                                     )}>
                                                         {candidate.store.chain}
                                                     </span>
                                                     <div className={clsx(
-                                                        "flex items-center gap-1 text-[9px] md:text-[10px] font-bold",
-                                                        isSmartRoute ? "text-blue-400" : "text-gray-400"
+                                                        "flex items-center gap-0.5 text-[8px] md:text-[9px] font-bold opacity-70",
+                                                        isSmartRoute ? "text-blue-500" : "text-gray-500"
                                                     )}>
-                                                        {!isSmartRoute && <MapPin className="w-2.5 h-2.5 shrink-0 text-gray-300" />}
-                                                        <span className="truncate max-w-[80px] md:max-w-[100px]">{candidate.store.name}</span>
+                                                        {!isSmartRoute && <MapPin className="w-2 h-2 shrink-0" />}
+                                                        <span className="truncate max-w-[70px] md:max-w-none">{candidate.store.name}</span>
                                                     </div>
                                                 </div>
                                             </th>
@@ -166,13 +168,13 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
 
                                     return (
                                         <tr key={rowItem.name} className="group hover:bg-blue-50/30 transition-colors border-b border-gray-50/50 last:border-0 text-sm">
-                                            <td className="py-3 px-4 md:px-6 sticky left-0 bg-white group-hover:bg-blue-50 transition-colors z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-r border-gray-100/30">
-                                                <div className="font-heading font-bold text-dark text-[11px] md:text-sm leading-tight">
+                                            <td className="py-2 px-4 md:px-6 sticky left-0 bg-white group-hover:bg-blue-50 transition-colors z-30 shadow-[1px_0_3px_rgba(0,0,0,0.05)] border-r border-gray-100/30">
+                                                <div className="font-heading font-bold text-dark text-[10px] md:text-sm leading-tight truncate max-w-[80px] md:max-w-none">
                                                     {rowItem.englishName || rowItem.name}
                                                 </div>
                                                 {(rowItem.quantity > 1 || rowItem.unit) && (
-                                                    <div className="text-[9px] md:text-[10px] text-gray-400 font-bold flex items-center gap-1 mt-0.5">
-                                                        {rowItem.quantity > 1 && <span className="bg-gray-50 px-1 py-0.5 rounded text-gray-500 border border-gray-100">{rowItem.quantity}x</span>}
+                                                    <div className="text-[8px] md:text-[9px] text-gray-400 font-bold flex items-center gap-1 mt-0.5">
+                                                        {rowItem.quantity > 1 && <span className="bg-gray-50 px-0.5 py-0 rounded text-[7px] text-gray-500 border border-gray-100">{rowItem.quantity}x</span>}
                                                         {rowItem.unit && <span>{rowItem.unit}</span>}
                                                     </div>
                                                 )}
@@ -187,15 +189,15 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
 
                                                 return (
                                                     <td key={candidate.store.id} className={clsx(
-                                                        "py-3 px-4 align-middle snap-center text-center",
-                                                        isSmartRoute ? "bg-blue-50/5 group-hover:bg-blue-50/20 font-bold text-blue-900" :
-                                                            (isBestValue ? "bg-green-50/5 group-hover:bg-green-50/20 font-bold text-green-900" : "")
+                                                        "py-2 px-3 align-middle snap-center text-center",
+                                                        isSmartRoute ? "bg-blue-50/5 group-hover:bg-blue-50/20 font-bold text-blue-900 border-x border-blue-50/30" :
+                                                            (isBestValue ? "bg-green-50/5 group-hover:bg-green-50/20 font-bold text-green-900 border-x border-green-50/30" : "border-x border-gray-50/50")
                                                     )}>
                                                         {item ? (
                                                             <div className={clsx(
                                                                 "text-xs md:text-sm font-bold tabular-nums tracking-tight",
-                                                                isCheaperThanBest ? "text-green-700 bg-green-100/70 px-1.5 py-0.5 rounded-lg border border-green-200" : // Highlight if better
-                                                                    (isBestValue ? "" : "text-gray-600") // Normal otherwise
+                                                                isCheaperThanBest ? "text-green-700 bg-green-100/70 px-1.5 py-0.5 rounded-lg border border-green-200" :
+                                                                    (isBestValue ? "" : "text-gray-600")
                                                             )}>
                                                                 {formatPrice(item.totalPrice)}
                                                             </div>
@@ -212,9 +214,8 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
                                 })}
                             </tbody>
                             <tfoot>
-                                {/* Distance Row */}
                                 <tr className="bg-white border-t border-gray-100">
-                                    <td className="py-4 px-4 md:px-6 font-black text-gray-400 text-[10px] uppercase tracking-widest sticky left-0 bg-white z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-r border-gray-100/50">
+                                    <td className="py-2 px-4 md:px-6 font-black text-gray-400 text-[9px] uppercase tracking-widest sticky left-0 bg-white z-30 shadow-[1px_0_3px_rgba(0,0,0,0.05)] border-r border-gray-100/50">
                                         {t('common.distance', 'Distance')}
                                     </td>
                                     {displayCandidates.map((candidate: SingleStoreOption) => {
@@ -223,10 +224,10 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
                                         const isClosest = candidate.distance === minDistance;
 
                                         return (
-                                            <td key={`dist-${candidate.store.id}`} className="py-4 px-4 align-top snap-center text-center">
+                                            <td key={`dist-${candidate.store.id}`} className="py-2 px-3 align-middle snap-center text-center">
                                                 <div className={clsx(
-                                                    "font-bold tabular-nums text-xs md:text-sm",
-                                                    isClosest ? "text-green-700 bg-green-50/80 inline-block px-2 py-0.5 rounded-full border border-green-100" : "text-gray-500"
+                                                    "font-bold tabular-nums text-[10px] md:text-sm",
+                                                    isClosest ? "text-green-700 bg-green-50/80 inline-block px-1.5 py-0.5 rounded-full border border-green-100" : "text-gray-500"
                                                 )}>
                                                     {candidate.distance !== undefined ? formatDistance(candidate.distance) : '-'}
                                                 </div>
@@ -235,21 +236,21 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
                                     })}
                                 </tr>
 
-                                <tr className="bg-gray-50/90 backdrop-blur-sm border-t border-gray-100 sticky bottom-0 z-40 shadow-[0_-2px_5px_-2px_rgba(0,0,0,0.05)]">
-                                    <td className="py-5 px-4 md:px-6 font-black text-dark text-xs uppercase tracking-widest sticky bottom-0 left-0 bg-gray-50 z-50 shadow-[2px_-2px_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-100/50">
+                                <tr className="bg-gray-50/95 backdrop-blur-sm border-t border-gray-100 sticky bottom-0 z-40 shadow-[0_-2px_5px_rgba(0,0,0,0.05)]">
+                                    <td className="py-2.5 px-4 md:px-6 font-black text-dark text-[10px] uppercase tracking-widest sticky bottom-0 left-0 bg-gray-50 z-50 shadow-[1px_-1px_3px_rgba(0,0,0,0.05)] border-r border-gray-100/50">
                                         {t('common.total', 'Total')}
                                     </td>
                                     {displayCandidates.map((candidate: SingleStoreOption) => (
-                                        <td key={candidate.store.id} className="py-5 px-4 snap-center text-center bg-gray-50/50 backdrop-blur-sm">
+                                        <td key={candidate.store.id} className="py-2.5 px-3 snap-center text-center bg-gray-50/50 backdrop-blur-sm">
                                             <div className="flex flex-col items-center">
                                                 <span className={clsx(
-                                                    "font-black text-sm md:text-lg tabular-nums",
-                                                    candidate.store.id === bestValueId ? "text-primary scale-110" : "text-gray-900"
+                                                    "font-black text-xs md:text-base tabular-nums",
+                                                    candidate.store.id === bestValueId ? "text-primary scale-105" : "text-gray-900"
                                                 )}>
                                                     {formatPrice(candidate.totalCost || 0)}
                                                 </span>
                                                 {candidate.store.id === bestValueId && (
-                                                    <span className="text-[8px] md:text-[10px] text-green-600 font-black uppercase tracking-widest mt-0.5">
+                                                    <span className="text-[7px] md:text-[9px] text-green-600 font-black uppercase tracking-widest">
                                                         {t('results.bestValue', 'Best')}
                                                     </span>
                                                 )}
