@@ -235,63 +235,73 @@ export default function Results() {
                 description={t('results.foundBestOptions')}
             />
             {/* Header */}
-            <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-20 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <header className="bg-white sticky top-16 z-[100] border-b border-gray-200">
+                <div className="max-w-7xl mx-auto">
                     {/* Top Row: Navigation & Main Actions */}
-                    <div className="h-14 md:h-16 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-2 md:gap-4 py-2 min-w-0 flex-1">
-                            <h1 className="text-sm md:text-lg font-bold text-dark flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-                                <span className="text-gray-400 font-medium hidden md:inline shrink-0">{t('results.title')}</span>
-                                <div className="flex gap-1 overflow-x-auto no-scrollbar px-0.5 items-center">
-                                    {confirmedItems ? (
-                                        confirmedItems.map((item: ShoppingItem, idx: number) => (
-                                            <span
-                                                key={idx}
-                                                className="text-[9px] md:text-[11px] font-black text-primary bg-primary/5 px-2 py-0.5 rounded-lg border border-primary/10 whitespace-nowrap uppercase tracking-wider shadow-sm animate-in zoom-in-50 duration-300"
-                                                style={{ animationDelay: `${idx * 100}ms` }}
-                                            >
-                                                {item.originalName || item.name}
-                                            </span>
-                                        ))
-                                    ) : (
-                                        <span className="text-primary bg-primary/5 px-2 py-0.5 rounded-lg border border-primary/10 whitespace-nowrap">
-                                            {query}
+                    <div className="bg-white px-3 sm:px-6 lg:px-8 py-0.5 md:py-1 flex flex-row items-center justify-between gap-x-2 border-b border-gray-50 md:border-b-0">
+                        <div className="flex items-center gap-2 md:gap-4 min-w-0 w-full md:w-auto">
+                            <h1 className="text-sm md:text-lg font-bold text-dark flex items-center gap-2 overflow-hidden py-0.5 w-full">
+                                <span className="text-gray-400 font-bold text-[10px] md:text-sm hidden md:inline shrink-0">{t('results.title')}</span>
+                                <div className="flex gap-1 items-center overflow-x-auto no-scrollbar px-0.5 w-full md:w-auto relative group">
+                                    <div className="flex gap-0.5 items-center">
+                                        <span className="text-gray-400 font-black text-[7px] md:text-[10px] uppercase tracking-tighter mr-0.5 md:hidden">
+                                            {t('results.title', 'Results')}:
                                         </span>
-                                    )}
+                                        {confirmedItems ? (
+                                            confirmedItems.map((item: ShoppingItem, idx: number) => (
+                                                <span
+                                                    key={idx}
+                                                    className="text-[8px] md:text-[11px] font-extrabold text-primary bg-primary/5 px-1 py-0.5 rounded border border-primary/10 whitespace-nowrap uppercase tracking-tighter shadow-sm animate-in zoom-in-50 duration-300 shrink-0"
+                                                    style={{ animationDelay: `${idx * 100}ms` }}
+                                                >
+                                                    {item.originalName || item.name}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className="text-primary bg-primary/5 px-1 py-0.5 rounded border border-primary/10 whitespace-nowrap text-[8px]">
+                                                {query}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Right-edge fade mask for mobile items scroll */}
+                                    <div className="absolute top-0 right-0 bottom-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none md:hidden" />
                                 </div>
                             </h1>
                         </div>
 
-                        <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
-                            <button
-                                onClick={handleShare}
-                                className="p-2 md:p-2.5 hover:bg-gray-50 text-gray-600 rounded-xl transition-all border border-gray-100 shadow-sm"
-                                aria-label={t('common.share')}
-                            >
-                                <Share2 className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => navigate('/')}
-                                className="bg-dark text-white p-2 md:p-2.5 rounded-xl hover:bg-black transition-all shadow-md flex items-center gap-2 text-xs md:text-sm font-bold pl-3 md:pl-4 pr-4 md:pr-5 group shrink-0"
-                            >
-                                <Search className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                <span className="hidden sm:inline">{t('common.newSearch')}</span>
-                                <span className="sm:hidden">New</span>
-                            </button>
+                        <div className="flex items-center justify-end w-auto gap-2">
+                            {/* Mobile Header Buttons */}
+                            <div className="flex items-center gap-1 md:gap-2 shrink-0 ml-auto md:ml-0">
+                                <button
+                                    onClick={handleShare}
+                                    className="p-1.5 md:p-2 hover:bg-gray-50 text-gray-600 rounded-lg transition-all border border-gray-100 shadow-sm"
+                                    aria-label={t('common.share')}
+                                >
+                                    <Share2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => navigate('/')}
+                                    className="bg-primary text-white p-1 md:p-2 rounded-lg hover:bg-red-600 transition-all shadow-md flex items-center gap-1 text-[9px] md:text-sm font-black pl-2 md:pl-4 pr-2.5 md:pr-5 group shrink-0"
+                                >
+                                    <Search className="w-3 h-3 md:w-3.5 md:h-3.5 group-hover:scale-110 transition-transform" />
+                                    <span className="hidden sm:inline">{t('common.newSearch')}</span>
+                                    <span className="sm:hidden">{t('common.newSearchMobile', 'New')}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Bottom Row: Route Options */}
+                    {/* Bottom Row: View Toggles */}
                     {!isLoading && (
-                        <div className="h-12 md:h-14 border-t border-gray-50 flex items-center justify-between overflow-x-auto no-scrollbar">
-                            <div className="flex items-center gap-3 sm:gap-6 shrink-0">
-                                <div className="flex items-center gap-1.5 pr-3 border-r border-gray-100 mr-1">
+                        <div className="px-3 sm:px-6 lg:px-8 py-0.5 md:py-1 border-t border-gray-100 flex items-center justify-between overflow-x-auto no-scrollbar bg-gray-50/50">
+                            <div className="flex items-center gap-2 sm:gap-6 shrink-0 w-full md:w-auto justify-between md:justify-start">
+                                <div className="flex items-center gap-1.5 pr-3 border-r border-gray-100 mr-1 shrink-0">
                                     <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
                                     <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-tighter whitespace-nowrap">
                                         {t('results.itemCount', { count: confirmedItems?.length || 0 })}
                                     </p>
                                 </div>
-                                <div className="flex bg-gray-50/80 p-0.5 md:p-1 rounded-xl border border-gray-100 shrink-0">
+                                <div className="flex bg-gray-50/80 p-0.5 md:p-1 rounded-xl border border-gray-100 shrink-0 overflow-x-auto">
                                     <button
                                         onClick={() => setActiveView('single')}
                                         className={clsx(
@@ -406,7 +416,7 @@ export default function Results() {
                         // Mobile: always use mobileActiveTab — works in ALL views including comparison
                         mobileActiveTab === 'list' ? 'hidden lg:block' : 'block w-full'
                     )}>
-                        <div className="sticky top-20 md:top-32">
+                        <div className="sticky top-48 md:top-44">
                             {/* Map container: always in DOM so Leaflet initialises with real dimensions */}
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden aspect-square md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                                 <StoreMap

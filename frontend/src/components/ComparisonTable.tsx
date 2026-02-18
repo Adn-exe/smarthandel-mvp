@@ -121,9 +121,9 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
 
                     <div className="overflow-x-auto snap-x snap-mandatory no-scrollbar md:max-h-[calc(100vh-300px)] relative">
                         <table className="w-full text-sm text-left border-collapse min-w-[340px]">
-                            <thead className="sticky top-0 z-40 shadow-[0_2px_5px_-2px_rgba(0,0,0,0.05)]">
+                            <thead className="sticky top-48 md:top-0 z-40 shadow-[0_2px_5px_-2px_rgba(0,0,0,0.05)]">
                                 <tr className="bg-gray-50 border-b border-gray-100">
-                                    <th className="py-4 px-4 md:px-6 font-black text-gray-500 uppercase tracking-widest text-[10px] w-1/3 min-w-[120px] md:min-w-[150px] sticky top-0 left-0 bg-white md:bg-gray-50 z-50 shadow-[2px_2px_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-100/50">
+                                    <th className="py-4 px-4 md:px-6 font-black text-gray-500 uppercase tracking-widest text-[10px] w-1/3 min-w-[120px] md:min-w-[150px] sticky top-48 md:top-0 left-0 bg-white md:bg-gray-50 z-50 shadow-[2px_2px_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-100/50">
                                         {t('common.item', 'Item')}
                                     </th>
                                     {displayCandidates.map((candidate: SingleStoreOption) => {
