@@ -14,10 +14,10 @@ interface ParsedQuery {
  */
 class AIService {
     private client: GoogleGenerativeAI;
-    private readonly MODEL = 'gemini-3-flash-preview';
+    private readonly MODEL = 'gemini-1.5-flash';
 
     constructor() {
-        this.client = new GoogleGenerativeAI(config.geminiApiKey);
+        this.client = new GoogleGenerativeAI(config.geminiApiKey || 'dummy-key');
     }
 
     /**
@@ -35,6 +35,11 @@ class AIService {
      * @returns Structured object with items and budget
      */
     public async parseShoppingQuery(userQuery: string): Promise<ParsedQuery> {
+        if (!config.geminiApiKey) {
+            console.error('[AIService] Missing API Key');
+            throw new ApiError(503, 'AI service configuration error');
+        }
+
         const cacheKey = `ai:parse:${userQuery.trim().toLowerCase()}`;
         const cached = cache.get<ParsedQuery>(cacheKey);
         if (cached) return cached;
@@ -69,6 +74,8 @@ Rules:
 - If quantity is not specified, default to 1.`;
 
         try {
+            console.log(`[AIService] Parsing query: "${userQuery}"`);
+
             const model = this.client.getGenerativeModel({
                 model: this.MODEL,
                 systemInstruction: systemPrompt
@@ -89,11 +96,20 @@ Rules:
             cache.set(cacheKey, parsed, 3600);
 
             return parsed;
-        } catch (error) {
+        } catch (error: any) {
             console.error('[AIService] Error parsing query:', error);
+
+            // Handle API-specific errors
+            if (error.status === 403) {
+                throw new ApiError(503, 'AI Service Access Denied (Check API Key)');
+            }
+            if (error.status === 429) {
+                throw new ApiError(429, 'AI Service Overloaded');
+            }
 
             // Handle JSON parsing errors with a safe fallback
             if (error instanceof SyntaxError) {
+                console.error('[AIService] Invalid JSON response:', error);
                 throw new ApiError(502, 'AI response was not valid JSON');
             }
 
