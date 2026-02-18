@@ -122,9 +122,9 @@ class RouteService {
 
             return result;
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('[RouteService] Error calculating optimal route:', error);
-            throw new ApiError(500, 'Failed to calculate optimal shopping route');
+            throw new ApiError(500, `Failed to calculate optimal shopping route: ${error.message || 'Unknown error'}`);
         }
     }
 

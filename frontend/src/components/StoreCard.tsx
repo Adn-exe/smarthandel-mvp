@@ -94,11 +94,7 @@ export const StoreCard = memo(function StoreCard({
                 session_id: sessionId
             });
 
-            setReportedItems(prev => {
-                const next = new Set(prev);
-                next.add(`${reportingItem.storeId}_${reportingItem.itemId}`);
-                return next;
-            });
+            setReportedItems(prev => new Set([...prev, `${reportingItem.storeId}_${reportingItem.itemId}`]));
             setReportingItem(null);
         } catch (error) {
             console.error('Failed to submit report:', error);
@@ -108,8 +104,7 @@ export const StoreCard = memo(function StoreCard({
 
     // Format currency
     const formatPriceParts = useMemo(() => {
-        const lang = i18n.language || 'en';
-        const locale = lang.startsWith('no') ? 'no-NO' : 'en-GB';
+        const locale = i18n.language.startsWith('no') ? 'no-NO' : 'en-GB';
         const formatter = new Intl.NumberFormat(locale, {
             style: 'decimal',
             maximumFractionDigits: 0
