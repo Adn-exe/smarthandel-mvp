@@ -378,17 +378,10 @@ export const ResultsDisplay = memo(function ResultsDisplay({
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 border-t border-gray-100 mb-12">
                 <button
                     onClick={onCreateList}
-                    className="btn btn-primary gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all h-12 px-8"
+                    className="btn btn-primary gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all h-12 px-8 w-full sm:w-auto"
                 >
                     <List className="w-5 h-5" />
                     {t('results.createShoppingList', 'Generate Shopping List')}
-                </button>
-
-                <button
-                    onClick={onReset}
-                    className="btn text-gray-400 hover:text-dark text-sm"
-                >
-                    {t('common.startOver', 'Initiate New Search')}
                 </button>
             </div>
         </div>
