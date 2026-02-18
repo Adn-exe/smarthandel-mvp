@@ -34,6 +34,8 @@ export default function Results() {
     // mobileActiveTab controls the mobile List/Map toggle — available in ALL views
     const [mobileActiveTab, setMobileActiveTab] = useState<'list' | 'map'>('list');
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
+    // Helper to detect desktop view for reliable map rendering logic
+    const isDesktop = useMediaQuery('(min-width: 1024px)');
 
     // When switching TO comparison view on desktop, keep map visible by default
     // (user can hide it via the Show/Hide Map button on desktop only)
@@ -416,9 +418,9 @@ export default function Results() {
                                     selectedStore={String(selectedStoreId)}
                                     // isVisible: true whenever the map is actually rendered and visible
                                     // Logic:
-                                    // 1. Mobile: Only when map tab is active
-                                    // 2. Desktop: Always visible UNLESS it's comparison view AND user toggled it off
-                                    isVisible={mobileActiveTab === 'map' || (activeView !== 'comparison' || isMapVisible)}
+                                    // 1. Mobile (< 1024px): Only when map tab is active
+                                    // 2. Desktop (>= 1024px): Always visible UNLESS it's comparison view AND user toggled it off
+                                    isVisible={isDesktop ? (activeView !== 'comparison' || isMapVisible) : mobileActiveTab === 'map'}
                                     onStoreClick={(store) => {
                                         setSelectedStoreId(store.id);
                                         trackEvent('store_selected', { type: 'map_click', storeId: store.id });
@@ -487,7 +489,7 @@ export default function Results() {
                 </div>
 
                 {/* Mobile Floating Toggle Button */}
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 lg:hidden z-30 flex bg-dark/90 backdrop-blur-lg p-1.5 rounded-2xl shadow-2xl border border-white/10">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 lg:hidden z-[60] flex bg-dark/90 backdrop-blur-lg p-1.5 rounded-2xl shadow-2xl border border-white/10">
                     <button
                         onClick={() => setMobileActiveTab('list')}
                         className={clsx(
@@ -541,4 +543,21 @@ export default function Results() {
             )}
         </div >
     );
+}
+
+// Hook to check media queries
+function useMediaQuery(query: string) {
+    const [matches, setMatches] = useState(false);
+
+    useEffect(() => {
+        const media = window.matchMedia(query);
+        if (media.matches !== matches) {
+            setMatches(media.matches);
+        }
+        const listener = () => setMatches(media.matches);
+        media.addEventListener('change', listener);
+        return () => media.removeEventListener('change', listener);
+    }, [matches, query]);
+
+    return matches;
 }
