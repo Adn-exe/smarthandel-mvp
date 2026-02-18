@@ -353,11 +353,12 @@ export default function Results() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col lg:flex-row gap-8 animate-fadeSlideIn">
                     {/* Results List Column */}
+                    {/* Use opacity/pointer-events instead of hidden so Leaflet always has real dimensions */}
                     <div className={clsx(
                         "transition-all duration-500 ease-in-out lg:block",
                         activeView === 'comparison' && !isMapVisible ? "w-full" : "w-full lg:w-1/2",
-                        // Mobile Visibility Logic: Explicitly hidden if map is active
-                        mobileActiveTab === 'map' ? 'hidden' : 'block'
+                        // Mobile: keep in DOM but visually hide to preserve Leaflet dimensions
+                        mobileActiveTab === 'map' ? 'hidden lg:block' : 'block'
                     )}>
                         <div className="space-y-6">
                             <ResultsDisplay
@@ -397,13 +398,16 @@ export default function Results() {
                     </div>
 
                     {/* Map Column */}
+                    {/* CRITICAL: Never use `hidden` on this div — Leaflet needs real dimensions at mount time.
+                        Instead we use a wrapper that keeps the map in the DOM but off-screen on mobile. */}
                     <div className={clsx(
-                        "transition-all duration-500 ease-in-out lg:block",
+                        "transition-all duration-500 ease-in-out",
                         activeView === 'comparison' && !isMapVisible ? "hidden" : "w-full lg:w-1/2",
-                        // Mobile Visibility Logic: Explicitly hidden if list is active
-                        mobileActiveTab === 'list' ? 'hidden' : 'block'
+                        // Mobile: show/hide via block/hidden but the inner map container stays rendered
+                        mobileActiveTab === 'list' ? 'hidden lg:block' : 'block'
                     )}>
                         <div className="sticky top-20 md:top-32">
+                            {/* Map container: always rendered so Leaflet initialises with real dimensions */}
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden aspect-square md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                                 <StoreMap
                                     userLocation={effectiveLocation!}
@@ -412,6 +416,7 @@ export default function Results() {
                                     roadPath={roadPath}
                                     isRouting={isRouting}
                                     selectedStore={String(selectedStoreId)}
+                                    isVisible={mobileActiveTab === 'map'}
                                     onStoreClick={(store) => {
                                         setSelectedStoreId(store.id);
                                         trackEvent('store_selected', { type: 'map_click', storeId: store.id });

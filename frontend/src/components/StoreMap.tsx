@@ -14,6 +14,7 @@ interface StoreMapProps {
     roadPath?: LatLngTuple[];
     selectedStore?: string;
     isRouting?: boolean;
+    isVisible?: boolean;
     onStoreClick?: (store: StoreType) => void;
 }
 
@@ -77,7 +78,7 @@ function MapBounds({
 }
 
 // Component to handle map resize invalidation (fixes grey map on mobile toggle)
-function MapResizer() {
+function MapResizer({ isVisible }: { isVisible?: boolean }) {
     const map = useMap();
 
     useEffect(() => {
@@ -101,6 +102,17 @@ function MapResizer() {
         };
     }, [map]);
 
+    // Invalidate when the map tab becomes visible on mobile
+    useEffect(() => {
+        if (isVisible) {
+            // Small delay to let the CSS transition complete before recalculating
+            const timer = setTimeout(() => {
+                map.invalidateSize({ animate: false });
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [isVisible, map]);
+
     return null;
 }
 
@@ -111,6 +123,7 @@ export function StoreMap({
     roadPath,
     selectedStore,
     isRouting,
+    isVisible,
     onStoreClick
 }: StoreMapProps) {
 
@@ -208,7 +221,7 @@ export function StoreMap({
                 ) : null}
 
                 {/* Auto Zoom Handler */}
-                <MapResizer />
+                <MapResizer isVisible={isVisible} />
                 <MapBounds userLocation={userLocation} stores={stores} />
 
             </MapContainer>
