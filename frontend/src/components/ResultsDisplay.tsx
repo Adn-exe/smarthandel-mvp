@@ -156,29 +156,8 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                 </div>
                                 <div
                                     key={singleStores[0].store.id}
-                                    className="relative p-4 md:p-6 rounded-2xl md:rounded-3xl border-2 border-primary bg-primary/[0.02] shadow-lg md:shadow-xl shadow-primary/5 transition-all duration-500"
+                                    className="transition-all duration-500"
                                 >
-                                    <div className="mb-4 md:mb-6">
-                                        <h3 className="text-lg md:text-xl font-bold text-dark flex items-center justify-between gap-2">
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <span className="truncate">{singleStores[0].store.name}</span>
-                                                <span className="text-[8px] md:text-[10px] font-bold bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-tighter shrink-0">
-                                                    {t('results.recommended', 'Highly Recommended')}
-                                                </span>
-                                            </div>
-                                            <span className="text-xl md:text-2xl font-black text-primary shrink-0">
-                                                {formatPrice(singleStores[0].totalCost || 0)}
-                                            </span>
-                                        </h3>
-
-                                        {/* Cost Breakdown for Single Store */}
-                                        <div className="mt-2 md:mt-3 flex gap-2 md:gap-4 text-[10px] md:text-xs text-gray-500 font-bold bg-white/60 p-1.5 md:p-2 rounded-lg inline-flex border border-primary/5">
-                                            <span>{t('results.itemsCost', 'Estimated Cost')}: {formatPrice(singleStores[0].totalCost || 0)}</span>
-                                        </div>
-
-                                        <p className="text-xs md:text-sm text-gray-500 mt-3">{t('results.everythingInOnePlace', 'Convenient Single-Stop Shopping')}</p>
-                                    </div>
-
                                     <div
                                         className="cursor-pointer"
                                         onClick={() => onSelectStore?.(singleStores[0].store.id)}
@@ -188,7 +167,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                             items={singleStores[0].items}
                                             totalCost={singleStores[0].totalCost}
                                             distance={singleStores[0].distance}
-                                            variant="detailed"
+                                            variant="default"
                                             selected={selectedStoreId === singleStores[0].store.id}
                                             totalRequestedItems={totalRequestedItems}
                                             userLocation={userLocation}
@@ -225,20 +204,8 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                     </div>
                                     <div
                                         key={alternative.store.id}
-                                        className="relative p-4 md:p-6 rounded-2xl md:rounded-3xl border-2 border-gray-100 bg-white hover:border-gray-200 transition-all duration-500"
+                                        className="transition-all duration-500"
                                     >
-                                        <div className="mb-4 md:mb-6">
-                                            <h3 className="text-lg md:text-xl font-bold text-dark flex items-center justify-between gap-2">
-                                                <span className="truncate">{alternative.store.name}</span>
-                                                <span className="text-xl md:text-2xl font-black text-gray-400 shrink-0">
-                                                    {formatPrice(alternative.totalCost || 0)}
-                                                </span>
-                                            </h3>
-                                            <div className="mt-1 text-xs text-gray-400">
-                                                {t('results.totalExpense', 'Aggregate Estimated Expenditure')}
-                                            </div>
-                                        </div>
-
                                         <div
                                             className="cursor-pointer"
                                             onClick={() => onSelectStore?.(alternative.store.id)}
@@ -248,7 +215,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                 items={alternative.items}
                                                 totalCost={alternative.totalCost}
                                                 distance={alternative.distance}
-                                                variant="detailed"
+                                                variant="default"
                                                 selected={selectedStoreId === alternative.store.id}
                                                 totalRequestedItems={totalRequestedItems}
                                                 userLocation={userLocation}
@@ -351,7 +318,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                     items={stop.items}
                                                     totalCost={stop.cost}
                                                     distance={stop.distance}
-                                                    variant="detailed"
+                                                    variant="default"
                                                     selected={selectedStoreId === stop.store.id}
                                                     reasoningTag={t('results.instruction.itemsToBuy')}
                                                     totalRequestedItems={stop.items.length}

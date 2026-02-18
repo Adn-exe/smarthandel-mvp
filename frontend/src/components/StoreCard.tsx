@@ -220,11 +220,62 @@ export const StoreCard = memo(function StoreCard({
                     </div>
 
                     {/* Action Link */}
-                    <button className="flex items-center gap-0.5 text-primary text-[14px] md:text-[15px] font-medium group-active:text-blue-700 whitespace-nowrap pl-2">
-                        View List
-                        <ChevronRight className="w-4 h-4 md:w-[18px] md:h-[18px] transition-transform group-hover:translate-x-0.5" />
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsItemsExpanded(!isItemsExpanded);
+                        }}
+                        className="flex items-center gap-0.5 text-primary text-[14px] md:text-[15px] font-medium group-active:text-blue-700 whitespace-nowrap pl-2 hover:underline"
+                    >
+                        {isItemsExpanded ? t('common.hideList', 'Hide List') : t('common.viewList', 'View List')}
+                        <ChevronRight className={clsx(
+                            "w-4 h-4 md:w-[18px] md:h-[18px] transition-transform",
+                            isItemsExpanded ? "-rotate-90" : "group-hover:translate-x-0.5"
+                        )} />
                     </button>
                 </div>
+
+                {/* Expanded Items List */}
+                {isItemsExpanded && (
+                    <div className="px-4 pb-4 md:px-5 md:pb-5 border-t border-gray-50 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="space-y-4">
+                            {items.map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-center gap-3">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                        <div className="flex items-center bg-gray-50 rounded-lg p-0.5 border border-gray-100 shrink-0">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
+                                                className="p-1 hover:bg-white rounded transition-all"
+                                            >
+                                                <Minus className="w-3 h-3 text-gray-400" />
+                                            </button>
+                                            <span className="px-1.5 text-[10px] font-black text-dark min-w-[20px] text-center">
+                                                {(localQuantities[String(item.id)] || item.quantity)}x
+                                            </span>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
+                                                className="p-1 hover:bg-white rounded transition-all"
+                                            >
+                                                <Plus className="w-3 h-3 text-gray-400" />
+                                            </button>
+                                        </div>
+                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                            {item.name}
+                                        </p>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <span className="text-sm font-bold text-gray-900">
+                                            {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
+                                        </span>
+                                        <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">
+                                            {formatPriceParts(item.price).currency}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }
