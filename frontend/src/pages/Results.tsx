@@ -416,9 +416,9 @@ export default function Results() {
                         // Mobile: always use mobileActiveTab — works in ALL views including comparison
                         mobileActiveTab === 'list' ? 'hidden lg:block' : 'block w-full'
                     )}>
-                        <div className="sticky top-48 md:top-44">
+                        <div className="sticky top-52 md:top-44">
                             {/* Map container: always in DOM so Leaflet initialises with real dimensions */}
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden aspect-square md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden h-[65vh] md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                                 <StoreMap
                                     userLocation={effectiveLocation!}
                                     stores={mapStores}
