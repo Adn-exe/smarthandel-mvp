@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, Suspense, lazy, useMemo } from 'react';
+
+import { useState, useEffect, Suspense, lazy, useMemo } from 'react';
 import { useLocation as useRouterLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Share2, Search, Sparkles, MapPin, List } from 'lucide-react';
+import { MapPin, Sparkles, List } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTranslation, Trans } from 'react-i18next';
 import i18n from 'i18next';
@@ -13,7 +14,7 @@ import { ErrorState } from '../components/ErrorState';
 import { trackEvent } from '../utils/analytics';
 import { routingService } from '../services/routingService';
 import { type LatLngTuple } from 'leaflet';
-import type { Location, ShoppingItem } from '../types';
+import type { Location } from '../types';
 
 const ResultsSkeleton = lazy(() => import('../components/ResultsSkeleton').then(m => ({ default: m.ResultsSkeleton })));
 
@@ -36,10 +37,6 @@ export default function Results() {
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
     // Helper to detect desktop view for reliable map rendering logic
     const isDesktop = useMediaQuery('(min-width: 1024px)');
-
-    // When switching TO comparison view on desktop, keep map visible by default
-    // (user can hide it via the Show/Hide Map button on desktop only)
-    // Do NOT auto-hide — let the user control it
 
     const [userLocation, setUserLocation] = useState<Location | null>(
         (routerLocation.state as any)?.location || null
@@ -120,20 +117,7 @@ export default function Results() {
     const effectiveLocation = routeData?.searchLocation || userLocation;
 
     // Handle Share
-    const handleShare = useCallback(() => {
-        trackEvent('share_clicked', { query });
-        const url = window.location.href;
-        if (navigator.share) {
-            navigator.share({
-                title: t('common.share_title'),
-                text: t('common.share_text', { query }),
-                url
-            }).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(url);
-            alert(t('common.copy_alert'));
-        }
-    }, [query, t]);
+
 
     // Prepare stores for map
     const showMulti = activeView === 'multi' && routeData?.multiStore && routeData.multiStore.stores.length > 1;
@@ -231,69 +215,17 @@ export default function Results() {
     return (
         <div className="min-h-screen bg-gray-50 pb-24 md:pb-20">
             <SEO
-                title={query ? `${t('seo.resultsTitle')}: ${query}` : t('seo.resultsTitle')}
+                title={query ? `${t('seo.resultsTitle')}: ${query} ` : t('seo.resultsTitle')}
                 description={t('results.foundBestOptions')}
             />
             {/* Header */}
             <header className="bg-white sticky top-16 z-[100] border-b border-gray-200">
                 <div className="max-w-7xl mx-auto">
-                    {/* Top Row: Navigation & Main Actions */}
-                    <div className="bg-white px-3 sm:px-6 lg:px-8 py-0.5 md:py-1 flex flex-row items-center justify-between gap-x-2 border-b border-gray-50 md:border-b-0">
-                        <div className="flex items-center gap-2 md:gap-4 min-w-0 w-full md:w-auto">
-                            <h1 className="text-sm md:text-lg font-bold text-dark flex items-center gap-2 overflow-hidden py-0.5 w-full">
-                                <span className="text-gray-400 font-bold text-[10px] md:text-sm hidden md:inline shrink-0">{t('results.title')}</span>
-                                <div className="flex gap-1 items-center overflow-x-auto no-scrollbar px-0.5 w-full md:w-auto relative group">
-                                    <div className="flex gap-0.5 items-center">
-                                        <span className="text-gray-400 font-black text-[7px] md:text-[10px] uppercase tracking-tighter mr-0.5 md:hidden">
-                                            {t('results.title', 'Results')}:
-                                        </span>
-                                        {confirmedItems ? (
-                                            confirmedItems.map((item: ShoppingItem, idx: number) => (
-                                                <span
-                                                    key={idx}
-                                                    className="text-[8px] md:text-[11px] font-extrabold text-primary bg-primary/5 px-1 py-0.5 rounded border border-primary/10 whitespace-nowrap uppercase tracking-tighter shadow-sm animate-in zoom-in-50 duration-300 shrink-0"
-                                                    style={{ animationDelay: `${idx * 100}ms` }}
-                                                >
-                                                    {item.originalName || item.name}
-                                                </span>
-                                            ))
-                                        ) : (
-                                            <span className="text-primary bg-primary/5 px-1 py-0.5 rounded border border-primary/10 whitespace-nowrap text-[8px]">
-                                                {query}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {/* Right-edge fade mask for mobile items scroll */}
-                                    <div className="absolute top-0 right-0 bottom-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none md:hidden" />
-                                </div>
-                            </h1>
-                        </div>
 
-                        <div className="flex items-center justify-end w-auto gap-2">
-                            {/* Mobile Header Buttons */}
-                            <div className="flex items-center gap-1 md:gap-2 shrink-0 ml-auto md:ml-0">
-                                <button
-                                    onClick={handleShare}
-                                    className="p-1.5 md:p-2 hover:bg-gray-50 text-gray-600 rounded-lg transition-all border border-gray-100 shadow-sm"
-                                    aria-label={t('common.share')}
-                                >
-                                    <Share2 className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                    onClick={() => navigate('/')}
-                                    className="bg-primary text-white p-1 md:p-2 rounded-lg hover:bg-red-600 transition-all shadow-md flex items-center gap-1 text-[9px] md:text-sm font-black pl-2 md:pl-4 pr-2.5 md:pr-5 group shrink-0"
-                                >
-                                    <Search className="w-3 h-3 md:w-3.5 md:h-3.5 group-hover:scale-110 transition-transform" />
-                                    <span className="hidden sm:inline">{t('common.newSearch')}</span>
-                                    <span className="sm:hidden">{t('common.newSearchMobile', 'New')}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Bottom Row: View Toggles */}
                     {!isLoading && (
-                        <div className="px-3 sm:px-6 lg:px-8 py-0.5 md:py-1 border-t border-gray-100 flex items-center justify-between overflow-x-auto no-scrollbar bg-gray-50/50">
+                        <div className="px-3 sm:px-6 lg:px-8 py-0.5 md:py-1 flex items-center justify-between overflow-x-auto no-scrollbar bg-gray-50/50">
                             <div className="flex items-center gap-2 sm:gap-6 shrink-0 w-full md:w-auto justify-between md:justify-start">
                                 <div className="flex items-center gap-1.5 pr-3 border-r border-gray-100 mr-1 shrink-0">
                                     <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
@@ -416,7 +348,7 @@ export default function Results() {
                         // Mobile: always use mobileActiveTab — works in ALL views including comparison
                         mobileActiveTab === 'list' ? 'hidden lg:block' : 'block w-full'
                     )}>
-                        <div className="sticky top-52 md:top-44">
+                        <div className="sticky top-28 md:top-44">
                             {/* Map container: always in DOM so Leaflet initialises with real dimensions */}
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden h-[65vh] md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                                 <StoreMap
