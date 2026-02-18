@@ -354,11 +354,10 @@ export default function Results() {
                 <div className="flex flex-col lg:flex-row gap-8 animate-fadeSlideIn">
                     {/* Results List Column */}
                     <div className={clsx(
-                        "transition-all duration-500 ease-in-out",
-                        // Desktop Logic
-                        activeView === 'comparison' && !isMapVisible ? "w-full" : "lg:w-1/2",
-                        // Mobile Logic: Strictly hide if map is active
-                        mobileActiveTab === 'map' ? 'hidden lg:block' : 'w-full lg:block'
+                        "transition-all duration-500 ease-in-out lg:block",
+                        activeView === 'comparison' && !isMapVisible ? "w-full" : "w-full lg:w-1/2",
+                        // Mobile Visibility Logic: Explicitly hidden if map is active
+                        mobileActiveTab === 'map' ? 'hidden' : 'block'
                     )}>
                         <div className="space-y-6">
                             <ResultsDisplay
@@ -399,11 +398,10 @@ export default function Results() {
 
                     {/* Map Column */}
                     <div className={clsx(
-                        "transition-all duration-500 ease-in-out",
-                        // Desktop Logic
-                        activeView === 'comparison' && !isMapVisible ? "hidden" : "lg:w-1/2",
-                        // Mobile Logic: Strictly hide if list is active, else full width
-                        mobileActiveTab === 'list' ? 'hidden lg:block' : 'w-full lg:block'
+                        "transition-all duration-500 ease-in-out lg:block",
+                        activeView === 'comparison' && !isMapVisible ? "hidden" : "w-full lg:w-1/2",
+                        // Mobile Visibility Logic: Explicitly hidden if list is active
+                        mobileActiveTab === 'list' ? 'hidden' : 'block'
                     )}>
                         <div className="sticky top-20 md:top-32">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden aspect-square md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">

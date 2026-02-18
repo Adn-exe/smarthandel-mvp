@@ -223,22 +223,23 @@ export function Selection() {
 
             {/* Bottom Sticky Action */}
             {items.length > 0 && (
-                <div className="fixed bottom-6 left-0 right-0 px-4 z-30 pointer-events-none pb-[env(safe-area-inset-bottom)]">
+                <div className="fixed bottom-6 left-4 right-4 z-30 pointer-events-none safe-area-bottom">
                     <div className="max-w-xl mx-auto pointer-events-auto">
-                        <div className="bg-blue-500/90 backdrop-blur-xl p-2 pr-3 rounded-[2rem] shadow-2xl shadow-blue-500/30 flex items-center gap-4 border border-white/20 ring-1 ring-white/20 animate-slideUp">
-                            <div className="pl-6 flex flex-col justify-center">
-                                <span className="text-[10px] uppercase tracking-widest font-bold text-blue-100">Total Items</span>
+                        <div className="bg-blue-500/90 backdrop-blur-xl p-2 pr-3 rounded-[2rem] shadow-2xl shadow-blue-500/30 flex items-center gap-3 sm:gap-4 border border-white/20 ring-1 ring-white/20 animate-slideUp">
+                            <div className="pl-4 sm:pl-6 flex flex-col justify-center shrink-0">
+                                <span className="text-[10px] uppercase tracking-widest font-bold text-blue-100 hidden sm:block">Total Items</span>
+                                <span className="text-[10px] uppercase tracking-widest font-bold text-blue-100 sm:hidden">Items</span>
                                 <span className="text-white font-black text-xl leading-none">{items.length}</span>
                             </div>
 
-                            <div className="w-px h-8 bg-white/10"></div>
+                            <div className="w-px h-8 bg-white/10 shrink-0"></div>
 
                             <button
                                 onClick={handleConfirm}
-                                className="flex-1 bg-white text-dark h-12 rounded-[1.5rem] font-black text-base flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-95 transition-all group relative overflow-hidden"
+                                className="flex-1 bg-white text-dark h-12 rounded-[1.5rem] font-black text-sm sm:text-base flex items-center justify-center gap-2 hover:bg-gray-100 active:scale-95 transition-all group relative overflow-hidden whitespace-nowrap px-4"
                             >
                                 <span className="relative z-10">{t('selection.confirm')}</span>
-                                <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent translate-x-[-100%] group-hover:animate-shimmer"></div>
                             </button>
                         </div>

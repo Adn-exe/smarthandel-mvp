@@ -76,6 +76,34 @@ function MapBounds({
     return null;
 }
 
+// Component to handle map resize invalidation (fixes grey map on mobile toggle)
+function MapResizer() {
+    const map = useMap();
+
+    useEffect(() => {
+        const resizeObserver = new ResizeObserver(() => {
+            map.invalidateSize();
+        });
+
+        // Observe the map container
+        if (map.getContainer()) {
+            resizeObserver.observe(map.getContainer());
+        }
+
+        // Also force invalidate on mount/update
+        const timer = setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+
+        return () => {
+            resizeObserver.disconnect();
+            clearTimeout(timer);
+        };
+    }, [map]);
+
+    return null;
+}
+
 export function StoreMap({
     userLocation,
     stores,
@@ -180,6 +208,7 @@ export function StoreMap({
                 ) : null}
 
                 {/* Auto Zoom Handler */}
+                <MapResizer />
                 <MapBounds userLocation={userLocation} stores={stores} />
 
             </MapContainer>
