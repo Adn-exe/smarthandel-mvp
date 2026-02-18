@@ -63,7 +63,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(errorHandler);
 
 // 7. Start Server
-let server: any;
+let server: ReturnType<typeof app.listen> | undefined;
 if (process.env.NODE_ENV !== 'test') {
     server = app.listen(PORT, '0.0.0.0', () => {
         console.log('==========================================');
@@ -79,6 +79,11 @@ if (process.env.NODE_ENV !== 'test') {
 // 8. Graceful Shutdown
 const shutdown = () => {
     console.log('\n[Server] SIGINT/SIGTERM received. Starting graceful shutdown...');
+    if (!server) {
+        console.log('[Server] No HTTP server running, exiting immediately.');
+        process.exit(0);
+        return;
+    }
     server.close(() => {
         console.log('[Server] HTTP server closed.');
         process.exit(0);

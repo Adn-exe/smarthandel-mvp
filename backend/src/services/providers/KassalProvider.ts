@@ -58,7 +58,7 @@ export class KassalProvider implements BaseProvider {
         return this.withRetry(async () => {
             try {
                 const response = await this.api.get('/products', {
-                    params: { size: 50, search: query, ...options }
+                    params: { size: 50, search: query }
                 });
 
                 const rawProducts: KassalProduct[] = response.data.data || [];
@@ -70,7 +70,7 @@ export class KassalProvider implements BaseProvider {
                 cache.set(cacheKey, processed, 3600);
                 return processed;
             } catch (error) {
-                this.handleError(error, 'Searching products');
+                return this.handleError(error, 'Searching products');
             }
         });
     }
@@ -108,7 +108,7 @@ export class KassalProvider implements BaseProvider {
                 cache.set(cacheKey, sorted, 86400);
                 return sorted;
             } catch (error) {
-                this.handleError(error, 'Getting nearby stores');
+                return this.handleError(error, 'Getting nearby stores');
             }
         });
     }
@@ -125,7 +125,7 @@ export class KassalProvider implements BaseProvider {
                 cache.set(cacheKey, normalized, 3600);
                 return normalized;
             } catch (error) {
-                this.handleError(error, `Getting product ${id}`);
+                return this.handleError(error, `Getting product ${id}`);
             }
         });
     }

@@ -350,7 +350,9 @@ class RouteService {
         const absoluteSavings = single.totalCost - multi.totalCost;
 
         multi.savings = Math.max(0, absoluteSavings);
-        multi.savingsPercent = Math.max(0, (absoluteSavings / single.totalCost) * 100);
+        multi.savingsPercent = single.totalCost > 0
+            ? Math.max(0, (absoluteSavings / single.totalCost) * 100)
+            : 0;
 
         // 1. Coverage check: If multi finds many more items, it's usually better
         if (multiCount > singleCount && (singleCount < multiCount * 0.8 || multiCount - singleCount >= 2)) {

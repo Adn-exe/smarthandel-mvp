@@ -12,7 +12,7 @@ interface UseLocationReturn {
 const STORAGE_KEY = 'smarthandel_location';
 const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
 
-const DEFAULT_LOCATION: Location = { lat: 59.9139, lng: 10.7522 }; // Oslo
+const DEFAULT_LOCATION: Location = { lat: 63.4305, lng: 10.3951 }; // Trondheim Center
 
 export function useLocation(): UseLocationReturn {
     const [location, setLocation] = useState<Location | null>(null);

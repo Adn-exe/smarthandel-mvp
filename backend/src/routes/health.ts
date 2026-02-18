@@ -65,7 +65,7 @@ router.get(
             services: {
                 kassal: kassalOk ? 'ok' : 'error',
                 offline: offlineOk ? 'ok' : 'error',
-                anthropic: aiOk ? 'ok' : 'error',
+                gemini: aiOk ? 'ok' : 'error',
                 cache: cacheOk ? 'ok' : 'error'
             }
         });

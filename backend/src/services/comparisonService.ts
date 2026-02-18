@@ -55,7 +55,7 @@ class ComparisonService {
         items: ShoppingItem[],
         stores: Store[]
     ): Promise<ComparisonResult> {
-        const cacheKey = `compare:${JSON.stringify(items)}:${JSON.stringify(stores.map(s => s.name))}`;
+        const cacheKey = `compare:${JSON.stringify(items)}:${JSON.stringify(stores.map(s => s.name).sort())}`;
         const cached = cache.get<ComparisonResult>(cacheKey);
         if (cached) return cached;
 

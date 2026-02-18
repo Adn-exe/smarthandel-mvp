@@ -48,7 +48,6 @@ router.post(
             timestamp: new Date()
         };
 
-        cache.set(cacheKey, response, 3600);
         res.json(response);
     })
 );

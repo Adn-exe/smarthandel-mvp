@@ -20,7 +20,7 @@ export interface MismatchReport {
     created_at: string;
 }
 
-const REPORTS_FILE = path.join(process.cwd(), 'src/data/item_mismatch_reports.json');
+const REPORTS_FILE = path.join(process.cwd(), 'data/item_mismatch_reports.json');
 
 // In-memory session cache for anti-abuse
 // Map<sessionId, Map<storeId_itemId, count>>
