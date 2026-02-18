@@ -47,11 +47,13 @@ export class ReportService {
                 const content = await fs.readFile(REPORTS_FILE, 'utf-8');
                 reports = JSON.parse(content);
             } catch (error) {
-                // File might not exist yet
+                // File might not exist yet — start fresh
                 reports = [];
             }
 
             reports.push(newReport);
+            // Ensure the data/ directory exists (important in fresh production containers)
+            await fs.mkdir(path.dirname(REPORTS_FILE), { recursive: true });
             await fs.writeFile(REPORTS_FILE, JSON.stringify(reports, null, 2));
 
             console.log(`[ReportService] New mismatch report saved: ${newReport.id}`);
