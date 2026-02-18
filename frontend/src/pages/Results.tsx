@@ -302,7 +302,7 @@ export default function Results() {
                         // Mobile: hide list when map tab is active (always, regardless of activeView)
                         mobileActiveTab === 'map' ? 'hidden lg:block' : 'block w-full pb-20'
                     )}>
-                        <div className="sticky top-[124px] md:top-[116px] pt-4 md:pt-0">
+                        <div className="sticky top-[140px] md:top-[116px] pt-8 md:pt-0">
                             <div className="space-y-6 lg:min-h-[calc(100vh-10rem)]">
                                 <ResultsDisplay
                                     singleStores={(() => {
@@ -348,7 +348,7 @@ export default function Results() {
                         // Mobile: always use mobileActiveTab — works in ALL views including comparison
                         mobileActiveTab === 'list' ? 'hidden lg:block' : 'block w-full'
                     )}>
-                        <div className="sticky top-[124px] md:top-[116px] pt-4 md:pt-0">
+                        <div className="sticky top-[140px] md:top-[116px] pt-8 md:pt-0">
                             {/* Map container: always in DOM so Leaflet initialises with real dimensions */}
                             <div className="bg-white md:rounded-2xl border-y md:border border-gray-100 shadow-xl overflow-hidden h-[60vh] md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                                 <StoreMap
