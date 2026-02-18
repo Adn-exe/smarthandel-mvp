@@ -43,7 +43,9 @@
         "list_coming_soon": "List creation coming soon!",
         "loading_map": "Loading Map...",
         "show_details": "Show technical details",
-        "hide_details": "Hide details"
+        "hide_details": "Hide details",
+        "list": "List",
+        "map": "Map"
     },
     "home": {
         "title": "Shop <1>smarter</1>, not harder",
@@ -171,7 +173,10 @@
             "tip1": "Prices are estimates and may vary in store",
             "tip2": "Check store opening hours before leaving",
             "tip3": "Savings are calculated against the most expensive single store"
-        }
+        },
+        "selectedStore": "Selected Store",
+        "comparePrices": "Price Matrix",
+        "createList": "Create List"
     },
     "selection": {
         "title": "Review your list",

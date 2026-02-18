@@ -512,13 +512,13 @@ export default function Results() {
             {/* Mobile Sticky Total Price Footer */}
             {routeData && (activeView === 'single' || activeView === 'multi') && (
                 <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 p-4 md:hidden z-50 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] animate-in slide-in-from-bottom-full duration-500">
-                    <div className="flex items-center justify-between gap-4 max-w-sm mx-auto">
-                        <div className="flex flex-col">
+                    <div className="flex items-center justify-center gap-4 max-w-sm mx-auto">
+                        <div className="flex flex-col items-center">
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">
                                 {activeView === 'multi' ? t('results.smartRoute') : t('results.selectedStore')}
                             </span>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-xl font-black text-dark tabular-nums">
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-black text-dark tabular-nums">
                                     {(() => {
                                         const locale = i18n.language.startsWith('no') ? 'no-NO' : 'en-GB';
                                         const total = activeView === 'multi'
@@ -528,19 +528,12 @@ export default function Results() {
                                     })()}
                                 </span>
                                 {activeView === 'multi' && routeData.singleStore && (
-                                    <span className="text-[10px] font-black text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                                        -{Math.round(((routeData.singleStore.totalCost - routeData.multiStore!.totalCost) / routeData.singleStore.totalCost) * 100)}%
+                                    <span className="text-[11px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-lg">
+                                        -{Math.round(((routeData.singleStore.totalCost - routeData.multiStore!.totalCost) / routeData.singleStore.totalCost) * 100)}% saved
                                     </span>
                                 )}
                             </div>
                         </div>
-                        <button
-                            onClick={() => alert(t('common.list_coming_soon'))}
-                            className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center gap-2"
-                        >
-                            <List className="w-4 h-4" />
-                            {t('results.createList', 'Create List')}
-                        </button>
                     </div>
                 </div>
             )}

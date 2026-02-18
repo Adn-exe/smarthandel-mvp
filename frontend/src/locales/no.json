@@ -43,7 +43,9 @@
         "list_coming_soon": "Oppretting av handleliste kommer snart!",
         "loading_map": "Laster kart...",
         "show_details": "Vis tekniske detaljer",
-        "hide_details": "Skjul detaljer"
+        "hide_details": "Skjul detaljer",
+        "list": "Liste",
+        "map": "Kart"
     },
     "home": {
         "title": "Handle <1>smartere</1>, ikke dyrere",
@@ -171,7 +173,10 @@
             "tip1": "Prisene er estimater og kan variere i butikk",
             "tip2": "Sjekk åpningstider før du drar",
             "tip3": "Besparelser beregnes mot den dyreste enkeltbutikken"
-        }
+        },
+        "selectedStore": "Valgt butikk",
+        "comparePrices": "Prismatrise",
+        "createList": "Lag liste"
     },
     "selection": {
         "title": "Se over listen",
