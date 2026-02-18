@@ -220,12 +220,13 @@ export default function Results() {
                 title={query ? `${t('seo.resultsTitle')}: ${query}` : t('seo.resultsTitle')}
                 description={t('results.foundBestOptions')}
             />
-            {/* Header */}
-            <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-20 shadow-sm">
+            {/* Header - Sticky below the main navbar (h-16) */}
+            <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-16 z-20 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Route Options */}
+
+                    {/* Main View Switching Bar */}
                     {!isLoading && (
-                        <div className="h-12 md:h-14 flex items-center justify-between overflow-x-auto no-scrollbar">
+                        <div className="h-11 md:h-13 flex items-center justify-between overflow-x-auto no-scrollbar">
                             <div className="flex items-center gap-3 sm:gap-6 shrink-0">
                                 <div className="flex items-center gap-1.5 pr-3 border-r border-gray-100 mr-1">
                                     <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
@@ -237,7 +238,7 @@ export default function Results() {
                                     <button
                                         onClick={() => setActiveView('single')}
                                         className={clsx(
-                                            "px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-[10px] md:text-xs font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap",
+                                            "px-3 md:px-4 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap",
                                             activeView === 'single'
                                                 ? "bg-white text-primary shadow-sm border border-gray-200"
                                                 : "text-gray-400 hover:text-gray-600"
@@ -255,7 +256,7 @@ export default function Results() {
                                         <button
                                             onClick={() => setActiveView('multi')}
                                             className={clsx(
-                                                "px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-[10px] md:text-xs font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap border-l border-gray-100 ml-0.5 rounded-l-none pl-3 md:pl-5",
+                                                "px-3 md:px-4 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap border-l border-gray-100 ml-0.5 rounded-l-none pl-3 md:pl-5",
                                                 activeView === 'multi'
                                                     ? "bg-white text-secondary shadow-sm border border-gray-200"
                                                     : "text-gray-400 hover:text-gray-600"
@@ -272,7 +273,7 @@ export default function Results() {
                                     <button
                                         onClick={() => setActiveView('comparison')}
                                         className={clsx(
-                                            "px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-[10px] md:text-xs font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap border-l border-gray-100 ml-0.5 rounded-l-none pl-3 md:pl-5",
+                                            "px-3 md:px-4 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap border-l border-gray-100 ml-0.5 rounded-l-none pl-3 md:pl-5",
                                             activeView === 'comparison'
                                                 ? "bg-white text-dark shadow-sm border border-gray-200"
                                                 : "text-gray-400 hover:text-gray-600"
@@ -301,37 +302,39 @@ export default function Results() {
                         // Mobile: hide list when map tab is active (always, regardless of activeView)
                         mobileActiveTab === 'map' ? 'hidden lg:block' : 'block w-full'
                     )}>
-                        <div className="space-y-6">
-                            <ResultsDisplay
-                                singleStores={(() => {
-                                    const candidates = routeData?.singleStoreCandidates || [];
-                                    const bestSingle = routeData?.singleStore;
-                                    const allCandidates = bestSingle ? [bestSingle, ...candidates] : candidates;
-                                    const uniqueStores = Array.from(new Map(allCandidates.map(c => {
-                                        const key = String(c.store.id);
-                                        return [key, c];
-                                    })).values());
-                                    return uniqueStores;
-                                })()}
-                                multiStore={routeData?.multiStore || null}
-                                recommendation={routeData?.recommendation || 'single'}
-                                activeView={activeView}
-                                selectedStoreId={selectedStoreId}
-                                onSelectStore={(id) => {
-                                    setSelectedStoreId(id);
-                                    trackEvent('store_selected', { type: 'card_click', storeId: id });
-                                }}
-                                onCreateList={() => {
-                                    trackEvent('store_selected', { type: 'create_list' });
-                                    alert(t('common.list_coming_soon'));
-                                }}
-                                onReset={() => navigate('/')}
-                                totalRequestedItems={confirmedItems?.length || 0}
-                                userLocation={routeData?.searchLocation || userLocation}
-                                onViewSwitch={setActiveView}
-                                isMapVisible={isMapVisible}
-                                onToggleMap={() => setIsMapVisible(prev => !prev)}
-                            />
+                        <div className="sticky top-[108px] md:top-[116px]">
+                            <div className="space-y-6 lg:min-h-[calc(100vh-10rem)]">
+                                <ResultsDisplay
+                                    singleStores={(() => {
+                                        const candidates = routeData?.singleStoreCandidates || [];
+                                        const bestSingle = routeData?.singleStore;
+                                        const allCandidates = bestSingle ? [bestSingle, ...candidates] : candidates;
+                                        const uniqueStores = Array.from(new Map(allCandidates.map(c => {
+                                            const key = String(c.store.id);
+                                            return [key, c];
+                                        })).values());
+                                        return uniqueStores;
+                                    })()}
+                                    multiStore={routeData?.multiStore || null}
+                                    recommendation={routeData?.recommendation || 'single'}
+                                    activeView={activeView}
+                                    selectedStoreId={selectedStoreId}
+                                    onSelectStore={(id) => {
+                                        setSelectedStoreId(id);
+                                        trackEvent('store_selected', { type: 'card_click', storeId: id });
+                                    }}
+                                    onCreateList={() => {
+                                        trackEvent('store_selected', { type: 'create_list' });
+                                        alert(t('common.list_coming_soon'));
+                                    }}
+                                    onReset={() => navigate('/')}
+                                    totalRequestedItems={confirmedItems?.length || 0}
+                                    userLocation={routeData?.searchLocation || userLocation}
+                                    onViewSwitch={setActiveView}
+                                    isMapVisible={isMapVisible}
+                                    onToggleMap={() => setIsMapVisible(prev => !prev)}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -348,7 +351,7 @@ export default function Results() {
                         // Mobile: always use mobileActiveTab — works in ALL views including comparison
                         mobileActiveTab === 'list' ? 'hidden lg:block' : 'block w-full'
                     )}>
-                        <div className="sticky top-20 md:top-32">
+                        <div className="sticky top-[108px] md:top-[116px]">
                             {/* Map container: always in DOM so Leaflet initialises with real dimensions */}
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden aspect-square md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                                 <StoreMap
