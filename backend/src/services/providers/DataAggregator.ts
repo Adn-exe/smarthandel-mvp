@@ -1,7 +1,7 @@
 import { BaseProvider, ProviderSearchOptions } from './BaseProvider.js';
 import { KassalProvider } from './KassalProvider.js';
-import { OfflineProvider } from './OfflineProvider.js';
 import { Product, Store, Location } from '../../types/index.js';
+import priceIndexService from '../PriceIndexService.js';
 
 /**
  * Aggregates multiple data providers and handles fallback logic.
@@ -9,39 +9,143 @@ import { Product, Store, Location } from '../../types/index.js';
 class DataAggregator {
     private providers: BaseProvider[] = [];
     private primaryProvider: BaseProvider;
-    private fallbackProvider: BaseProvider;
 
     constructor() {
         this.primaryProvider = new KassalProvider();
-        this.fallbackProvider = new OfflineProvider();
-
-        // Order matters for general queries
-        this.providers = [this.primaryProvider, this.fallbackProvider];
+        this.providers = [this.primaryProvider];
     }
 
     /**
-     * Search for products across providers with fallback
+     * Search for products across providers
      */
     public async searchProducts(query: string, options?: ProviderSearchOptions): Promise<Product[]> {
         try {
-            // 1. Try Primary (Kassal API)
-            const primaryResults = await this.primaryProvider.searchProducts(query, options);
-
-            // 2. If primary returns results, use them
-            if (primaryResults.length > 0) {
-                return primaryResults;
-            }
-
-            // 3. Fallback to offline dataset if primary returns nothing or fails
-            console.log(`[DataAggregator] No results from primary for "${query}", trying fallback...`);
-            return await this.fallbackProvider.searchProducts(query, options);
-
+            return await this.primaryProvider.searchProducts(query, options);
         } catch (error) {
             console.error(`[DataAggregator] Primary provider ("${this.primaryProvider.name}") failed for "${query}":`, error);
-            // On failure, attempt fallback
-            console.log(`[DataAggregator] Attempting fallback to "${this.fallbackProvider.name}" for "${query}"...`);
-            return await this.fallbackProvider.searchProducts(query, options);
+            return [];
         }
+    }
+
+    /**
+     * Search for MULTIPLE products in parallel.
+     * This is crucial for the robust optimization engine to fetch all potential matches at once.
+     */
+    public async searchAllProducts(queries: string[], options?: ProviderSearchOptions): Promise<Product[]> {
+        // Run all searches in parallel
+        const results = await Promise.all(
+            queries.map(q => this.searchProducts(q, options))
+        );
+        // Flatten the array of arrays into a single list of all products found
+        return results.flat();
+    }
+
+    /**
+     * Performs a broad search followed by targeted chain searches to ensure variety.
+     * Returns both the flat list of products and a map of which productId belongs to which search query.
+     */
+    public async searchProductsWithChainVariety(
+        queries: string[],
+        chains: string[],
+        options?: ProviderSearchOptions & { bypassIndex?: boolean }
+    ): Promise<{ products: Product[], queryMapping: Map<string, string[]> }> {
+        // 1. Check local Deterministic Price Index for canonical items
+        const resultsByQuery: { query: string, products: Product[] }[] = [];
+        const queriesToFetch: string[] = [];
+
+        for (const q of queries) {
+            const normalizedQ = q.toLowerCase().trim().replace(/\s+/g, '_');
+            if (!options?.bypassIndex && priceIndexService.isCanonical(normalizedQ)) {
+                const indexedPrices = priceIndexService.getPricesForCanonicalItem(normalizedQ);
+                if (indexedPrices.length > 0) {
+                    console.log(`[DataAggregator] Cache HIT (Index) for canonical item: "${q}" (${indexedPrices.length} entries)`);
+                    resultsByQuery.push({
+                        query: q,
+                        products: indexedPrices.map(entry => ({
+                            id: `idx-${entry.canonical_product_id}-${entry.store_id}`,
+                            name: entry.product_name,
+                            price: entry.price,
+                            store: String(entry.store_id),
+                            chain: entry.chain,
+                            image_url: '',
+                            unit: 'stk',
+                            relevanceScore: -10000 // High relevance for indexed items
+                        }))
+                    });
+                    continue;
+                }
+            }
+            queriesToFetch.push(q);
+        }
+
+        // 2. Initial global search (only for those not indexed)
+        const remoteResultsByQuery = await Promise.all(
+            queriesToFetch.map(async (q) => ({
+                query: q,
+                products: await this.searchProducts(q, options)
+            }))
+        );
+
+        // Merge indexed and remote
+        resultsByQuery.push(...remoteResultsByQuery);
+
+        // 2. Targeted searches for variety (only if global/index search missed some chains)
+        const uniqueChains = Array.from(new Set(chains.map(c => {
+            const parts = c.split(' ');
+            return (parts.length > 1 ? `${parts[0]} ${parts[1]}` : parts[0]).toUpperCase();
+        })));
+        const topChains = uniqueChains.slice(0, 6);
+
+        const targetedResultsByQuery = await Promise.all(
+            queriesToFetch.map(async (q) => {
+                // Find which chains we already have results for
+                const existingProducts = resultsByQuery.find(r => r.query === q)?.products || [];
+                const foundChains = new Set(existingProducts.map(p => {
+                    const parts = (p.chain || '').split(' ');
+                    return (parts.length > 1 ? `${parts[0]} ${parts[1]}` : parts[0]).toUpperCase();
+                }));
+
+                const missingChains = topChains.filter(tc => !foundChains.has(tc));
+
+                if (missingChains.length === 0) return { query: q, products: [] };
+
+                console.log(`[DataAggregator] Targeted variety search for "${q}" - Missing chains: ${missingChains.join(', ')}`);
+
+                // Don't do too many targeted searches to avoid 429
+                const chainQueries = missingChains.slice(0, 3).map(c => `${c} ${q}`);
+                const products = await Promise.all(
+                    chainQueries.map(cq => this.searchProducts(cq, options))
+                );
+                return {
+                    query: q,
+                    products: products.flat()
+                };
+            })
+        );
+
+        // 3. Build the mapping and flat list
+        const queryMapping = new Map<string, string[]>(); // canonicalQuery -> productIds[]
+        const allProductsMap = new Map<string, Product>();
+
+        // Merge global and targeted
+        [...resultsByQuery, ...targetedResultsByQuery].forEach(res => {
+            const productIds: string[] = queryMapping.get(res.query) || [];
+            res.products.forEach(p => {
+                const pId = String(p.id);
+                if (!allProductsMap.has(pId)) {
+                    allProductsMap.set(pId, p);
+                }
+                if (!productIds.includes(pId)) {
+                    productIds.push(pId);
+                }
+            });
+            queryMapping.set(res.query, productIds);
+        });
+
+        return {
+            products: Array.from(allProductsMap.values()),
+            queryMapping
+        };
     }
 
     /**

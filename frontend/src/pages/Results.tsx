@@ -89,6 +89,9 @@ export default function Results() {
     // Optimization Effect - Uses confirmedItems directly
     useEffect(() => {
         if (confirmedItems && userLocation) {
+            // Reset active view when a new optimization starts to prevent stale UI
+            setActiveView(null);
+
             optimizeRoute({
                 items: confirmedItems,
                 userLocation,
@@ -100,9 +103,9 @@ export default function Results() {
                 }
             }, {
                 onSuccess: (res: any) => {
-                    if (!activeView) {
-                        setActiveView(res.recommendation || 'single');
-                    }
+                    const hasMulti = !!(res.multiStore && res.multiStore.stores && res.multiStore.stores.length > 1);
+                    setActiveView(hasMulti ? res.recommendation : 'single');
+
                     trackEvent('route_optimized', {
                         query,
                         recommendation: res.recommendation,
@@ -111,8 +114,9 @@ export default function Results() {
                 }
             });
         }
-    }, [confirmedItems, userLocation, query]);
+    }, [confirmedItems, userLocation, query, optimizeRoute]);
 
+    // Use isOptimizing to block stale results
     const isLoading = isOptimizing;
     const error = routeError;
 
@@ -122,7 +126,8 @@ export default function Results() {
 
 
     // Prepare stores for map
-    const showMulti = activeView === 'multi' && routeData?.multiStore && routeData.multiStore.stores.length > 1;
+    const hasMultiStore = !!(routeData?.multiStore && routeData.multiStore.stores.length > 1);
+    const showMulti = activeView === 'multi' && hasMultiStore;
 
     const mapStores = useMemo(() => {
         if (!routeData) return [];
@@ -184,7 +189,7 @@ export default function Results() {
         return <DynamicLoading step="locating" className="min-h-screen bg-gray-50" />;
     }
 
-    if (isLoading && !routeData) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col">
                 <SEO title={t('seo.resultsTitle')} />
@@ -212,7 +217,7 @@ export default function Results() {
         );
     }
 
-    const hasMultiStore = routeData?.multiStore && routeData.multiStore.stores.length > 1;
+
 
     return (
         <div className="min-h-screen bg-gray-50 pb-24 md:pb-20">
@@ -328,7 +333,7 @@ export default function Results() {
                                         alert(t('common.list_coming_soon'));
                                     }}
                                     onReset={() => navigate('/')}
-                                    totalRequestedItems={confirmedItems?.length || 0}
+                                    requestedItems={confirmedItems || []}
                                     userLocation={routeData?.searchLocation || userLocation}
                                     onViewSwitch={setActiveView}
                                     isMapVisible={isMapVisible}

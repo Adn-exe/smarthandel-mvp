@@ -34,7 +34,7 @@ export const ensureInRegion = (location: Location, maxRadius?: number) => {
 
     return {
         location,
-        radius: maxRadius || 5, // Default 5km for locals if not specified
+        radius: maxRadius || 10, // Default 10km for locals if not specified
         snapped: false
     };
 };

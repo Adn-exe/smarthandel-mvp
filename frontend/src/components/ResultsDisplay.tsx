@@ -5,7 +5,8 @@ import type { SingleStoreOption, MultiStoreOption } from '../types';
 import { StoreCard } from './StoreCard';
 
 import { ComparisonTable } from './ComparisonTable';
-import { formatDistance } from '../utils/format';
+import { formatDistance, calculateTravelTime } from '../utils/format';
+import { type ShoppingItem } from '../types';
 
 interface ResultsDisplayProps {
     singleStores: SingleStoreOption[];
@@ -16,7 +17,7 @@ interface ResultsDisplayProps {
     selectedStoreId?: string | number | null;
     onSelectStore?: (storeId: string | number) => void;
     activeView?: 'single' | 'multi' | 'comparison' | null;
-    totalRequestedItems?: number;
+    requestedItems: ShoppingItem[];
     userLocation?: { lat: number; lng: number } | null;
     onViewSwitch?: (view: 'single' | 'multi' | 'comparison') => void;
     isMapVisible?: boolean;
@@ -31,7 +32,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
     selectedStoreId,
     onSelectStore,
     activeView,
-    totalRequestedItems,
+    requestedItems,
     userLocation,
     isMapVisible,
     onToggleMap
@@ -76,7 +77,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
 
     const comparisonCandidates = useMemo(() => {
         const baseCandidates = singleStores;
-        if (multiStore && multiStore.stores.length > 0) {
+        if (multiStore && multiStore.stores.length > 1) {
             // Construct synthetic Smart Route candidate
             const smartRouteItems = multiStore.stores.flatMap(s => s.items);
 
@@ -98,8 +99,15 @@ export const ResultsDisplay = memo(function ResultsDisplay({
             const allCandidates = [smartRouteCandidate, ...baseCandidates];
 
             return allCandidates.sort((a, b) => {
+                // Priority 1: Coverage (More items is better)
+                const countDiff = b.items.length - a.items.length;
+                if (countDiff !== 0) return countDiff;
+
+                // Priority 2: Cost (Lower is better)
                 const costDiff = (a.totalCost || 0) - (b.totalCost || 0);
                 if (Math.abs(costDiff) > 0.01) return costDiff;
+
+                // Priority 3: Distance
                 return (a.distance || 0) - (b.distance || 0);
             });
         }
@@ -116,6 +124,16 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                 <p className="text-gray-500 max-w-md mx-auto mb-6">
                     {t('results.noRoutesDescription', 'We could not find any stores carrying your items within range.')}
                 </p>
+
+                {/* Show what we were looking for */}
+                <div className="flex flex-wrap justify-center gap-2 px-4 max-w-sm mx-auto mb-8">
+                    {requestedItems.map((item, idx) => (
+                        <span key={idx} className="px-2 py-1 bg-gray-50 border border-gray-100 rounded-lg text-[10px] font-bold text-gray-400">
+                            {item.originalName || item.name}
+                        </span>
+                    ))}
+                </div>
+
                 <button
                     onClick={onReset}
                     className="btn btn-outline"
@@ -130,7 +148,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
         <div className="space-y-4 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* 1. View Header */}
-            <div className="text-center space-y-2 md:space-y-4 pt-4 md:pt-8">
+            <div className="text-center space-y-4 md:space-y-6 pt-4 md:pt-8 mb-4">
                 {activeView !== 'comparison' && (
                     <h2 className="text-lg md:text-3xl font-heading font-black text-dark whitespace-nowrap overflow-hidden text-ellipsis px-2 leading-tight">
                         {activeView === 'single' ? (
@@ -140,6 +158,28 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                         )}
                     </h2>
                 )}
+
+                {/* Input Item Labels */}
+                <div className="flex flex-col items-center gap-3 px-4 max-w-2xl mx-auto">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                        {t('results.searchingFor', 'Searching for:')}
+                    </span>
+                    <div className="flex flex-wrap justify-center gap-2">
+                        {requestedItems.map((item, idx) => (
+                            <div
+                                key={`${item.name}-${idx}`}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-xl text-[10px] md:text-xs font-bold text-gray-500 shadow-sm hover:bg-white hover:border-primary/20 hover:text-primary transition-all duration-300 animate-in fade-in zoom-in-95"
+                                style={{ animationDelay: `${idx * 100}ms` }}
+                            >
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary/40"></span>
+                                {item.originalName || item.name}
+                                {item.quantity > 1 && (
+                                    <span className="text-[10px] opacity-60">×{item.quantity}</span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {/* 2. Content Isolation Grid */}
@@ -170,7 +210,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                             distance={singleStores[0].distance}
                                             variant="default"
                                             selected={selectedStoreId === singleStores[0].store.id}
-                                            totalRequestedItems={totalRequestedItems}
+                                            totalRequestedItems={requestedItems.length}
                                             userLocation={userLocation}
                                             highlightBorder="red"
                                             efficiencyTags={(() => {
@@ -188,10 +228,9 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                         {/* Alternative Options (Top 3 Stores) */}
                         {(() => {
                             const bestStoreId = singleStores[0]?.store.id;
-                            const bestStoreName = singleStores[0]?.store.name;
                             const alternatives = singleStores.filter((s, idx) => {
                                 if (idx === 0) return false;
-                                return s.store.id !== bestStoreId && s.store.name !== bestStoreName;
+                                return s.store.id !== bestStoreId;
                             }).slice(0, 3);
 
                             if (alternatives.length === 0) return null;
@@ -221,7 +260,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                 distance={alternative.distance}
                                                 variant="default"
                                                 selected={selectedStoreId === alternative.store.id}
-                                                totalRequestedItems={totalRequestedItems}
+                                                totalRequestedItems={requestedItems.length}
                                                 userLocation={userLocation}
                                                 highlightBorder="light-red"
                                                 indexBadge={index + 1}
@@ -321,6 +360,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                             totalRequestedItems={stop.items.length}
                                                             userLocation={userLocation}
                                                             highlightBorder="blue"
+                                                            showItemCount={true}
                                                         />
                                                     </div>
                                                 </div>
@@ -334,8 +374,8 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                         <div className="flex items-center gap-3 text-gray-400 font-bold bg-white/40 backdrop-blur-sm px-4 py-2 rounded-2xl border border-gray-50/50 shadow-sm ml-8">
                                                             <Car className="w-4 h-4 text-secondary/40" />
                                                             <span className="text-[10px] md:text-xs uppercase tracking-[0.1em]">
-                                                                {/* Estimate: 400m per minute = ~24km/h typical city + parking */}
-                                                                {Math.max(1, Math.round(multiStore.stores[idx + 1].distance / 400))} min drive ({formatDistance(multiStore.stores[idx + 1].distance)})
+                                                                {/* Estimated travel time based on distance */}
+                                                                {calculateTravelTime(multiStore.stores[idx + 1].distance)} drive ({formatDistance(multiStore.stores[idx + 1].distance)})
                                                             </span>
                                                             <ArrowRight className="w-3 h-3 ml-1 opacity-30" />
                                                         </div>
@@ -352,7 +392,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                     /* Comparison Table View */
                     <ComparisonTable
                         candidates={comparisonCandidates}
-                        requestedItemsCount={totalRequestedItems || 0}
+                        requestedItems={requestedItems}
                         isMapVisible={isMapVisible}
                         onToggleMap={onToggleMap}
                     />

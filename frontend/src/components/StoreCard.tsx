@@ -21,6 +21,7 @@ interface StoreCardProps {
     userLocation?: { lat: number; lng: number } | null;
     highlightBorder?: 'red' | 'blue' | 'grey' | 'light-red';
     indexBadge?: number;
+    showItemCount?: boolean;
 }
 
 export const StoreCard = memo(function StoreCard({
@@ -35,7 +36,8 @@ export const StoreCard = memo(function StoreCard({
     efficiencyTags = [],
     userLocation,
     highlightBorder,
-    indexBadge
+    indexBadge,
+    showItemCount
 }: StoreCardProps) {
     const { t, i18n } = useTranslation();
     const [localQuantities, setLocalQuantities] = useState<Record<string | number, number>>(() =>
@@ -100,7 +102,7 @@ export const StoreCard = memo(function StoreCard({
             });
 
             setReportedItems(prev => new Set([...prev, `${reportingItem.storeId}_${reportingItem.itemId}`]));
-            setReportingItem(null);
+            // Let the modal handle its own closure to show success state
         } catch (error) {
             console.error('Failed to submit report:', error);
             throw error;
@@ -129,6 +131,15 @@ export const StoreCard = memo(function StoreCard({
         const foundCount = items.length;
         const isFullStock = foundCount === totalRequestedItems;
 
+        // Custom text for Smart Route stops (or whenever showItemCount is true)
+        if (showItemCount) {
+            return {
+                isFull: true, // Use green color
+                text: t('storeCard.itemCount', { count: foundCount, defaultValue: `${foundCount} items` }),
+                icon: ShoppingBag
+            };
+        }
+
         return {
             isFull: isFullStock,
             text: isFullStock
@@ -136,7 +147,7 @@ export const StoreCard = memo(function StoreCard({
                 : t('storeCard.missingItems', { count: totalRequestedItems - foundCount }),
             icon: isFullStock ? CheckCircle2 : AlertCircle
         };
-    }, [items.length, totalRequestedItems, t]);
+    }, [items.length, totalRequestedItems, t, showItemCount]);
 
     const googleMapsUrl = useMemo(() => {
         const baseUrl = "https://www.google.com/maps/dir/?api=1";
@@ -161,7 +172,7 @@ export const StoreCard = memo(function StoreCard({
                         setIsItemsExpanded(!isItemsExpanded);
                     }}
                     className={clsx(
-                        "relative w-full rounded-[16px] border transition-all duration-200 overflow-hidden cursor-pointer group select-none",
+                        "relative w-full rounded-[16px] border transition-all duration-200 cursor-pointer group select-none",
                         // Default State styling
                         !highlightBorder && "bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200",
                         // Custom Border Highlighting
@@ -175,7 +186,7 @@ export const StoreCard = memo(function StoreCard({
                 >
                     {/* Index Badge for Alternatives */}
                     {indexBadge && (
-                        <div className="absolute -left-[1px] -top-[1px] w-8 h-8 rounded-br-2xl bg-gray-900 text-white flex items-center justify-center font-black text-xs z-10 shadow-sm border-r border-b border-gray-100/10">
+                        <div className="absolute -left-[1px] -top-[1px] w-8 h-8 rounded-br-2xl bg-gray-900 text-white flex items-center justify-center font-black text-xs z-10 shadow-sm border-r border-b border-gray-100/10 rounded-tl-[16px]">
                             {indexBadge}
                         </div>
                     )}
@@ -229,7 +240,10 @@ export const StoreCard = memo(function StoreCard({
                     </div>
 
                     {/* 3. Bottom Zone: Action Footer (Directions & Stock) */}
-                    <div className="mt-auto px-4 py-3 md:px-5 md:py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between gap-4">
+                    <div className={clsx(
+                        "mt-auto px-4 py-3 md:px-5 md:py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between gap-4",
+                        !isItemsExpanded && "rounded-b-[16px]"
+                    )}>
                         {/* Left: Get Directions Button */}
                         <button
                             onClick={(e) => {
@@ -287,22 +301,28 @@ export const StoreCard = memo(function StoreCard({
                                                         <p className="text-sm font-medium text-gray-900 truncate">
                                                             {item.name}
                                                         </p>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setReportingItem({
-                                                                    storeId: String(store.id),
-                                                                    storeName: store.name,
-                                                                    itemId: item.id,
-                                                                    itemName: item.name,
-                                                                    requestedName: item.originalQueryName
-                                                                });
-                                                            }}
-                                                            className="p-1 hover:bg-gray-100 rounded-full transition-colors group/report"
-                                                            title={t('common.reportIssue', 'Report issue')}
-                                                        >
-                                                            <Flag className="w-3 h-3 text-gray-300 group-hover/report:text-red-400" />
-                                                        </button>
+                                                        {!reportedItems.has(`${store.id}_${String(item.id)}`) ? (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setReportingItem({
+                                                                        storeId: String(store.id),
+                                                                        storeName: store.name,
+                                                                        itemId: item.id,
+                                                                        itemName: item.name,
+                                                                        requestedName: item.originalQueryName
+                                                                    });
+                                                                }}
+                                                                className="p-1 hover:bg-gray-100 rounded-full transition-colors group/report"
+                                                                title={t('common.reportIssue', 'Report issue')}
+                                                            >
+                                                                <Flag className="w-3 h-3 text-gray-300 group-hover/report:text-red-400" />
+                                                            </button>
+                                                        ) : (
+                                                            <div className="flex items-center text-green-500" title={t('report.submitted', 'Report submitted')}>
+                                                                <CheckCircle2 className="w-3 h-3" />
+                                                            </div>
+                                                        )}
                                                     </div>
 
                                                     <div className="flex items-center bg-gray-50 rounded-md p-0.5 border border-gray-100 shrink-0 w-fit mt-1">

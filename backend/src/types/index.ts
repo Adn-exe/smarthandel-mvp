@@ -9,6 +9,7 @@ export interface Product {
     englishName?: string;
     price: number;
     store: string;
+    chain: string;
     image_url: string;
     unit: string;
     relevanceScore?: number;
@@ -89,6 +90,7 @@ export interface KassalProduct {
     store?: {
         name: string;
         group: string;
+        code?: string;
         address?: string;
     };
     nutrition?: Array<{

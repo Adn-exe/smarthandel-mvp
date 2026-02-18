@@ -38,14 +38,15 @@ export function ReportModal({ isOpen, onClose, onSubmit, itemName }: ReportModal
         try {
             await onSubmit(selectedReason, note);
             setIsSuccess(true);
+
             setTimeout(() => {
                 onClose();
                 setIsSuccess(false);
                 setSelectedReason('');
                 setNote('');
-            }, 2000);
-        } catch (err) {
-            setError(t('report.submitError', 'Failed to submit report. Please try again.'));
+            }, 2500);
+        } catch (err: any) {
+            setError(err.message || t('report.submitError', 'Failed to submit report. Please try again.'));
         } finally {
             setIsSubmitting(false);
         }
@@ -55,14 +56,21 @@ export function ReportModal({ isOpen, onClose, onSubmit, itemName }: ReportModal
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-dark/20 animate-in fade-in duration-300">
             <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
                 {/* Header */}
-                <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 transition-colors duration-500">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                            <AlertCircle className="w-6 h-6 text-orange-600" />
+                        <div className={clsx(
+                            "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500",
+                            isSuccess ? "bg-green-100 rotate-[360deg]" : "bg-orange-100"
+                        )}>
+                            {isSuccess ? (
+                                <CheckCircle2 className="w-6 h-6 text-green-600 animate-in zoom-in duration-300" />
+                            ) : (
+                                <AlertCircle className="w-6 h-6 text-orange-600" />
+                            )}
                         </div>
                         <div>
                             <h3 className="text-lg font-black text-dark tracking-tight leading-tight">
-                                {t('report.title', 'Report item issue')}
+                                {isSuccess ? t('report.thankYou', 'Thank you!') : t('report.title', 'Report item issue')}
                             </h3>
                             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
                                 {itemName}
@@ -75,12 +83,9 @@ export function ReportModal({ isOpen, onClose, onSubmit, itemName }: ReportModal
                 </div>
 
                 {isSuccess ? (
-                    <div className="p-10 text-center flex flex-col items-center animate-in zoom-in duration-300">
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                            <CheckCircle2 className="w-10 h-10 text-green-600" />
-                        </div>
-                        <h4 className="text-xl font-black text-dark mb-2">{t('report.thankYou', 'Thank you!')}</h4>
-                        <p className="text-gray-500 font-medium">{t('report.successText', 'Your report has been submitted. This helps us improve our matching quality.')}</p>
+                    <div className="p-10 text-center flex flex-col items-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <p className="text-dark font-bold text-lg">{t('report.successText', 'Your report has been submitted.')}</p>
+                        <p className="text-gray-400 font-medium text-sm mt-1">{t('report.improving', 'This helps us improve our matching quality.')}</p>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="p-6">

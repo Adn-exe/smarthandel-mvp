@@ -53,9 +53,9 @@ export function Home() {
             <SEO title={t('seo.homeTitle')} />
 
             {/* Hero Section */}
-            <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-[80vh] md:min-h-[85vh] flex items-center">
+            <section className="relative z-20 pt-24 md:pt-32 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 min-h-[80vh] md:min-h-[85vh] flex items-center">
                 {/* Morphing Gradient Orbs */}
-                <div className="absolute inset-0 -z-20 bg-[#fafafa]">
+                <div className="absolute inset-0 -z-20 bg-[#fafafa] overflow-hidden">
                     <div
                         className="absolute top-[-5%] left-[-5%] w-[80%] md:w-[45%] h-[45%] bg-gradient-to-br from-primary/30 to-pink-400/20"
                         style={{ animation: 'morph 8s ease-in-out infinite, pulse-glow 4s ease-in-out infinite' }}
@@ -112,33 +112,7 @@ export function Home() {
                         )}
                     </div>
 
-                    {/* Quick-Search Chips */}
-                    <div className="mt-12 md:mt-16 animate-reveal [animation-delay:800ms] [animation-fill-mode:forwards]">
-                        <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
-                            {t('home.quickSearch.heading')}
-                        </p>
-                        <div className="flex flex-wrap justify-center gap-2 md:gap-3 px-2">
-                            {[
-                                { labelKey: 'home.quickSearch.essentials', query: 'melk, brød, egg' },
-                                { labelKey: 'home.quickSearch.taco', query: 'tacokrydder, tortilla, kjøttdeig, rømme, mais, salsa' },
-                                { labelKey: 'home.quickSearch.chicken', query: 'kyllingfilet, ris, brokkoli' },
-                                { labelKey: 'home.quickSearch.produce', query: 'eple, banan, gulrot, agurk, tomat' },
-                                { labelKey: 'home.quickSearch.breakfast', query: 'havregryn, yoghurt, blåbær, juice, brød' },
-                            ].map((chip) => (
-                                <button
-                                    key={chip.query}
-                                    onClick={() => handleSearch(chip.query)}
-                                    className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold 
-                                        bg-white/80 backdrop-blur-sm border border-gray-100 text-gray-600
-                                        hover:bg-primary/10 hover:text-primary hover:border-primary/30 
-                                        hover:shadow-md hover:-translate-y-0.5
-                                        active:scale-95 transition-all duration-200 cursor-pointer shadow-sm"
-                                >
-                                    {t(chip.labelKey)}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+
                 </div>
             </section>
 

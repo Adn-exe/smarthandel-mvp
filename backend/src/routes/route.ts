@@ -37,10 +37,11 @@ router.post(
 
         const { items, userLocation, preferences } = req.body;
 
-        // Cache identical requests for 10 minutes
+        // Cache identical requests for 10 minutes (Bypass in development for easier testing)
         const cacheKey = `route:optimize:${JSON.stringify(req.body)}`;
-        const cachedResponse = cache.get(cacheKey);
+        const cachedResponse = process.env.NODE_ENV === 'production' ? cache.get(cacheKey) : null;
         if (cachedResponse) {
+            console.log(`[Optimize] Cache HIT for key: ${cacheKey.substring(0, 50)}...`);
             res.setHeader('X-Cache', 'HIT');
             return res.json(cachedResponse);
         }
@@ -59,7 +60,7 @@ router.post(
         // GEOGRAPHIC RESTRICTION: TRONDHEIM ONLY
         const { location: searchLocation, radius: searchRadius } = ensureInRegion(
             userLocation,
-            (preferences?.maxDistance || 5000) / 1000
+            (preferences?.maxDistance || 10000) / 1000
         );
 
         let stores: Store[] = [];
@@ -68,12 +69,19 @@ router.post(
                 searchLocation,
                 searchRadius
             );
+
+            // FALLBACK: If 0 stores in 10km, try 25km (Trondheim region is spread out)
+            if (stores.length === 0) {
+                console.log(`[Optimize] 0 stores found at ${searchRadius}km. Widening search to 25km...`);
+                stores = await dataAggregator.getStoresNearby(searchLocation, 25);
+            }
         } catch (error) {
             console.error('[Optimize] Data fetching failed:', error);
         }
 
+        console.log(`[Optimize] Stores found: ${stores.length}`);
         if (stores.length === 0) {
-            console.warn(`[Optimize] No results found for location. Check coverage.`);
+            console.warn(`[Optimize] CRITICAL: No stores found even at 25km for ${JSON.stringify(searchLocation)}`);
         }
 
         const optimization = await routeService.calculateOptimalRoute(

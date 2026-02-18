@@ -90,13 +90,13 @@
             "I need milk and bread...",
             "I need chicken for dinner...",
             "2 liters of milk, eggs, cheese for under 200kr",
-            "Taco Friday with the family",
+            "Baking for the weekend",
             "Healthy breakfast for the whole week"
         ],
         "quickSearch": {
             "heading": "Try something popular",
             "essentials": "🥛 Milk, bread & eggs",
-            "taco": "🌮 Taco Friday",
+            "baking": "🧁 Baking & dairy",
             "chicken": "🍗 Chicken & rice",
             "produce": "🥬 Fruits & veggies",
             "breakfast": "☀️ Weekly breakfast"
@@ -104,6 +104,7 @@
     },
     "results": {
         "title": "Results for",
+        "searchingFor": "Searching for:",
         "itemCount": "{{count}} items found",
         "foundBestOptions": "Best options found",
         "foundBestStore": "Best Store found",
@@ -279,5 +280,29 @@
         "home": "Home",
         "search": "Search",
         "about": "About Us"
+    },
+    "products": {
+        "milk": "Milk",
+        "bread": "Bread",
+        "eggs": "Eggs",
+        "cheese": "Cheese",
+        "chicken": "Chicken",
+        "minced_meat": "Minced Meat",
+        "salmon": "Salmon",
+        "apple": "Apple",
+        "banana": "Banana",
+        "carrot": "Carrot",
+        "potato": "Potato",
+        "tomato": "Tomato",
+        "cucumber": "Cucumber",
+        "broccoli": "Broccoli",
+        "pasta": "Pasta",
+        "rice": "Rice",
+        "coffee": "Coffee",
+        "orange_juice": "Orange Juice",
+        "butter": "Butter",
+        "flour": "Flour",
+        "onion": "Onion",
+        "soda": "Soda"
     }
 }

@@ -88,6 +88,7 @@ export interface SingleStoreOption {
     items: ProductWithPrice[];
     totalCost: number;
     distance: number;
+    availabilityScore?: number;
     missingItems?: string[];
 }
 

@@ -12,6 +12,7 @@ import aiRouter from './routes/ai.js';
 import reportRouter from './routes/report.js';
 import healthRouter from './routes/health.js';
 import { errorHandler, ApiError } from './middleware/errorHandler.js';
+import priceIndexService from './services/PriceIndexService.js';
 
 // Load environment variables
 dotenv.config();
@@ -73,6 +74,11 @@ if (process.env.NODE_ENV !== 'test') {
         console.log(`🔗 Local lookup: http://localhost:${PORT}/api/health`);
         console.log(`🔗 Network access: http://0.0.0.0:${PORT}/api/health`);
         console.log('==========================================');
+
+        // Setup automated price indexing
+        priceIndexService.scheduleSync().catch(err => {
+            console.error('[Server] Price indexing setup failed:', err);
+        });
     });
 }
 

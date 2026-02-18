@@ -50,22 +50,105 @@ export class KassalProvider implements BaseProvider {
         }
     }
 
+    private getMappedQuery(query: string): string {
+        let cleanedQuery = query.toLowerCase().trim();
+
+        // Strip common chain prefixes that might be added by DataAggregator
+        const chainPrefixes = ['rema 1000', 'rema', 'kiwi', 'meny', 'coop extra', 'coop', 'spar', 'joker', 'extra'];
+        for (const prefix of chainPrefixes) {
+            if (cleanedQuery.startsWith(prefix)) {
+                const afterPrefix = cleanedQuery.slice(prefix.length).trim();
+                if (afterPrefix) {
+                    cleanedQuery = afterPrefix;
+                    break;
+                }
+            }
+        }
+
+        const QUERY_MAPPINGS: Record<string, string> = {
+            // Fruits
+            'apple': 'epler', 'apples': 'epler', 'eple': 'epler',
+            'banana': 'bananer', 'bananas': 'bananer', 'banan': 'bananer',
+            'pear': 'pærer', 'pears': 'pærer', 'pære': 'pærer',
+            'orange': 'appelsiner', 'oranges': 'appelsiner', 'appelsin': 'appelsiner',
+            'grapes': 'druer', 'drue': 'druer',
+            'lemon': 'sitron', 'lemons': 'sitroner',
+            'lime': 'lime', 'limes': 'lime',
+
+            // Vegetables
+            'carrot': 'gulrøtter', 'carrots': 'gulrøtter', 'gulrot': 'gulrøtter',
+            'potato': 'poteter', 'potatoes': 'poteter', 'potet': 'poteter',
+            'tomato': 'tomater', 'tomatoes': 'tomater', 'tomat': 'tomater',
+            'cucumber': 'agurk', 'cucumbers': 'agurk',
+            'broccoli': 'brokkoli',
+            'onion': 'løk', 'onions': 'løk',
+            'garlic': 'hvitløk',
+            'paprika': 'paprika', 'peppers': 'paprika',
+
+            // Bakery / Staples
+            'bread': 'brød',
+            'pasta': 'pasta',
+            'rice': 'ris',
+            'milk': 'melk',
+            'cheese': 'hvitost',
+            'butter': 'smør',
+            'eggs': 'egg', 'egg': 'egg',
+            'kneipp': 'kneippbrød',
+
+            // Meat / Fish
+            'chicken': 'kylling',
+            'minced meat': 'kjøttdeig', 'ground meat': 'kjøttdeig',
+            'minced beef': 'karbonadedeig',
+            'salmon': 'laks',
+            'sausages': 'pølser', 'sausage': 'pølser', 'pølse': 'pølser',
+            'bacon': 'bacon',
+
+            // Misc
+            'coffee': 'kaffe',
+            'pizza': 'pizza',
+            'taco': 'taco',
+            'soda': 'brus',
+            'orange juice': 'appelsinjuice',
+
+        };
+
+        const result = QUERY_MAPPINGS[cleanedQuery] || cleanedQuery;
+
+        // If we stripped a prefix, return the original query IF no mapping was found
+        if (cleanedQuery !== query.toLowerCase().trim() && !QUERY_MAPPINGS[cleanedQuery]) {
+            return query;
+        }
+
+        return result;
+    }
+
     public async searchProducts(query: string, options?: ProviderSearchOptions): Promise<Product[]> {
-        const cacheKey = `kassal:search:${query}:${JSON.stringify(options || {})}`;
-        const cached = cache.get<Product[]>(cacheKey);
+        const mappedQuery = this.getMappedQuery(query);
+        const cacheKey = `kassal:search:${mappedQuery}:${JSON.stringify(options || {})}`;
+        const cached = config.nodeEnv === 'production' ? cache.get<Product[]>(cacheKey) : null;
         if (cached) return cached;
 
         return this.withRetry(async () => {
             try {
+                // Use mappedQuery for the API call to ensure we get Norwegian results
                 const response = await this.api.get('/products', {
-                    params: { size: 50, search: query }
+                    params: {
+                        size: 100,
+                        search: mappedQuery,
+                        lat: options?.location?.lat,
+                        lng: options?.location?.lng,
+                        km: options?.radius,
+                        store_id: options?.storeId
+                    }
                 });
 
                 const rawProducts: KassalProduct[] = response.data.data || [];
-                const normalized = rawProducts.map(p => this.normalizeProduct(p));
+                const normalized = rawProducts
+                    .map(p => this.normalizeProduct(p))
+                    .filter(p => p.price > 0);
 
-                // Note: Keeping the relevance scoring logic from the original service
-                const processed = this.applyRelevanceScoring(normalized, query, options, rawProducts);
+                // Pass mappedQuery to scoring so it checks against the Norwegian term
+                const processed = this.applyRelevanceScoring(normalized, mappedQuery, options, rawProducts);
 
                 cache.set(cacheKey, processed, 3600);
                 return processed;
@@ -77,7 +160,7 @@ export class KassalProvider implements BaseProvider {
 
     public async getStoresNearby(location: Location, radiusKm = 5): Promise<Store[]> {
         const cacheKey = `kassal:stores:${location.lat}:${location.lng}:${radiusKm}`;
-        const cached = cache.get<Store[]>(cacheKey);
+        const cached = config.nodeEnv === 'production' ? cache.get<Store[]>(cacheKey) : null;
         if (cached) return cached;
 
         return this.withRetry(async () => {
@@ -86,7 +169,8 @@ export class KassalProvider implements BaseProvider {
                     params: {
                         lat: location.lat,
                         lng: location.lng,
-                        radius: radiusKm
+                        km: radiusKm,
+                        size: 100
                     }
                 });
 
@@ -156,6 +240,7 @@ export class KassalProvider implements BaseProvider {
             name: capitalizedName,
             price: price,
             store: p.store?.name || 'Unknown Store',
+            chain: p.store?.code || p.store?.group || p.store?.name || 'Unknown Chain',
             image_url: p.image || '',
             unit: p.nutrition?.[0]?.unit || 'stk',
             priceHistory: p.price_history
@@ -163,17 +248,36 @@ export class KassalProvider implements BaseProvider {
     }
 
     private applyRelevanceScoring(products: Product[], query: string, options: any, rawProducts: any[]): Product[] {
-        // Implementation of the original scoring logic from kassalService.ts
-        // (Truncated for readability, assume same logic as before)
         const lowerQuery = query.toLowerCase().trim();
         const wordRegex = new RegExp(`\\b${lowerQuery}(\\b|\\d|\\s)`, 'i');
         const suggestedCategory = options?.suggestedCategory?.toLowerCase();
+
+        // --- KEYWORD DEFINITIONS ---
+        // Hoisted to avoid reference errors and ensure consistency
+        const stapleKeywords = ['melk', 'egg', 'smør', 'butter', 'milk', 'brød', 'ost', 'hvitost', 'kaffe', 'ris', 'pasta', 'kjøttdeig', 'kylling', 'laks', 'pølser', 'pizza', 'taco', 'bacon'];
+        const dessertKeywords = ['sjoko', 'choco', 'muffins', 'is', 'kake', 'dessert', 'godteri', 'vanilje', 'jordbær', 'kaffe', 'litago', 'confecta', 'juice', 'nektar', 'saft', 'brus', 'farris', 'frus', 'friskis', 'kjeks', 'yoghurt', 'skyr', 'kesam', 'pudding', 'crumble', 'pai', 'pie', 'kompott', 'syltetøy', 'kanel', 'sukker', 'mad fish', 'snacks', 'chips', 'dip', 'gele', 'jelly', 'smudi', 'smoothie', 'pålegg'];
+        const produceKeywords = ['brokkoli', 'gulrot', 'potet', 'blomkål', 'broccoli', 'carrot', 'potato', 'cauliflower', 'banan', 'eple', 'banana', 'apple', 'pære', 'druer', 'appelsin', 'agurk', 'tomat', 'løk', 'bananer', 'epler', 'pærer', 'appelsiner', 'gulrøtter', 'poteter', 'tomater', 'hvitløk', 'paprika', 'sitron', 'lime'];
+        const processedKeywords = ['suppe', 'rett i koppen', 'gryte', 'pose', 'mix', 'toro', 'pulver', 'marinert', 'krydret', 'soltørket', 'lår', 'vinger', 'vinge', 'vingeklubb', 'burger', 'pølse', 'salat', 'slider', 'ferdigrett', 'grateng', 'saus', 'buljong', 'fyll', 'bunn', 'majones', 'reker', 'pepper', 'ringe', 'beger'];
+        const babyFoodKeywords = ['ellas', 'semper', 'hipp', 'nestle', 'småfolk', 'grøt', 'mos', 'barnemat', 'klemmepose', 'smoothie', 'bubs', 'skids'];
+        const nonFoodKeywords = ['shampoo', 'balsam', 'maske', 'såpe', 'krem', 'lotion', 'serviett', 'bleie', 'vask', 'rengjøring'];
 
         products.forEach((p, idx) => {
             const raw = rawProducts[idx];
             const name = p.name.toLowerCase();
             const category = (raw.category?.name || '').toLowerCase();
             let score = 0;
+
+            // --- BOOLEAN FLAGS ---
+            const isStapleSearch = stapleKeywords.includes(lowerQuery) ||
+                (suggestedCategory === 'meieri' || suggestedCategory === 'egg');
+            const isProduceSearch = produceKeywords.includes(lowerQuery) || (suggestedCategory === 'frukt & grønt');
+            const isChickenSearch = lowerQuery === 'kylling' || lowerQuery === 'chicken' || lowerQuery === 'kyllingfilet';
+            const isPizzaSearch = lowerQuery === 'pizza';
+
+            const hasFlavorAdditives = dessertKeywords.some(word => name.includes(word));
+            const isProcessedFood = processedKeywords.some(word => name.includes(word));
+            const isBabyFood = babyFoodKeywords.some(w => name.includes(w));
+            const isNonFood = nonFoodKeywords.some(w => name.includes(w));
 
             // 1. Basic Exact/Prefix Matching
             if (name === lowerQuery) score -= 5000;
@@ -204,43 +308,90 @@ export class KassalProvider implements BaseProvider {
                 score += 8000; // Heavy penalty to push "Oatmeal WITH milk" down
             }
 
-            // 4. Compound Word, Flavor & Category Penalty (The "Choco-Melk" & "Muffins" fixes)
-            const stapleKeywords = ['melk', 'egg', 'smør', 'butter', 'milk'];
-            const dessertKeywords = ['sjoko', 'choco', 'muffins', 'is', 'kake', 'dessert', 'godteri', 'vanilje', 'jordbær', 'kaffe', 'litago', 'confecta'];
-            const produceKeywords = ['brokkoli', 'gulrot', 'potet', 'blomkål', 'broccoli', 'carrot', 'potato', 'cauliflower'];
-            const processedKeywords = ['suppe', 'rett i koppen', 'gryte', 'pose', 'mix', 'toro', 'pulver'];
+            // 4a. Baby Food & Non-Food Penalty
+            if ((isBabyFood || isNonFood) && !babyFoodKeywords.includes(lowerQuery) && !nonFoodKeywords.includes(lowerQuery)) {
+                score += 15000;
+            }
 
-            const isStapleSearch = stapleKeywords.includes(lowerQuery) ||
-                (suggestedCategory === 'meieri' || suggestedCategory === 'egg');
-            const isProduceSearch = produceKeywords.includes(lowerQuery) || (suggestedCategory === 'frukt & grønt');
+            // 4b. Produce Plural/Compound Bonus
+            // CRITICAL: Only apply if NOT juice/nectar
+            if (isProduceSearch && name.includes(lowerQuery) && !hasFlavorAdditives) {
+                score -= 1500; // Bonus for containing the fruit name even as part of a word
 
-            const hasFlavorAdditives = dessertKeywords.some(word => name.includes(word));
-            const isProcessedFood = processedKeywords.some(word => name.includes(word));
+                // Extra bonus if it starts with the fruit name (e.g. "Bananklase")
+                if (name.startsWith(lowerQuery)) {
+                    score -= 2000;
+                }
+            } else if (isProduceSearch && hasFlavorAdditives) {
+                // If it's a produce search and it's juice, hit it even harder
+                score += 25000;
+            }
 
+            // 5. Compound Word, Flavor & Category Penalty
             if (isStapleSearch && hasFlavorAdditives) {
-                score += 15000; // Massive penalty for chocolate/coffee milk when pure milk is wanted
+                score += 15000; // Massive penalty for chocolate/coffee milk or egg-juice when pure products are wanted
             }
 
-            if ((isStapleSearch || isProduceSearch) && isProcessedFood) {
-                score += 12000; // Penalize soups/mixes when fresh items are wanted
+            // Check produce search too for flavor additives (e.g. "Banana Split", "Apple Cake")
+            if (isProduceSearch && hasFlavorAdditives) {
+                score += 15000;
             }
 
-            // 5. Category Matching (AI hint)
+            if ((isStapleSearch || isProduceSearch || isChickenSearch || isPizzaSearch) && isProcessedFood) {
+                score += 12000; // Penalize soups/mixes or seasoned chicken parts when fresh items are wanted
+            }
+
+            // Naturell Bonus for meat/poultry
+            if (isChickenSearch && (name.includes('naturell') || name.includes('filet'))) {
+                score -= 3000;
+            }
+
+            // 6. Category Matching (AI hint)
             if (suggestedCategory && (category.includes(suggestedCategory))) {
                 score -= 4000;
             }
 
-            // 6. Strict Word Filtering (The "Coconut Oil vs Milk" Fix)
+            // 7. Strict Word Filtering (The "Coconut Oil vs Milk" Fix)
             const antiMatches = ['olje', 'kokos', 'oil', 'coconut', 'smør', 'butter'];
             const unintendedMatch = antiMatches.some(word =>
                 name.includes(word) && !lowerQuery.includes(word)
             );
 
+            // Special handling for cheese vs liver paste ("postei" contains "ost")
+            if (lowerQuery === 'ost' && (name.includes('postei') || name.includes('leverpostei'))) {
+                score += 20000; // Nuclear penalty
+            }
+
             if (unintendedMatch && (lowerQuery === 'melk' || suggestedCategory === 'melk' || suggestedCategory === 'meieri')) {
                 score += 10000;
             }
 
-            // 7. Beverage vs Dairy Priority
+            // 8. Specific penalties for highly deceptive items
+            if (name.includes('farris') || name.includes('frus') || name.includes('friskis')) {
+                score += 20000;
+            }
+            if (name.includes('smudi') || name.includes('smoothie')) {
+                score += 20000;
+            }
+
+            // Special fix for "Brødrene" / "Brødr" matching "brød"
+            if (lowerQuery === 'brød' && (name.includes('brødrene') || name.includes('brødr'))) {
+                score += 5000;
+            }
+
+            // User Request: Ban specific deceptive chicken items (Den Stolte Hane, Soltørket Tomat)
+            // User says "this isnt chicken" for generic search context.
+            if (isChickenSearch && (name.includes('soltørket') || name.includes('hane'))) {
+                score += 50000; // Total ban threshold for practical purposes
+            }
+
+            // User Request: Ban baby food from matching generic "laks" (salmon)
+            const isSalmonSearch = lowerQuery === 'laks' || lowerQuery.includes('laks');
+            if (isSalmonSearch && (name.includes('naturnes') || name.includes('nestle') || name.includes('8md') || name.includes('12md'))) {
+                score += 30000; // High penalty to demote below real fish
+            }
+
+            // 8. Beverage vs Dairy Priority
             if (isStapleSearch && category.includes('drikke') && !name.includes('melk')) {
                 score += 5000; // Push soft drinks/coffees down even if they match partially
             }
@@ -251,7 +402,7 @@ export class KassalProvider implements BaseProvider {
         });
 
         return products
-            .filter(p => (p.relevanceScore || 0) <= 2000) // Slightly broader threshold for fallback flexibility
+            .filter(p => (p.relevanceScore || 0) <= 20000) // Loosened threshold to allow variants for AI mapping
             .sort((a, b) => (a.relevanceScore || 0) - (b.relevanceScore || 0));
     }
 

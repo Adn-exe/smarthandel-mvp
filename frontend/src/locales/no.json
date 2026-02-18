@@ -90,13 +90,13 @@
             "Jeg trenger melk og brød...",
             "Jeg trenger kylling til middag...",
             "2 liter melk, egg, ost for under 200kr",
-            "Tacofredag med familien",
+            "Noe godt til søndagsmiddag",
             "Sunn frokost til hele uken"
         ],
         "quickSearch": {
             "heading": "Prøv noe populært",
             "essentials": "🥛 Melk, brød og egg",
-            "taco": "🌮 Taco fredag",
+            "baking": "🧁 Bakst og meieri",
             "chicken": "🍗 Kylling og ris",
             "produce": "🥬 Frukt og grønt",
             "breakfast": "☀️ Frokost til uken"
@@ -104,6 +104,7 @@
     },
     "results": {
         "title": "Resultater for",
+        "searchingFor": "Søker etter:",
         "itemCount": "{{count}} varer funnet",
         "foundBestOptions": "Beste alternativer funnet",
         "foundBestStore": "Beste Butikk funnet",
@@ -279,5 +280,29 @@
         "home": "Forsiden",
         "search": "Søk",
         "about": "Om oss"
+    },
+    "products": {
+        "milk": "Melk",
+        "bread": "Brød",
+        "eggs": "Egg",
+        "cheese": "Ost",
+        "chicken": "Kylling",
+        "minced_meat": "Kjøttdeig",
+        "salmon": "Laks",
+        "apple": "Eple",
+        "banana": "Banan",
+        "carrot": "Gulrot",
+        "potato": "Potet",
+        "tomato": "Tomat",
+        "cucumber": "Agurk",
+        "broccoli": "Brokkoli",
+        "pasta": "Pasta",
+        "rice": "Ris",
+        "coffee": "Kaffe",
+        "orange_juice": "Appelsinjuice",
+        "butter": "Smør",
+        "flour": "Mel",
+        "onion": "Løk",
+        "soda": "Brus"
     }
 }

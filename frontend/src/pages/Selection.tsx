@@ -17,6 +17,7 @@ import type { Location } from '../types';
 interface ShoppingItem {
     name: string;
     originalName?: string;
+    englishName?: string;
     quantity: number;
     unit?: string;
     category?: string;

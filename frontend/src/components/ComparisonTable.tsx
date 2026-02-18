@@ -4,26 +4,33 @@ import { useMemo } from 'react';
 import { MapPin, List } from 'lucide-react';
 import { clsx } from 'clsx';
 import { formatDistance } from '../utils/format';
-import type { SingleStoreOption, ProductWithPrice } from '../types';
+import type { ShoppingItem, SingleStoreOption, ProductWithPrice } from '../types';
 
 interface ComparisonTableProps {
     candidates: SingleStoreOption[];
-    requestedItemsCount: number;
+    requestedItems: ShoppingItem[];
     isMapVisible?: boolean;
     onToggleMap?: () => void;
 }
 
-export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible, onToggleMap }: ComparisonTableProps) {
+export function ComparisonTable({ candidates, requestedItems, isMapVisible, onToggleMap }: ComparisonTableProps) {
     const { t, i18n } = useTranslation();
 
     if (!candidates || candidates.length === 0) return null;
 
-    // 1. Identify the absolute "Best Value" (Least Cost, then Least Distance)
+    // 1. Identify the absolute "Best Value" (Most Items Found, then Least Cost)
     const bestValueId = useMemo(() => {
         if (!candidates || candidates.length === 0) return null;
         const sorted = [...candidates].sort((a, b) => {
+            // Priority 1: Coverage (More items is better)
+            const countDiff = b.items.length - a.items.length;
+            if (countDiff !== 0) return countDiff;
+
+            // Priority 2: Cost (Lower is better)
             const costDiff = (a.totalCost || 0) - (b.totalCost || 0);
             if (Math.abs(costDiff) > 0.01) return costDiff;
+
+            // Priority 3: Distance (Closer is better)
             return (a.distance || 0) - (b.distance || 0);
         });
         return sorted[0].store.id;
@@ -55,19 +62,35 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
         return [...prioritized, ...others].slice(0, 4);
     }, [candidates, bestValueId]);
 
-    // 3. Identify ALL unique items across ALL displayed candidates for complete rows
+    // 3. Use requestedItems (input list) for fixed row headers and ordering
     const rowItems = useMemo(() => {
-        const uniqueItemsMap = new Map<string, ProductWithPrice>();
-        displayCandidates.forEach((candidate: SingleStoreOption) => {
-            candidate.items.forEach((item: ProductWithPrice) => {
-                const key = item.name.toLowerCase().trim();
-                if (!uniqueItemsMap.has(key)) {
-                    uniqueItemsMap.set(key, item);
-                }
-            });
+        return requestedItems.map(inputItem => {
+            // Find a representative ProductWithPrice for this input item 
+            // to ensure we capitalize based on the user's choice or the AI's best guess.
+            let representativeItem: ProductWithPrice | undefined;
+            for (const candidate of candidates) {
+                representativeItem = candidate.items.find(i =>
+                    (i.originalQueryName || i.name).toLowerCase().trim() === inputItem.name.toLowerCase().trim()
+                );
+                if (representativeItem) break;
+            }
+
+            // Return a synthetic row item if not found anywhere, or use the real representative one.
+            // This ensures every item in the "Input" appears as a row.
+            return representativeItem || {
+                id: `missing-${inputItem.name}`,
+                name: inputItem.originalName || inputItem.name, // Use original name if available
+                originalQueryName: inputItem.name,
+                englishName: inputItem.englishName,
+                price: 0,
+                totalPrice: 0,
+                quantity: inputItem.quantity,
+                store: '',
+                image_url: '',
+                unit: inputItem.unit || ''
+            } as ProductWithPrice;
         });
-        return Array.from(uniqueItemsMap.values());
-    }, [displayCandidates]);
+    }, [candidates, requestedItems]);
 
     const formatPrice = (price: number) => {
         const locale = i18n.language.startsWith('no') ? 'no-NO' : 'en-GB';
@@ -82,7 +105,7 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
                         {t('results.priceComparison', 'Price Comparison')}
                     </h3>
                     <p className="text-sm md:text-base text-gray-500 font-medium max-w-md leading-relaxed">
-                        {t('results.compareText', { count: requestedItemsCount, defaultValue: `Compare prices for your ${requestedItemsCount} items.` })}
+                        {t('results.compareText', { count: requestedItems.length, defaultValue: `Compare prices for your ${requestedItems.length} items.` })}
                     </p>
                 </div>
 
@@ -161,14 +184,17 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
                                 {rowItems.map((rowItem) => {
                                     // Get price from the actual Best Value store for robust highlighting
                                     const bestValCandidate = displayCandidates.find(c => c.store.id === bestValueId);
-                                    const bestStoreItem = bestValCandidate?.items.find(i => i.name.toLowerCase().trim() === rowItem.name.toLowerCase().trim());
+                                    const bestStoreItem = bestValCandidate?.items.find(i =>
+                                        ((i.originalQueryName || i.name).toLowerCase().trim() === (rowItem.originalQueryName || rowItem.name).toLowerCase().trim())
+                                    );
                                     const bestStorePrice = bestStoreItem ? bestStoreItem.totalPrice : Infinity;
+                                    const rowLabel = rowItem.originalQueryName || rowItem.englishName || rowItem.name;
 
                                     return (
-                                        <tr key={rowItem.name} className="group hover:bg-blue-50/30 transition-colors border-b border-gray-50/50 last:border-0 text-sm">
+                                        <tr key={rowItem.originalQueryName || rowItem.name} className="group hover:bg-blue-50/30 transition-colors border-b border-gray-50/50 last:border-0 text-sm">
                                             <td className="py-3 px-4 md:px-6 sticky left-0 bg-white group-hover:bg-blue-50 transition-colors z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-r border-gray-100/30">
-                                                <div className="font-heading font-bold text-dark text-[11px] md:text-sm leading-tight">
-                                                    {rowItem.englishName || rowItem.name}
+                                                <div className="font-heading font-black text-dark text-[11px] md:text-sm leading-tight uppercase tracking-tight">
+                                                    {rowLabel}
                                                 </div>
                                                 {(rowItem.quantity > 1 || rowItem.unit) && (
                                                     <div className="text-[9px] md:text-[10px] text-gray-400 font-bold flex items-center gap-1 mt-0.5">
@@ -178,7 +204,9 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
                                                 )}
                                             </td>
                                             {displayCandidates.map((candidate: SingleStoreOption) => {
-                                                const item = candidate.items.find(i => i.name.toLowerCase().trim() === rowItem.name.toLowerCase().trim());
+                                                const item = candidate.items.find(i =>
+                                                    (i.originalQueryName || i.name).toLowerCase().trim() === (rowItem.originalQueryName || rowItem.name).toLowerCase().trim()
+                                                );
                                                 const price = item?.totalPrice || Infinity;
 
                                                 const isSmartRoute = candidate.store.id === 'smart-route';

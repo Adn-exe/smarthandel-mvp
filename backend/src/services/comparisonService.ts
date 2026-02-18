@@ -131,7 +131,15 @@ class ComparisonService {
         // Calculate metadata
         const storeTotals = Object.entries(byStore)
             .filter(([_, data]) => data.total > 0)
-            .sort((a, b) => a[1].total - b[1].total);
+            .sort((a, b) => {
+                // Priority 1: Coverage (More found items is better)
+                const countA = a[1].items.filter(i => i.found).length;
+                const countB = b[1].items.filter(i => i.found).length;
+                if (countB !== countA) return countB - countA;
+
+                // Priority 2: Cost (Lower is better)
+                return a[1].total - b[1].total;
+            });
 
         const cheapestStore = storeTotals.length > 0 ? storeTotals[0][0] : null;
         const mostExpensiveStore = storeTotals.length > 0 ? storeTotals[storeTotals.length - 1][0] : null;

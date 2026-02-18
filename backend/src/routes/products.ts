@@ -35,7 +35,7 @@ router.post(
         const parsedQuery = await aiService.parseShoppingQuery(query);
 
         // 2. Search for stores nearby (Apply Trondheim Snap)
-        const { location: searchLocation } = ensureInRegion(location);
+        const { location: searchLocation } = ensureInRegion(location, 10);
         const stores = await dataAggregator.getStoresNearby(searchLocation);
 
         if (stores.length === 0) {

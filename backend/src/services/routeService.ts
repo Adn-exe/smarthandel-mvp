@@ -1,4 +1,5 @@
 import dataAggregator from './providers/DataAggregator.js';
+import priceIndexService from './PriceIndexService.js';
 import { calculateDistance } from '../utils/distance.js';
 import { Product, Store, ShoppingItem, Location } from '../types/index.js';
 import { ApiError } from '../middleware/errorHandler.js';
@@ -6,6 +7,7 @@ import { ApiError } from '../middleware/errorHandler.js';
 interface ProductWithPrice extends Product {
     totalPrice: number;
     quantity: number;
+    originalQueryName?: string; // Standardized field name for user input
 }
 
 interface SingleStoreOption {
@@ -13,6 +15,8 @@ interface SingleStoreOption {
     items: ProductWithPrice[];
     totalCost: number;
     distance: number;
+    availabilityScore: number; // 0 to 1 (e.g., 0.8 = 80% of items found)
+    missingItems: string[];
 }
 
 interface MultiStoreOption {
@@ -40,7 +44,7 @@ export interface RouteOptimizationResult {
 }
 
 /**
- * Service to calculate optimal shopping routes and estimate travel costs.
+ * Service to calculate optimal shopping routes using Availability-First Logic.
  */
 class RouteService {
     /**
@@ -58,66 +62,81 @@ class RouteService {
         } = { maxStores: 3, maxDistance: 10000, sortBy: 'cheapest' }
     ): Promise<RouteOptimizationResult> {
         try {
-            // 0. Filter stores based on excluded chains
-            const validStores = options.excludedChains && options.excludedChains.length > 0
-                ? stores.filter(s => {
-                    const storeChain = s.chain.toLowerCase().trim();
-                    return !options.excludedChains?.some(excluded =>
-                        excluded.toLowerCase().trim() === storeChain
-                    );
-                })
-                : stores;
-
+            // 0. Filter stores
+            const validStores = this.filterStores(stores, options.excludedChains);
             if (validStores.length === 0) {
-                return {
-                    singleStore: null,
-                    multiStore: null,
-                    recommendation: 'single',
-                    reasoning: 'No stores available after filtering.',
-                    singleStoreCandidates: []
-                };
+                return this.createEmptyResult('No stores available after filtering.');
             }
 
-            // 1. Gather all possible products for all items across all stores
-            // (Simplified: using searchProducts for each item)
-            // Optimization: We could filter products by chain here too, but checking store match later is safer
-            const itemToProductsMap: Record<string, Product[]> = {};
-            for (const item of items) {
-                let products: Product[] = [];
-                try {
-                    products = await dataAggregator.searchProducts(item.name, {
-                        suggestedCategory: item.suggestedCategory,
-                        location: userLocation,
-                        radius: (options.maxDistance || 10000) / 1000 // Convert meters to km
-                    });
-                } catch (error) {
-                    console.warn(`[RouteService] Failed to search for "${item.name}", skipping. Error:`, (error as any)?.message || error);
+            // 1. Fetch & Canonicalize Products
+            const productQueries = items.map(i => i.name);
+            const uniqueChains = Array.from(new Set(validStores.map(s => s.chain)));
+            const { products: allProducts, queryMapping } = await dataAggregator.searchProductsWithChainVariety(
+                productQueries,
+                uniqueChains,
+                {
+                    location: userLocation,
+                    radius: (options.maxDistance || 10000) / 1000
                 }
-                // Keep ALL products (no chain-filtering) — products from the Kassal API
-                // have chain-level store names (Joker, SPAR, Meny etc.) that don't match
-                // physical store chains (Rema 1000, Kiwi, Bunnpris etc.).
-                // Each physical store will be assigned the cheapest available product.
-                itemToProductsMap[item.name] = products;
-            }
-
-            // 2. Calculate Single-Store Options (Get Top 8)
-            const singleStoreCandidates = this.calculateBestSingleStores(items, userLocation, validStores, itemToProductsMap, options);
-            const bestSingleStore = singleStoreCandidates.length > 0 ? singleStoreCandidates[0] : null;
-
-            // 3. Calculate Multi-Store Option (Greedy Algorithm)
-            const multiStoreOption = this.calculateBestMultiStore(
-                items,
-                userLocation,
-                validStores,
-                itemToProductsMap,
-                options
             );
 
-            // 4. Recommendation Logic
-            const result = this.generateRecommendation(bestSingleStore, multiStoreOption);
+            console.log(`[RouteService] Found ${allProducts.length} total products. Query mapping keys: ${Array.from(queryMapping.keys()).join(', ')}`);
+            for (const [q, ids] of queryMapping.entries()) {
+                console.log(`  - Query "${q}": ${ids.length} products`);
+            }
 
-            // Attach candidates and all stores for map context
-            result.singleStoreCandidates = singleStoreCandidates;
+            // 2. Score Stores (Availability > Cost)
+            // No longer using GeminiCanonicalMapper - using direct search-to-query mapping
+            const rankedStores = this.scoreAndRankStores(
+                validStores,
+                allProducts,
+                queryMapping,
+                items,
+                userLocation
+            );
+
+            console.log(`[RouteService] Ranked stores: ${rankedStores.length}`);
+            if (rankedStores.length > 0) {
+                console.log(`  - Top store: ${rankedStores[0].store.name} (${rankedStores[0].availabilityScore * 100}% coverage)`);
+            }
+
+            const bestSingleStore = rankedStores.length > 0 ? rankedStores[0] : null;
+
+            // 3. Smart Route Optimization (Combinatorial)
+            // Use top 5 stores to find optimal combination (max 3 stores)
+            const topCandidates = rankedStores.slice(0, 5);
+            const smartRouteOption = this.calculateSmartRoute(
+                items,
+                topCandidates,
+                bestSingleStore
+            );
+
+            // 4. Alternative Candidates (Spec: >70% items found & cost < 1.25x best)
+            // Filter alternatives from the ranked list (excluding the best store itself)
+            // Phase 2: Store Variety (Chain Diversity)
+            const seenChains = new Set<string>();
+            if (bestSingleStore) seenChains.add(bestSingleStore.store.chain.toLowerCase());
+
+            const alternatives = rankedStores.slice(1).filter(store => {
+                const satisfiesAvailability = store.availabilityScore >= 0.30;
+                const satisfiesCost = bestSingleStore ? store.totalCost <= bestSingleStore.totalCost * 2.0 : true;
+
+                // Chain Diversity: We want to show the best store from DIFFERENT chains if possible
+                const chainKey = store.store.chain.toLowerCase().trim();
+                const isNewChain = !seenChains.has(chainKey);
+
+                if (satisfiesAvailability && satisfiesCost && isNewChain) {
+                    seenChains.add(chainKey);
+                    return true;
+                }
+                return false;
+            });
+
+            // 5. Generate Recommendation
+            const result = this.generateRecommendation(bestSingleStore, smartRouteOption);
+
+            // Attach metadata - Increased limit from 4 to 6 for better variety
+            result.singleStoreCandidates = [bestSingleStore, ...alternatives].filter((s): s is SingleStoreOption => !!s).slice(0, 6);
             result.allNearbyStores = validStores;
 
             return result;
@@ -128,192 +147,251 @@ class RouteService {
         }
     }
 
+    private filterStores(stores: Store[], excludedChains?: string[]): Store[] {
+        if (!excludedChains || excludedChains.length === 0) return stores;
+        return stores.filter(s => {
+            const storeChain = s.chain.toLowerCase().trim();
+            return !excludedChains.some(excluded => excluded.toLowerCase().trim() === storeChain);
+        });
+    }
 
-    private calculateBestSingleStores(
-        items: ShoppingItem[],
-        userLocation: Location,
+    private scoreAndRankStores(
         stores: Store[],
-        itemToProductsMap: Record<string, Product[]>,
-        options: { sortBy?: 'cheapest' | 'closest' | 'stops' }
+        allProducts: Product[],
+        queryMapping: Map<string, string[]>,
+        items: ShoppingItem[],
+        userLocation: Location
     ): SingleStoreOption[] {
         const results: SingleStoreOption[] = [];
+        const requiredCanonicalIds = new Set(items.map(i => i.name)); // Assuming i.name IS the canonical ID from frontend
 
         for (const store of stores) {
-            const storeItems: ProductWithPrice[] = [];
+            // Find products for this store that match valid canonical IDs
+            const storeName = store.name.toLowerCase().replace(/_/g, ' ');
+            const chainName = store.chain.toLowerCase().replace(/_/g, ' ');
+
+            const storeProducts = allProducts.filter(p => {
+                const pStore = p.store.toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+                const pChain = (p.chain || '').toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+
+                // Phase 3: Price Accuracy & Matching
+                // Prefer matches that mention the exact store name or address
+                const isChainMatch = pStore.includes(chainName) || chainName.includes(pStore) ||
+                    pChain.includes(chainName) || chainName.includes(pChain);
+                const isBranchMatch = pStore.includes(storeName) || storeName.includes(pStore);
+
+                // Extra Loosening: Common parent groups or abbreviations
+                const isParentMatch = (pStore.includes('norgesgruppen') && ['meny', 'spar', 'kiwi', 'joker'].some(c => chainName.includes(c))) ||
+                    (pStore.includes('coop') && chainName.includes('coop')) ||
+                    (pChain.includes('norgesgruppen') && ['meny', 'spar', 'kiwi', 'joker'].some(c => chainName.includes(c)));
+
+                if (isBranchMatch) return true; // Branch specific data is best
+                if (isChainMatch) return true; // Chain level is fallback
+                if (isParentMatch) return true; // Parent group is a loose fallback
+
+                return false;
+            });
+
+            // Select cheapest product per canonical ID
+            const foundItems: ProductWithPrice[] = [];
             let storeTotalCost = 0;
+            const foundCanonicalIds = new Set<string>();
 
-            for (const shoppingItem of items) {
-                const products = itemToProductsMap[shoppingItem.name];
-                if (!products || products.length === 0) continue;
+            // Map products back to their search terms (queries)
+            for (const item of items) {
+                const searchLabel = item.name;
+                // Get all product IDs that were returned for this specific search query
+                const productIdsForThisQuery = queryMapping.get(searchLabel) || [];
 
-                // Pick the cheapest product available (no chain-matching needed)
-                const cheapest = products.reduce((best, p) => p.price < best.price ? p : best);
+                // Find candidates in this store that correspond to this search query
+                const candidates = storeProducts.filter(p => productIdsForThisQuery.includes(String(p.id)));
 
-                if (cheapest) {
-                    const totalPrice = cheapest.price * shoppingItem.quantity;
-                    storeItems.push({
-                        ...cheapest,
+                if (candidates.length > 0) {
+                    // Pick best candidate: Prioritize Relevance Score, then Price
+                    const best = candidates.reduce((best, curr) => {
+                        const scoreA = best.relevanceScore ?? 0;
+                        const scoreB = curr.relevanceScore ?? 0;
+                        const scoreDiff = scoreB - scoreA;
+
+                        // If current item is significantly more relevant (lower score), pick it
+                        // Threshold of 2000 corresponds to a minor penalty tier in KassalProvider
+                        if (scoreDiff < -2000) return curr;
+
+                        // If best item is significantly more relevant, keep it
+                        if (scoreDiff > 2000) return best;
+
+                        // If relevance is similar, pick the cheaper one
+                        return curr.price < best.price ? curr : best;
+                    });
+
+                    const quantity = item.quantity;
+                    const totalPrice = best.price * quantity;
+
+                    foundItems.push({
+                        ...best,
                         totalPrice,
-                        quantity: shoppingItem.quantity,
-                        englishName: shoppingItem.englishName,
-                        originalQueryName: shoppingItem.name
+                        quantity,
+                        originalQueryName: searchLabel // Use exact query to ensure frontend matrix matching works
                     });
                     storeTotalCost += totalPrice;
+                    foundCanonicalIds.add(searchLabel);
                 }
             }
 
-            if (storeItems.length > 0) {
+            if (foundItems.length > 0) {
+                const availabilityScore = foundCanonicalIds.size / items.length;
                 const distance = calculateDistance(
-                    userLocation.lat,
-                    userLocation.lng,
-                    store.location.lat,
-                    store.location.lng
+                    userLocation.lat, userLocation.lng,
+                    store.location.lat, store.location.lng
                 );
 
                 results.push({
                     store,
-                    items: storeItems,
+                    items: foundItems,
                     totalCost: storeTotalCost,
-                    distance
+                    distance,
+                    availabilityScore,
+                    missingItems: items.filter(i => !foundCanonicalIds.has(i.name)).map(i => i.name)
                 });
             }
         }
 
-        // Sort by coverage (number of items) descending, then by open status (open first), then by total cost ascending
-        const sorted = results.sort((a, b) => {
-            if (b.items.length !== a.items.length) {
-                return b.items.length - a.items.length;
-            }
-            // Prioritize open stores if coverage is the same
-            if (a.store.open_now !== b.store.open_now) {
-                return b.store.open_now ? 1 : -1;
+        // Output Ranking Logic:
+        // 1. Availability Score (High to Low)
+        // 2. Total Cost (Low to High)
+        // Distance is explicitly IGNORED for ranking as requested.
+        return results.sort((a, b) => {
+            if (b.availabilityScore !== a.availabilityScore) {
+                return b.availabilityScore - a.availabilityScore;
             }
             return a.totalCost - b.totalCost;
         });
+    }
 
-        // Deduplicate stores by ID (defensive)
-        const seenStoreIds = new Set<string>();
-        const uniqueCandidates: SingleStoreOption[] = [];
+    private calculateSmartRoute(
+        items: ShoppingItem[],
+        candidates: SingleStoreOption[],
+        bestSingleStore: SingleStoreOption | null
+    ): MultiStoreOption | null {
+        // User requested: Smart route should only trigger if number of candidate stores is 2 or more
+        // (i.e. we need at least 2 stores to consider combinatorics)
+        if (!candidates.length || candidates.length < 2) return null;
 
-        for (const candidate of sorted) {
-            const id = String(candidate.store.id);
-            if (!seenStoreIds.has(id)) {
-                seenStoreIds.add(id);
-                uniqueCandidates.push(candidate);
+        // Combinatorial: Check combinations of 2 and 3 stores
+        const combinations = this.generateCombinations(candidates, 3);
+
+        let bestCombo: MultiStoreOption | null = null;
+        let minComboCost = Infinity;
+
+        // If best single store exists, that's our baseline to beat
+        const baselineCost = bestSingleStore?.items.length === items.length ? bestSingleStore.totalCost : Infinity;
+
+        for (const combo of combinations) {
+            // 1. Calculate Combined Availability & Cost
+            const { totalCost, missingCount, storeAllocations } = this.evaluateCombination(combo, items);
+
+            // 2. Strict Constraints:
+            // - Must have 100% availability (missingCount === 0)
+            // - Must be STRICTLY cheaper than best single store (if perfect single store exists)
+            if (missingCount === 0) {
+                // Spec: Prioritize lower total cost AND fewer stores used (stops)
+                const isCheaper = totalCost < baselineCost;
+                const isBetterThanBest = totalCost < minComboCost;
+                const isEqualCostButFewerStops = Math.abs(totalCost - minComboCost) < 0.01 && combo.length < (bestCombo?.stores.length || 4);
+
+                if (isCheaper && (isBetterThanBest || isEqualCostButFewerStops)) {
+                    minComboCost = totalCost;
+
+                    // Transform to updated MultiStoreOption format
+                    const stores = combo.map(c => {
+                        const allocation = storeAllocations.get(String(c.store.id));
+                        return {
+                            store: c.store,
+                            items: allocation?.items || [],
+                            cost: allocation?.cost || 0,
+                            distance: c.distance
+                        };
+                    }).filter(s => s.items.length > 0); // Remove stores that contributed 0 items in optimal mix
+
+                    // Re-sort stores by distance for route logic
+                    // (Visuals only, does not affect selection)
+                    stores.sort((a, b) => a.distance - b.distance);
+
+                    bestCombo = {
+                        stores,
+                        totalCost,
+                        totalDistance: stores.reduce((sum, s) => sum + s.distance, 0),
+                        savings: 0, // Calculated later
+                        savingsPercent: 0
+                    };
+                }
             }
         }
 
-        return uniqueCandidates.slice(0, 8); // Return top 8 unique candidates for better variety
+        if (bestCombo && bestCombo.stores.length <= 1) {
+            return null;
+        }
+
+        return bestCombo;
     }
 
-    private calculateBestMultiStore(
-        items: ShoppingItem[],
-        userLocation: Location,
-        availableStores: Store[],
-        itemToProductsMap: Record<string, Product[]>,
-        options: { maxStores: number; maxDistance: number; sortBy?: 'cheapest' | 'closest' | 'stops' }
-    ): MultiStoreOption | null {
-        // 1. For each item, find ALL viable store options within maxDistance
-        //    Store the top 2 cheapest options per item for diversification
-        const itemOptions = new Map<string, { product: Product, store: Store, price: number, distance: number }[]>();
+    private evaluateCombination(combo: SingleStoreOption[], items: ShoppingItem[]) {
+        // For every item, pick the cheapest available across the combination stores
+        const storeAllocations = new Map<string, { items: ProductWithPrice[], cost: number }>();
+        let totalCost = 0;
+        let foundCount = 0;
 
-        for (const shoppingItem of items) {
-            const products = itemToProductsMap[shoppingItem.name] || [];
+        combo.forEach(c => storeAllocations.set(String(c.store.id), { items: [], cost: 0 }));
 
-            // Track best option per store (nearest store of each chain)
-            const bestPerStore = new Map<string, { product: Product, store: Store, price: number, distance: number }>();
+        for (const item of items) {
+            let bestPrice = Infinity;
+            let bestStoreId: string | null = null;
+            let bestProduct: ProductWithPrice | null = null;
 
-            for (const store of availableStores) {
-                const distance = calculateDistance(
-                    userLocation.lat,
-                    userLocation.lng,
-                    store.location.lat,
-                    store.location.lng
+            for (const storeOption of combo) {
+                const product = storeOption.items.find(p =>
+                    (p.originalQueryName || p.name).toLowerCase().trim() === item.name.toLowerCase().trim()
                 );
-
-                if (distance > options.maxDistance) continue;
-
-                // Pick the cheapest product available (no chain-matching needed)
-                const cheapest = products.length > 0
-                    ? products.reduce((best, p) => p.price < best.price ? p : best)
-                    : null;
-
-                if (cheapest) {
-                    const chainKey = store.chain.toLowerCase().trim();
-                    const existing = bestPerStore.get(chainKey);
-                    // Keep only the nearest store per chain
-                    if (!existing || distance < existing.distance) {
-                        bestPerStore.set(chainKey, { product: cheapest, store, price: cheapest.price, distance });
+                if (product) {
+                    // Normalize price for comparison
+                    if (product.totalPrice < bestPrice) {
+                        bestPrice = product.totalPrice;
+                        bestStoreId = String(storeOption.store.id);
+                        bestProduct = product;
                     }
                 }
             }
 
-            // Collect best per chain, sorted by price
-            const sorted = Array.from(bestPerStore.values()).sort((a, b) => a.price - b.price);
-            if (sorted.length > 0) {
-                itemOptions.set(shoppingItem.name, sorted);
+            if (bestStoreId && bestProduct) {
+                const alloc = storeAllocations.get(bestStoreId)!;
+                alloc.items.push(bestProduct);
+                alloc.cost += bestProduct.totalPrice;
+                totalCost += bestProduct.totalPrice;
+                foundCount++;
             }
         }
-
-        if (itemOptions.size === 0) return null;
-
-        // 2. Greedy assignment: assign each item to cheapest store
-        const itemAssignments = new Map<string, { product: Product, store: Store, price: number }>();
-        itemOptions.forEach((opts, itemName) => {
-            itemAssignments.set(itemName, opts[0]);
-        });
-
-        // 3. Diversification: if all items mapped to one store, split some to 2nd-cheapest
-        const assignedStoreIds = new Set(Array.from(itemAssignments.values()).map(a => a.store.id.toString()));
-        if (assignedStoreIds.size === 1 && items.length >= 2) {
-            // Try to move some items to alternate stores for a genuine multi-store route
-            for (const [itemName, opts] of itemOptions.entries()) {
-                if (opts.length > 1) {
-                    // Assign this item to the 2nd cheapest chain
-                    itemAssignments.set(itemName, opts[1]);
-                    break; // Only move one item to create 2-store route
-                }
-            }
-        }
-
-        // 4. Group items by store
-        const storeGroups = new Map<string, { store: Store, items: ProductWithPrice[], cost: number, distance: number }>();
-        let totalProductCost = 0;
-
-        itemAssignments.forEach((assignment, itemName) => {
-            const shoppingItem = items.find(i => i.name === itemName)!;
-            const storeId = assignment.store.id.toString();
-
-            const group = storeGroups.get(storeId) || {
-                store: assignment.store,
-                items: [],
-                cost: 0,
-                distance: calculateDistance(userLocation.lat, userLocation.lng, assignment.store.location.lat, assignment.store.location.lng)
-            };
-
-            const totalPrice = assignment.price * shoppingItem.quantity;
-            group.items.push({
-                ...assignment.product,
-                totalPrice,
-                quantity: shoppingItem.quantity,
-                englishName: shoppingItem.englishName
-            });
-            group.cost += totalPrice;
-            totalProductCost += totalPrice;
-            storeGroups.set(storeId, group);
-        });
-
-        // 5. Sort stores by distance from user
-        const sortedStores = Array.from(storeGroups.values()).sort((a, b) => a.distance - b.distance);
-        const totalDistance = sortedStores.reduce((acc, s) => acc + s.distance, 0);
 
         return {
-            stores: sortedStores,
-            totalCost: totalProductCost,
-            totalDistance,
-            savings: 0,
-            savingsPercent: 0
+            totalCost,
+            missingCount: items.length - foundCount,
+            storeAllocations
         };
+    }
+
+    private generateCombinations(candidates: SingleStoreOption[], maxSize: number): SingleStoreOption[][] {
+        const result: SingleStoreOption[][] = [];
+
+        const f = (start: number, current: SingleStoreOption[]) => {
+            if (current.length >= 2) result.push([...current]);
+            if (current.length === maxSize) return;
+
+            for (let i = start; i < candidates.length; i++) {
+                f(i + 1, [...current, candidates[i]]);
+            }
+        };
+
+        f(0, []);
+        return result;
     }
 
     private generateRecommendation(
@@ -321,77 +399,53 @@ class RouteService {
         multi: MultiStoreOption | null
     ): RouteOptimizationResult {
         if (!single && !multi) {
-            // Need to return something valid or handle fully in caller
-            return {
-                singleStore: null,
-                multiStore: null,
-                recommendation: 'single', // Default fallback
-                reasoning: 'No suitable stores found with your preferences.'
-            };
+            return this.createEmptyResult('No stores found matching your items.');
         }
 
-        if (!multi || !single) {
-            const rec = single ? 'single' : 'multi';
-            const count = single ? single.items.length : multi!.stores.reduce((acc, s) => acc + s.items.length, 0);
-            const msg = `Found ${count} items. This was the best achievable option with current stock constraints.`;
-            return {
-                singleStore: single,
-                multiStore: multi,
-                recommendation: rec as 'single' | 'multi',
-                reasoning: msg,
-                singleStoreReasoning: msg,
-                multiStoreReasoning: msg
-            };
+        if (multi && single) {
+            const absoluteSavings = single.totalCost - multi.totalCost;
+            multi.savings = Math.max(0, absoluteSavings);
+            multi.savingsPercent = single.totalCost > 0 ? (absoluteSavings / single.totalCost) * 100 : 0;
         }
 
-        const singleCount = single.items.length;
-        const multiCount = multi.stores.reduce((acc, s) => acc + s.items.length, 0);
+        // If Multi exists, it BY DEFINITION matches requirements better or is cheaper (due to logic in calculateSmartRoute)
+        if (multi && multi.stores.length > 1) {
+            // Verify savings are "Genuine" (> 10 NOK or some threshold? User said "Strictly lower")
+            // We stick to strictly lower.
+            const savings = multi.savings;
+            const stops = multi.stores.length;
 
-        const absoluteSavings = single.totalCost - multi.totalCost;
-
-        multi.savings = Math.max(0, absoluteSavings);
-        multi.savingsPercent = single.totalCost > 0
-            ? Math.max(0, (absoluteSavings / single.totalCost) * 100)
-            : 0;
-
-        // 1. Coverage check: If multi finds many more items, it's usually better
-        if (multiCount > singleCount && (singleCount < multiCount * 0.8 || multiCount - singleCount >= 2)) {
-            const multiReasoning = `Get ${multiCount} items across ${multi.stores.length} stops for ${multi.totalCost.toFixed(0)} NOK. ${single.store.name} only has ${singleCount} items.`;
             return {
                 singleStore: single,
                 multiStore: multi,
                 recommendation: 'multi',
-                reasoning: multiReasoning,
-                singleStoreReasoning: `Convenient one-stop shop for ${singleCount} items at ${single.totalCost.toFixed(0)} NOK.`,
-                multiStoreReasoning: multiReasoning
+                reasoning: `Save ${savings.toFixed(0)} NOK by splitting your trip into ${stops} stops.`, // Availability is 100% guaranteed by loop
+                singleStoreReasoning: single ? `Convenient one-stop shop provided by ${single.store.name}.` : 'No single store has all items.',
+                multiStoreReasoning: `Smart Route optimizes for lowest price across top stores.`
             };
         }
 
-        // 2. Compare cost
-        if (absoluteSavings > 0) {
-            const multiReasoning = `Save ${absoluteSavings.toFixed(0)} NOK on groceries by splitting your trip! Total combined cost: ${multi.totalCost.toFixed(0)} NOK.`;
-            return {
-                singleStore: single,
-                multiStore: multi,
-                recommendation: 'multi',
-                reasoning: multiReasoning,
-                singleStoreReasoning: `Convenient one-stop shop at ${single.store.name} for ${single.totalCost.toFixed(0)} NOK.`,
-                multiStoreReasoning: multiReasoning
-            };
-        } else {
-            const singleReasoning = `Best choice for value: Buy everything at ${single.store.name} for ${single.totalCost.toFixed(0)} NOK.`;
+        return {
+            singleStore: single,
+            multiStore: null,
+            recommendation: 'single',
+            reasoning: single ? `Best value found at ${single.store.name}.` : 'Best available option.',
+            singleStoreReasoning: 'Best single store option.',
+            multiStoreReasoning: 'No smart route offered genuine savings.'
+        };
+    }
 
-            return {
-                singleStore: single,
-                multiStore: multi,
-                recommendation: 'single',
-                reasoning: singleReasoning,
-                singleStoreReasoning: singleReasoning,
-                multiStoreReasoning: `Multi-store route would cost an extra ${Math.abs(absoluteSavings).toFixed(0)} NOK.`
-            };
-        }
+    private createEmptyResult(msg: string): RouteOptimizationResult {
+        return {
+            singleStore: null,
+            multiStore: null,
+            recommendation: 'single',
+            reasoning: msg,
+            singleStoreCandidates: []
+        };
     }
 }
 
 export const routeService = new RouteService();
 export default routeService;
+

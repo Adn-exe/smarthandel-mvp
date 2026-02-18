@@ -73,6 +73,22 @@ export function formatItemName(name: string): string {
     return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
 }
 
+/**
+ * Calculates estimated travel time for a given distance
+ * @param meters Distance in meters
+ * @param avgSpeedKmH Average speed in km/h (default: 30 km/h for city driving)
+ * @returns Formatted string (e.g. "5 min" or "1 min")
+ */
+export function calculateTravelTime(meters: number, avgSpeedKmH = 30): string {
+    if (!meters || meters <= 0) return '1 min';
+
+    // Speed in meters per minute: (km/h * 1000) / 60
+    const metersPerMin = (avgSpeedKmH * 1000) / 60;
+    const minutes = Math.ceil(meters / metersPerMin);
+
+    return `${minutes} min`;
+}
+
 // Example usage / Unit tests (commented out for production but ready for testing)
 /*
 if (import.meta.vitest) {

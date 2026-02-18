@@ -68,7 +68,7 @@ export const api = {
     /**
      * Get stores nearby specific coordinates
      */
-    getStoresNearby: async (lat: number, lng: number, radius: number = 5): Promise<Store[]> => {
+    getStoresNearby: async (lat: number, lng: number, radius: number = 10): Promise<Store[]> => {
         try {
             const response = await apiClient.get<any>('/api/stores/nearby', {
                 params: { lat, lng, radius },
