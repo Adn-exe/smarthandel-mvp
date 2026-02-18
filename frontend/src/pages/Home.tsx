@@ -53,7 +53,7 @@ export function Home() {
             <SEO title={t('seo.homeTitle')} />
 
             {/* Hero Section */}
-            <section className="relative pt-12 md:pt-20 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-[80vh] md:min-h-[85vh] flex items-center">
+            <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-[80vh] md:min-h-[85vh] flex items-center">
                 {/* Morphing Gradient Orbs */}
                 <div className="absolute inset-0 -z-20 bg-[#fafafa]">
                     <div
