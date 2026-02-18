@@ -19,6 +19,7 @@ interface StoreCardProps {
     totalRequestedItems?: number;
     efficiencyTags?: string[];
     userLocation?: { lat: number; lng: number } | null;
+    highlightBorder?: 'red' | 'blue' | 'grey' | 'light-red';
 }
 
 export const StoreCard = memo(function StoreCard({
@@ -31,7 +32,8 @@ export const StoreCard = memo(function StoreCard({
     reasoningTag,
     totalRequestedItems,
     efficiencyTags = [],
-    userLocation
+    userLocation,
+    highlightBorder
 }: StoreCardProps) {
     const { t, i18n } = useTranslation();
     const [localQuantities, setLocalQuantities] = useState<Record<string | number, number>>(() =>
@@ -48,6 +50,7 @@ export const StoreCard = memo(function StoreCard({
     } | null>(null);
     const [reportedItems, setReportedItems] = useState<Set<string>>(new Set());
     const [sessionId] = useState(() => Math.random().toString(36).substring(2, 11));
+    const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
     // Sync state if initial items change
     useEffect(() => {
@@ -127,7 +130,7 @@ export const StoreCard = memo(function StoreCard({
         return {
             isFull: isFullStock,
             text: isFullStock
-                ? t('storeCard.fullStock')
+                ? t('storeCard.fullStock', 'Full Stock')
                 : t('storeCard.missingItems', { count: totalRequestedItems - foundCount }),
             icon: isFullStock ? CheckCircle2 : AlertCircle
         };
@@ -146,167 +149,186 @@ export const StoreCard = memo(function StoreCard({
     if (!isDetailed && !isComparison) {
         return (
             <div
-                onClick={onSelect}
+                onClick={(e) => {
+                    // Prevent triggering selection/expansion when clicking directions button
+                    if ((e.target as HTMLElement).closest('button')) {
+                        return;
+                    }
+                    onSelect?.();
+                    setIsItemsExpanded(!isItemsExpanded);
+                }}
                 className={clsx(
                     "relative w-full rounded-[16px] border transition-all duration-200 overflow-hidden cursor-pointer group select-none",
                     // Default State styling
-                    "bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200",
+                    !highlightBorder && "bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200",
+                    // Custom Border Highlighting
+                    highlightBorder === 'red' && "border-2 border-primary shadow-md ring-1 ring-primary/10",
+                    highlightBorder === 'light-red' && "border-2 border-red-200 shadow-sm bg-red-50/10",
+                    highlightBorder === 'blue' && "border-2 border-secondary shadow-md ring-1 ring-secondary/10",
+                    highlightBorder === 'grey' && "border border-gray-300 shadow-sm bg-gray-50/10",
                     // Highlighted "Best / Cheapest" State
-                    isCheapest && "bg-blue-50/30 border-blue-500 shadow-md ring-1 ring-blue-500/20"
+                    isCheapest && !highlightBorder && "bg-blue-50/30 border-blue-500 shadow-md ring-1 ring-blue-500/20"
                 )}
             >
                 {/* 1. Top Zone: Badge + Price */}
                 <div className="flex justify-between items-start px-4 pt-4 md:px-5 md:pt-5">
                     {/* Badge Pill */}
-                    <div>
-                        {isCheapest && (
-                            <div className="bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block mb-2">
-                                Cheapest
+                    <div className="flex gap-2">
+                        {efficiencyTags.map((tag, idx) => (
+                            <div key={idx} className={clsx(
+                                "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block mb-2 shadow-sm border",
+                                tag.toLowerCase().includes('cheapest') ? "bg-green-100 text-green-700 border-green-200" :
+                                    tag.toLowerCase().includes('closest') ? "bg-amber-100 text-amber-700 border-amber-200" :
+                                        tag.toLowerCase().includes('stop') ? "bg-blue-100 text-blue-700 border-blue-200 font-extrabold" :
+                                            "bg-gray-100 text-gray-600 border-gray-200"
+                            )}>
+                                {tag}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Price - LARGE & BLUE */}
+                    <div className="text-right">
+                        <div className="flex items-baseline justify-end gap-1">
+                            <span className="text-2xl md:text-3xl font-black text-blue-600 tracking-tight leading-none">
+                                {formatPriceParts(currentTotalCost).amount}
+                            </span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase">NOK</span>
+                        </div>
+                        {reasoningTag && (
+                            <div className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-md inline-block mt-1 font-medium border border-red-100">
+                                {reasoningTag}
                             </div>
                         )}
                     </div>
-
-                    {/* Price Block */}
-                    <div className="text-right">
-                        <div className={clsx(
-                            "text-2xl md:text-[28px] font-bold leading-none tracking-tight",
-                            isCheapest ? "text-blue-600" : "text-gray-900"
-                        )}>
-                            {formatPriceParts(currentTotalCost).amount},
-                            <span className="text-lg md:text-xl">{formatPriceParts(currentTotalCost).amount.split(',')[1] || '-'}</span>
-                        </div>
-                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
-                            NOK Total
-                        </div>
-                    </div>
                 </div>
 
-                {/* 2. Middle Zone: Store Name + Distance */}
-                <div className="px-4 md:px-5 pb-4">
-                    <h3 className="text-lg md:text-[20px] font-semibold text-gray-900 leading-tight mb-1 truncate pr-2">
+                {/* 2. Middle Zone: Store Info */}
+                <div className="px-4 pb-4 md:px-5 md:pb-5 mt-2">
+                    <h3 className="font-bold text-dark text-lg leading-tight mb-1 group-hover:text-primary transition-colors">
                         {store.name}
                     </h3>
-                    <div className="flex items-center gap-1.5 text-gray-500">
-                        <MapPin className="w-3.5 h-3.5 shrink-0" />
-                        <span className="text-[14px] md:text-[15px] font-medium">
-                            {formatDistance(distance)} away
-                        </span>
+                    <div className="flex items-center gap-3 text-xs text-gray-500 font-medium">
+                        <div className="flex items-center gap-1">
+                            <Navigation className="w-3 h-3" />
+                            {formatDistance(distance)}
+                        </div>
+                        <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                        <div>{store.chain}</div>
                     </div>
                 </div>
 
-                {/* Divider */}
-                <div className="h-px w-full bg-gray-100 mx-0"></div>
-
-                {/* 3. Bottom Zone: Availability + Action */}
-                <div className="px-4 py-3 md:px-5 md:py-4 flex justify-between items-center bg-transparent">
-                    {/* Availability */}
-                    <div className="flex items-center gap-2 min-w-0">
-                        {stockStatus ? (
-                            <>
-                                <stockStatus.icon className={clsx(
-                                    "w-4 h-4 md:w-[18px] md:h-[18px] shrink-0",
-                                    stockStatus.isFull ? "text-green-500" : "text-amber-500"
-                                )} />
-                                <span className={clsx(
-                                    "text-[14px] md:text-[15px] truncate",
-                                    stockStatus.isFull ? "text-gray-700 font-medium" : "text-gray-900 font-medium"
-                                )}>
-                                    {stockStatus.text}
-                                </span>
-                            </>
-                        ) : (
-                            <span className="text-[14px] text-gray-400">Availability unknown</span>
-                        )}
-                    </div>
-
-                    {/* Action Link */}
+                {/* 3. Bottom Zone: Action Footer (Directions & Stock) */}
+                <div className="mt-auto px-4 py-3 md:px-5 md:py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between gap-4">
+                    {/* Left: Get Directions Button */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            setIsItemsExpanded(!isItemsExpanded);
+                            window.open(googleMapsUrl, '_blank');
                         }}
-                        className="flex items-center gap-0.5 text-primary text-[14px] md:text-[15px] font-medium group-active:text-blue-700 whitespace-nowrap pl-2 hover:underline"
+                        className="flex items-center gap-2 bg-white hover:bg-gray-50 text-dark border border-gray-200 px-3 py-2 rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all group/btn"
                     >
-                        {isItemsExpanded ? t('common.hideList', 'Hide List') : t('common.viewList', 'View List')}
-                        <ChevronRight className={clsx(
-                            "w-4 h-4 md:w-[18px] md:h-[18px] transition-transform",
-                            isItemsExpanded ? "-rotate-90" : "group-hover:translate-x-0.5"
-                        )} />
+                        <MapPin className="w-3.5 h-3.5 text-blue-500 group-hover/btn:scale-110 transition-transform" />
+                        {t('storeCard.getDirections', 'Get Directions')}
                     </button>
+
+                    {/* Right: Stock Status & Expand Chevron */}
+                    <div className="flex items-center gap-3">
+                        {stockStatus && (
+                            <div className={clsx(
+                                "flex items-center gap-1.5 text-xs font-bold",
+                                stockStatus.isFull ? "text-green-600" : "text-amber-600"
+                            )}>
+                                <stockStatus.icon className="w-3.5 h-3.5" />
+                                <span>{stockStatus.text}</span>
+                            </div>
+                        )}
+                        <ChevronRight className={clsx(
+                            "w-4 h-4 text-gray-400 transition-transform duration-300",
+                            isItemsExpanded ? "-rotate-90" : "rotate-90 md:rotate-0"
+                        )} />
+                    </div>
                 </div>
 
                 {/* Expanded Items List */}
-                {isItemsExpanded && (
-                    <div className="px-4 pb-4 md:px-5 md:pb-5 border-t border-gray-50 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div className="space-y-4">
-                            {items.map((item, idx) => (
-                                <div key={idx} className="flex justify-between items-center gap-3">
-                                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                                        {/* Product Image */}
-                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                                            {item.image_url ? (
-                                                <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1" />
-                                            ) : (
-                                                <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-gray-200" />
-                                            )}
-                                        </div>
-
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-sm font-medium text-gray-900 truncate">
-                                                    {item.name}
-                                                </p>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setReportingItem({
-                                                            storeId: String(store.id),
-                                                            storeName: store.name,
-                                                            itemId: item.id,
-                                                            itemName: item.name,
-                                                            requestedName: item.originalQueryName
-                                                        });
-                                                    }}
-                                                    className="p-1 hover:bg-gray-100 rounded-full transition-colors group/report"
-                                                    title={t('common.reportIssue', 'Report issue')}
-                                                >
-                                                    <Flag className="w-3 h-3 text-gray-300 group-hover/report:text-red-400" />
-                                                </button>
+                {
+                    isItemsExpanded && (
+                        <div className="px-4 pb-4 md:px-5 md:pb-5 border-t border-gray-50 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="space-y-4">
+                                {items.map((item, idx) => (
+                                    <div key={idx} className="flex justify-between items-center gap-3">
+                                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                                            {/* Product Image */}
+                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                                {item.image_url && !failedImages.has(String(item.id)) ? (
+                                                    <img
+                                                        src={item.image_url}
+                                                        alt={item.name}
+                                                        className="w-full h-full object-contain p-1"
+                                                        onError={() => setFailedImages(prev => new Set(prev).add(String(item.id)))}
+                                                    />
+                                                ) : (
+                                                    <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-gray-200" />
+                                                )}
                                             </div>
 
-                                            <div className="flex items-center bg-gray-50 rounded-md p-0.5 border border-gray-100 shrink-0 w-fit mt-1">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
-                                                    className="p-1 hover:bg-white rounded transition-all"
-                                                >
-                                                    <Minus className="w-2.5 h-2.5 text-gray-400" />
-                                                </button>
-                                                <span className="px-1.5 text-[9px] font-black text-dark min-w-[18px] text-center">
-                                                    {(localQuantities[String(item.id)] || item.quantity)}x
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-medium text-gray-900 truncate">
+                                                        {item.name}
+                                                    </p>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setReportingItem({
+                                                                storeId: String(store.id),
+                                                                storeName: store.name,
+                                                                itemId: item.id,
+                                                                itemName: item.name,
+                                                                requestedName: item.originalQueryName
+                                                            });
+                                                        }}
+                                                        className="p-1 hover:bg-gray-100 rounded-full transition-colors group/report"
+                                                        title={t('common.reportIssue', 'Report issue')}
+                                                    >
+                                                        <Flag className="w-3 h-3 text-gray-300 group-hover/report:text-red-400" />
+                                                    </button>
+                                                </div>
+
+                                                <div className="flex items-center bg-gray-50 rounded-md p-0.5 border border-gray-100 shrink-0 w-fit mt-1">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
+                                                        className="p-1 hover:bg-white rounded transition-all"
+                                                    >
+                                                        <Minus className="w-2.5 h-2.5 text-gray-400" />
+                                                    </button>
+                                                    <span className="px-1.5 text-[9px] font-black text-dark min-w-[18px] text-center">
+                                                        {(localQuantities[String(item.id)] || item.quantity)}x
+                                                    </span>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
+                                                        className="p-1 hover:bg-white rounded transition-all"
+                                                    >
+                                                        <Plus className="w-2.5 h-2.5 text-gray-400" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                            <div className="text-sm font-bold text-gray-900">
+                                                {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
+                                                <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">
+                                                    {formatPriceParts(item.price).currency}
                                                 </span>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
-                                                    className="p-1 hover:bg-white rounded transition-all"
-                                                >
-                                                    <Plus className="w-2.5 h-2.5 text-gray-400" />
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-right shrink-0">
-                                        <div className="text-sm font-bold text-gray-900">
-                                            {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
-                                            <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">
-                                                {formatPriceParts(item.price).currency}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )
+                }
+            </div >
         );
     }
 

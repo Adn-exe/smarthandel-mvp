@@ -399,8 +399,13 @@ export default function Results() {
                                                 // Helper to format price
                                                 const formatPrice = (price: number) => {
                                                     const locale = i18n.language.startsWith('no') ? 'no-NO' : 'en-GB';
-                                                    const amount = new Intl.NumberFormat(locale, { style: 'decimal', maximumFractionDigits: 0 }).format(price);
-                                                    return `${amount} NOK`;
+                                                    // Ensure clean formatting without decimals or currency symbols first
+                                                    const formatter = new Intl.NumberFormat(locale, {
+                                                        style: 'decimal',
+                                                        maximumFractionDigits: 0
+                                                    });
+                                                    // Manually construct the string to guarantee "Amount NOK" format without trailing chars
+                                                    return `${formatter.format(price).replace(/,00$|,-$/, '')} NOK`;
                                                 };
 
                                                 if (currentV === 'multi' && routeData?.multiStore && routeData.singleStore) {

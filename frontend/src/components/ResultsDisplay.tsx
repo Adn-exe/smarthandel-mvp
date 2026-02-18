@@ -65,11 +65,13 @@ export const ResultsDisplay = memo(function ResultsDisplay({
         return Math.max(...singleStores.map(s => s.items.length));
     }, [singleStores]);
 
-    const minPrice = useMemo(() => {
-        if (!singleStores || singleStores.length === 0) return 0;
-        // Only consider stores that have the maximum number of items found
+    const cheapestStoreId = useMemo(() => {
+        if (!singleStores || singleStores.length === 0) return null;
         const validStores = singleStores.filter(s => s.items.length === maxItemsFound);
-        return Math.min(...validStores.map(s => s.totalCost));
+        const minCost = Math.min(...validStores.map(s => s.totalCost));
+        const candidates = validStores.filter(s => s.totalCost === minCost);
+        // Tie-breaker: Sort by distance (ascending)
+        return candidates.sort((a, b) => a.distance - b.distance)[0]?.store.id;
     }, [singleStores, maxItemsFound]);
 
     const comparisonCandidates = useMemo(() => {
@@ -144,10 +146,10 @@ export const ResultsDisplay = memo(function ResultsDisplay({
             <div className="grid grid-cols-1 gap-4 md:gap-6">
 
                 {activeView === 'single' ? (
-                    <div className="space-y-8 md:space-y-12">
+                    <div className="space-y-12 md:space-y-16">
                         {/* Choice 1: Best Single Store */}
                         {singleStores.length > 0 && (
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <div className="flex items-center gap-2 mb-1 px-2">
                                     <div className="h-px bg-primary/10 flex-grow"></div>
                                     <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{t('results.bestChoice', 'Best Value Selection')}</span>
@@ -170,9 +172,10 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                             selected={selectedStoreId === singleStores[0].store.id}
                                             totalRequestedItems={totalRequestedItems}
                                             userLocation={userLocation}
+                                            highlightBorder="red"
                                             efficiencyTags={(() => {
                                                 const tags = [];
-                                                if (singleStores[0].totalCost === minPrice) tags.push('💰 Cheapest');
+                                                if (singleStores[0].store.id === cheapestStoreId) tags.push('💰 Cheapest');
                                                 if (singleStores[0].distance === minDistance) tags.push('📍 Closest');
                                                 return tags;
                                             })()}
@@ -194,7 +197,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                             if (alternatives.length === 0) return null;
 
                             return alternatives.map((alternative, index) => (
-                                <div key={alternative.store.id} className="space-y-4">
+                                <div key={alternative.store.id} className="space-y-6">
                                     <div className="flex items-center gap-2 mb-2 px-2">
                                         <div className="h-px bg-gray-100 flex-grow"></div>
                                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
@@ -218,9 +221,10 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                 selected={selectedStoreId === alternative.store.id}
                                                 totalRequestedItems={totalRequestedItems}
                                                 userLocation={userLocation}
+                                                highlightBorder="light-red"
                                                 efficiencyTags={(() => {
                                                     const tags = [];
-                                                    if (alternative.totalCost === minPrice) tags.push('💰 Cheapest');
+                                                    if (alternative.store.id === cheapestStoreId) tags.push('💰 Cheapest');
                                                     if (alternative.distance === minDistance) tags.push('📍 Closest');
                                                     return tags;
                                                 })()}
@@ -302,9 +306,10 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                             distance={stop.distance}
                                                             variant="default"
                                                             selected={selectedStoreId === stop.store.id}
-                                                            reasoningTag={t('results.instruction.itemsToBuy')}
+                                                            efficiencyTags={[`Stop ${idx + 1}`]}
                                                             totalRequestedItems={stop.items.length}
                                                             userLocation={userLocation}
+                                                            highlightBorder="blue"
                                                         />
                                                     </div>
                                                 </div>
@@ -318,7 +323,8 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                         <div className="flex items-center gap-3 text-gray-400 font-bold bg-white/40 backdrop-blur-sm px-4 py-2 rounded-2xl border border-gray-50/50 shadow-sm ml-8">
                                                             <Car className="w-4 h-4 text-secondary/40" />
                                                             <span className="text-[10px] md:text-xs uppercase tracking-[0.1em]">
-                                                                {Math.round(multiStore.stores[idx + 1].distance * 3.5)} min drive ({formatDistance(multiStore.stores[idx + 1].distance)})
+                                                                {/* Estimate: 400m per minute = ~24km/h typical city + parking */}
+                                                                {Math.max(1, Math.round(multiStore.stores[idx + 1].distance / 400))} min drive ({formatDistance(multiStore.stores[idx + 1].distance)})
                                                             </span>
                                                             <ArrowRight className="w-3 h-3 ml-1 opacity-30" />
                                                         </div>
