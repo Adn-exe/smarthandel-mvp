@@ -20,6 +20,7 @@ interface StoreCardProps {
     efficiencyTags?: string[];
     userLocation?: { lat: number; lng: number } | null;
     highlightBorder?: 'red' | 'blue' | 'grey' | 'light-red';
+    indexBadge?: number;
 }
 
 export const StoreCard = memo(function StoreCard({
@@ -33,7 +34,8 @@ export const StoreCard = memo(function StoreCard({
     totalRequestedItems,
     efficiencyTags = [],
     userLocation,
-    highlightBorder
+    highlightBorder,
+    indexBadge
 }: StoreCardProps) {
     const { t, i18n } = useTranslation();
     const [localQuantities, setLocalQuantities] = useState<Record<string | number, number>>(() =>
@@ -170,8 +172,15 @@ export const StoreCard = memo(function StoreCard({
                     isCheapest && !highlightBorder && "bg-blue-50/30 border-blue-500 shadow-md ring-1 ring-blue-500/20"
                 )}
             >
+                {/* Index Badge for Alternatives */}
+                {indexBadge && (
+                    <div className="absolute -left-[1px] -top-[1px] w-8 h-8 rounded-br-2xl bg-gray-900 text-white flex items-center justify-center font-black text-xs z-10 shadow-sm border-r border-b border-gray-100/10">
+                        {indexBadge}
+                    </div>
+                )}
+
                 {/* 1. Top Zone: Badge + Price */}
-                <div className="flex justify-between items-start px-4 pt-4 md:px-5 md:pt-5">
+                <div className="flex justify-between items-start px-4 pt-4 md:px-5 md:pt-5 pl-10"> {/* Added padding-left to avoid overlap if badge exists */}
                     {/* Badge Pill */}
                     <div className="flex gap-2">
                         {efficiencyTags.map((tag, idx) => (

@@ -175,8 +175,8 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                             highlightBorder="red"
                                             efficiencyTags={(() => {
                                                 const tags = [];
-                                                if (singleStores[0].store.id === cheapestStoreId) tags.push('💰 Cheapest');
-                                                if (singleStores[0].distance === minDistance) tags.push('📍 Closest');
+                                                if (singleStores[0].store.id === cheapestStoreId) tags.push('Cheapest');
+                                                if (singleStores[0].distance === minDistance) tags.push('Closest');
                                                 return tags;
                                             })()}
                                         />
@@ -198,13 +198,15 @@ export const ResultsDisplay = memo(function ResultsDisplay({
 
                             return alternatives.map((alternative, index) => (
                                 <div key={alternative.store.id} className="space-y-6">
-                                    <div className="flex items-center gap-2 mb-2 px-2">
-                                        <div className="h-px bg-gray-100 flex-grow"></div>
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
-                                            {index === 0 ? t('results.bestAlternative', 'Secondary Provider') : `${t('results.alternative', 'Option')} ${index + 2}`}
-                                        </span>
-                                        <div className="h-px bg-gray-100 flex-grow"></div>
-                                    </div>
+                                    {index === 0 && (
+                                        <div className="flex items-center gap-2 mb-2 px-2">
+                                            <div className="h-px bg-gray-100 flex-grow"></div>
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                                                {t('results.bestAlternative', 'Secondary Provider')}
+                                            </span>
+                                            <div className="h-px bg-gray-100 flex-grow"></div>
+                                        </div>
+                                    )}
                                     <div
                                         className="transition-all duration-500"
                                     >
@@ -222,10 +224,11 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                 totalRequestedItems={totalRequestedItems}
                                                 userLocation={userLocation}
                                                 highlightBorder="light-red"
+                                                indexBadge={index + 1}
                                                 efficiencyTags={(() => {
                                                     const tags = [];
-                                                    if (alternative.store.id === cheapestStoreId) tags.push('💰 Cheapest');
-                                                    if (alternative.distance === minDistance) tags.push('📍 Closest');
+                                                    if (alternative.store.id === cheapestStoreId) tags.push('Cheapest');
+                                                    if (alternative.distance === minDistance) tags.push('Closest');
                                                     return tags;
                                                 })()}
                                             />
@@ -240,45 +243,53 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                     <div className="space-y-6 md:space-y-10 px-2 lg:px-0">
                         {multiStore && (
                             <>
-                                {/* Trip Header: Calm & Efficient */}
-                                <div className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 p-5 md:p-8 shadow-sm mb-8 md:mb-12">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                        <div>
-                                            <h3 className="text-sm md:text-base font-black text-gray-400 uppercase tracking-widest mb-1">
-                                                {t('results.smartRoute', 'Smart Route Strategy')}
-                                            </h3>
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="text-3xl md:text-4xl font-black text-dark tabular-nums">
-                                                    {formatPrice(multiStore.totalCost || 0)}
-                                                </span>
-                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">
-                                                    {t('results.totalExpense', 'Aggregate')}
-                                                </span>
-                                            </div>
+                                {/* Trip Header: Compact & Clean */}
+                                <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm mb-6 flex flex-wrap md:flex-nowrap items-center justify-around md:justify-between text-center gap-4">
+                                    {/* 1. Total Expense */}
+                                    <div className="flex-1 min-w-[100px]">
+                                        <div className="text-3xl md:text-4xl font-black text-blue-600 tracking-tight leading-none mb-1">
+                                            {Math.round(multiStore.totalCost || 0)}
                                         </div>
-
-                                        {/* Metrics Row */}
-                                        <div className="flex items-center gap-3 sm:gap-6 bg-gray-50/50 p-2 rounded-2xl border border-gray-50">
-                                            <div className="text-center px-4 py-2">
-                                                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">{t('results.stops', 'Stops')}</div>
-                                                <div className="font-black text-dark text-lg">{multiStore.stores.length}</div>
-                                            </div>
-                                            <div className="w-px h-8 bg-gray-200"></div>
-                                            <div className="text-center px-4 py-2">
-                                                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">{t('common.distance', 'Distance')}</div>
-                                                <div className="font-black text-dark text-lg">{formatDistance(multiStore.totalDistance)}</div>
-                                            </div>
+                                        <div className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wide">
+                                            NOK {t('results.totalExpense', 'Total Expense')}
                                         </div>
                                     </div>
 
-                                    {/* Savings Tag */}
-                                    {routeSavings > 0 && (
-                                        <div className="mt-6 flex items-center gap-2 text-secondary bg-secondary/10 w-fit px-4 py-2 rounded-xl border border-secondary/20 font-bold text-xs md:text-sm">
-                                            <Sparkles className="w-4 h-4" />
-                                            {t('results.saveExtra', 'Save {{amount}} extra vs. best single stop', { amount: formatPrice(routeSavings) })}
+                                    {/* Divider */}
+                                    <div className="hidden md:block w-px h-8 bg-gray-100"></div>
+
+                                    {/* 2. Stops */}
+                                    <div className="flex-1 min-w-[80px]">
+                                        <div className="text-2xl md:text-3xl font-black text-gray-900 leading-none mb-1">
+                                            {multiStore.stores.length}
                                         </div>
-                                    )}
+                                        <div className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wide">
+                                            {t('results.stops', 'Stops')}
+                                        </div>
+                                    </div>
+
+                                    {/* Divider */}
+                                    <div className="hidden md:block w-px h-8 bg-gray-100"></div>
+
+                                    {/* 3. Distance */}
+                                    <div className="flex-1 min-w-[100px]">
+                                        <div className="text-2xl md:text-3xl font-black text-gray-900 leading-none mb-1">
+                                            {formatDistance(multiStore.totalDistance)}
+                                        </div>
+                                        <div className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wide">
+                                            {t('common.distance', 'Distance')}
+                                        </div>
+                                    </div>
                                 </div>
+
+                                {routeSavings > 0 && (
+                                    <div className="flex justify-center mb-8 -mt-4">
+                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded-b-xl border-x border-b border-green-100 shadow-sm">
+                                            <Sparkles className="w-3 h-3" />
+                                            {t('results.saveExtra', 'Save {{amount}}', { amount: formatPrice(routeSavings) })}
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="relative ml-2 mr-2 md:ml-4 md:mr-0">
                                     {/* Vertical Spine - Left Aligned */}
