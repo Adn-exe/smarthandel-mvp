@@ -87,7 +87,7 @@ async function sync() {
         console.log(`[SyncJob] Processing canonical ID: ${item.id}...`);
 
         for (const query of item.queries) {
-            await sleep(500); // Rate limiting
+            await sleep(1500); // Increased sleep from 500ms to 1500ms for better rate limiting
             try {
                 // Fetch products for this query across all chains
                 const response = await dataAggregator.searchProductsWithChainVariety(

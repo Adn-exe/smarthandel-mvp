@@ -37,16 +37,34 @@ export class KassalProvider implements BaseProvider {
         }
     }
 
-    private async withRetry<T>(fn: () => Promise<T>, retries = 2): Promise<T> {
+    private activeRequests = 0;
+    private readonly MAX_CONCURRENT = 3;
+
+    private async withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
+        // Simple Concurrency Throttling
+        while (this.activeRequests >= this.MAX_CONCURRENT) {
+            console.log(`[Kassal Provider] Throttling active requests (${this.activeRequests}/${this.MAX_CONCURRENT}), waiting...`);
+            await new Promise(res => setTimeout(res, 500 + Math.random() * 500));
+        }
+
+        this.activeRequests++;
         try {
             return await fn();
-        } catch (error) {
+        } catch (error: any) {
+            const isRateLimit = axios.isAxiosError(error) && error.response?.status === 429;
+
             if (retries > 0) {
-                console.warn(`[Kassal Provider] Request failed, retrying... (${retries} left)`);
-                await new Promise(res => setTimeout(res, (3 - retries) * 300));
+                const delayMs = isRateLimit
+                    ? (4 - retries) * 2000 + Math.random() * 1000 // Heavy backoff for 429
+                    : (4 - retries) * 500 + Math.random() * 200;  // Standard backoff
+
+                console.warn(`[Kassal Provider] Request failed (${isRateLimit ? '429 Rate Limit' : 'Error'}), retrying in ${Math.round(delayMs)}ms... (${retries} left)`);
+                await new Promise(res => setTimeout(res, delayMs));
                 return this.withRetry(fn, retries - 1);
             }
             throw error;
+        } finally {
+            this.activeRequests--;
         }
     }
 
