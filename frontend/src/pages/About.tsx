@@ -64,15 +64,15 @@ export function About() {
                                 </p>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-5 pt-4">
+                            <div className="flex flex-col sm:flex-row gap-4 md:gap-5 pt-4">
                                 <button
                                     onClick={() => navigate('/')}
-                                    className="bg-dark text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-black/10 flex items-center justify-center gap-3"
+                                    className="bg-dark text-white px-6 py-4 md:px-10 md:py-5 rounded-2xl font-black text-base md:text-lg hover:bg-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-black/10 flex items-center justify-center gap-3"
                                 >
                                     {t('common.startOver')}
                                     <ArrowRight className="w-5 h-5" />
                                 </button>
-                                <button className="border-2 border-gray-200 bg-white px-10 py-5 rounded-2xl font-black text-lg text-dark hover:border-dark transition-all flex items-center justify-center">
+                                <button className="border-2 border-gray-200 bg-white px-6 py-4 md:px-10 md:py-5 rounded-2xl font-black text-base md:text-lg text-dark hover:border-dark transition-all flex items-center justify-center">
                                     {t('about.viewPartners')}
                                 </button>
                             </div>
@@ -116,7 +116,7 @@ export function About() {
                             { icon: List, title: t('about.step2Title'), desc: t('about.step2Desc'), color: 'bg-green-50 text-green-600' },
                             { icon: TrendingDown, title: t('about.step3Title'), desc: t('about.step3Desc'), color: 'bg-primary/5 text-primary' }
                         ].map((step, idx) => (
-                            <div key={idx} className="group bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.03)] space-y-8 transition-all hover:shadow-[0_40px_80px_-24px_rgba(0,0,0,0.1)] hover:-translate-y-2">
+                            <div key={idx} className="group bg-white p-6 md:p-10 rounded-[32px] border border-gray-100 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.03)] space-y-5 md:space-y-8 transition-all hover:shadow-[0_40px_80px_-24px_rgba(0,0,0,0.1)] hover:-translate-y-2">
                                 <div className={clsx(
                                     "w-20 h-20 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
                                     step.color

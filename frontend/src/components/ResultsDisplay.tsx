@@ -225,12 +225,12 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                     </div>
                                     <div
                                         key={alternative.store.id}
-                                        className="relative p-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-gray-200 transition-all duration-500"
+                                        className="relative p-4 md:p-6 rounded-2xl md:rounded-3xl border-2 border-gray-100 bg-white hover:border-gray-200 transition-all duration-500"
                                     >
-                                        <div className="mb-6">
-                                            <h3 className="text-xl font-bold text-dark flex items-center justify-between">
-                                                <span>{alternative.store.name}</span>
-                                                <span className="text-2xl font-black text-gray-400">
+                                        <div className="mb-4 md:mb-6">
+                                            <h3 className="text-lg md:text-xl font-bold text-dark flex items-center justify-between gap-2">
+                                                <span className="truncate">{alternative.store.name}</span>
+                                                <span className="text-xl md:text-2xl font-black text-gray-400 shrink-0">
                                                     {formatPrice(alternative.totalCost || 0)}
                                                 </span>
                                             </h3>

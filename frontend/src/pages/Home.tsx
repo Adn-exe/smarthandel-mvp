@@ -213,8 +213,8 @@ export function Home() {
 ![Final Home Page Redesign](file:///Users/mohammedadnan/.gemini/antigravity/brain/41ad05d8-f5b9-4b51-9102-566be8b6e03c/homepage_top_1771058558085.png)
             */}
             {/* Stats Section - Classic Dark Bar (Matching About Us) */}
-            <section className="bg-dark text-white py-20 px-4">
-                <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-12 text-center items-center">
+            <section className="bg-dark text-white py-12 md:py-20 px-4">
+                <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 md:gap-12 text-center items-center">
                     <div className="animate-reveal [animation-delay:100ms]">
                         <div className="text-5xl md:text-6xl font-bold text-primary mb-3">15k+</div>
                         <p className="text-gray-400 text-lg uppercase tracking-widest font-medium">
@@ -237,18 +237,18 @@ export function Home() {
             </section>
 
             {/* CTA Section */}
-            <section className="py-32 text-center px-4">
-                <div className="max-w-3xl mx-auto glass p-16 rounded-[3rem] animate-reveal">
-                    <h2 className="text-4xl md:text-5xl font-bold text-dark mb-10 leading-tight">{t('home.cta.title')}</h2>
+            <section className="py-16 md:py-32 text-center px-4">
+                <div className="max-w-3xl mx-auto glass p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] animate-reveal">
+                    <h2 className="text-3xl md:text-5xl font-bold text-dark mb-8 md:mb-10 leading-tight">{t('home.cta.title')}</h2>
                     <button
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                        className="inline-flex items-center gap-3 bg-dark text-white px-12 py-5 rounded-2xl text-xl font-bold hover:bg-black transition-all transform hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] active:scale-95"
+                        className="inline-flex items-center gap-2 md:gap-3 bg-dark text-white px-8 py-4 md:px-12 md:py-5 rounded-2xl text-base md:text-xl font-bold hover:bg-black transition-all transform hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] active:scale-95"
                     >
-                        <ShoppingBag className="w-6 h-6" />
+                        <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" />
                         {t('home.cta.button')}
-                        <ArrowRight className="w-6 h-6 ml-1" />
+                        <ArrowRight className="w-5 h-5 md:w-6 md:h-6 ml-1" />
                     </button>
-                    <p className="mt-8 text-gray-400 font-medium">No sign up required. Just start saving.</p>
+                    <p className="mt-6 md:mt-8 text-sm md:text-base text-gray-400 font-medium">No sign up required. Just start saving.</p>
                 </div>
             </section>
         </div>

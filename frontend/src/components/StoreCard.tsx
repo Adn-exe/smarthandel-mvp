@@ -69,6 +69,8 @@ export const StoreCard = memo(function StoreCard({
     };
 
     const [hoveredItemId, setHoveredItemId] = useState<string | number | null>(null);
+    const [isItemsExpanded, setIsItemsExpanded] = useState(false);
+    const MOBILE_ITEMS_LIMIT = 3;
 
     const currentTotalCost = useMemo(() => {
         return items.reduce((acc, item) => {
@@ -225,115 +227,137 @@ export const StoreCard = memo(function StoreCard({
                         {t('storeCard.yourCartItems')}
                     </h4>
                     <div className="space-y-3 md:space-y-4">
-                        {items.map((item, idx) => (
-                            <div key={idx} className="flex justify-between items-start gap-2">
-                                <div className="flex items-start gap-2 md:gap-3 min-w-0 flex-1">
-                                    {item.image_url ? (
-                                        <img
-                                            src={item.image_url}
-                                            alt={item.name}
-                                            className="w-10 h-10 md:w-12 md:h-12 object-contain bg-white rounded-lg border border-gray-50 p-0.5 shrink-0"
-                                            loading="lazy"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.onerror = null; // Prevent infinite loop
-                                                target.src = '/images/placeholder.png';
-                                                target.className = 'w-10 h-10 md:w-12 md:h-12 object-contain bg-gray-50 rounded-lg p-1.5 opacity-60';
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg flex items-center justify-center text-gray-300 shrink-0">
-                                            <ShoppingBag className="w-5 h-5" />
-                                        </div>
-                                    )}
-                                    <div className="flex flex-col min-w-0 flex-1">
-                                        <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-2">
-                                            <div className="flex items-center bg-gray-50 md:bg-gray-50/50 rounded-xl md:rounded-lg p-1 md:p-0.5 border border-gray-100 md:border-gray-100/50 shrink-0 w-fit">
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
-                                                    className="p-2 md:p-1 hover:bg-white rounded-lg transition-all active:scale-90"
-                                                >
-                                                    <Minus className="w-3.5 h-3.5 md:w-2.5 md:h-2.5 text-gray-400 hover:text-primary" />
-                                                </button>
-                                                <span className="px-2 md:px-1.5 text-xs md:text-[10px] font-black text-dark min-w-[24px] md:min-w-[20px] text-center">
-                                                    {(localQuantities[String(item.id)] || item.quantity)}x
-                                                </span>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
-                                                    className="p-2 md:p-1 hover:bg-white rounded-lg transition-all active:scale-90"
-                                                >
-                                                    <Plus className="w-3.5 h-3.5 md:w-2.5 md:h-2.5 text-gray-400 hover:text-primary" />
-                                                </button>
+                        {items
+                            .slice(0, !isItemsExpanded && items.length > MOBILE_ITEMS_LIMIT ? MOBILE_ITEMS_LIMIT : undefined)
+                            .map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-start gap-2">
+                                    <div className="flex items-start gap-2 md:gap-3 min-w-0 flex-1">
+                                        {item.image_url ? (
+                                            <img
+                                                src={item.image_url}
+                                                alt={item.name}
+                                                className="w-10 h-10 md:w-12 md:h-12 object-contain bg-white rounded-lg border border-gray-50 p-0.5 shrink-0"
+                                                loading="lazy"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.onerror = null; // Prevent infinite loop
+                                                    target.src = '/images/placeholder.png';
+                                                    target.className = 'w-10 h-10 md:w-12 md:h-12 object-contain bg-gray-50 rounded-lg p-1.5 opacity-60';
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg flex items-center justify-center text-gray-300 shrink-0">
+                                                <ShoppingBag className="w-5 h-5" />
                                             </div>
-                                            <div className="min-w-0 flex-1 relative flex items-center gap-2">
-                                                <p
-                                                    className="font-bold text-dark text-xs md:text-sm leading-snug hover:text-primary transition-colors cursor-help truncate"
-                                                    onMouseEnter={() => setHoveredItemId(item.id)}
-                                                    onMouseLeave={() => setHoveredItemId(null)}
-                                                    title={item.name}
-                                                >
-                                                    {item.name}
-                                                </p>
-
-                                                {/* Report Button */}
-                                                {!reportedItems.has(`${store.id}_${String(item.id)}`) && (
+                                        )}
+                                        <div className="flex flex-col min-w-0 flex-1">
+                                            <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-2">
+                                                <div className="flex items-center bg-gray-50 md:bg-gray-50/50 rounded-xl md:rounded-lg p-1 md:p-0.5 border border-gray-100 md:border-gray-100/50 shrink-0 w-fit">
                                                     <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setReportingItem({
-                                                                storeId: String(store.id),
-                                                                storeName: store.name,
-                                                                itemId: item.id,
-                                                                itemName: item.name,
-                                                                requestedName: item.originalQueryName || item.englishName
-                                                            });
-                                                        }}
-                                                        className="p-2 md:p-1 hover:bg-orange-50 rounded-lg text-gray-300 hover:text-orange-500 transition-all active:scale-95 group/report shrink-0"
-                                                        title={t('report.title', 'Report item issue')}
+                                                        onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
+                                                        className="p-2 md:p-1 hover:bg-white rounded-lg transition-all active:scale-90"
                                                     >
-                                                        <Flag className="w-3.5 h-3.5 md:w-3 md:h-3 group-hover/report:fill-current" />
+                                                        <Minus className="w-3.5 h-3.5 md:w-2.5 md:h-2.5 text-gray-400 hover:text-primary" />
                                                     </button>
-                                                )}
-                                                {reportedItems.has(`${store.id}_${String(item.id)}`) && (
-                                                    <div className="flex items-center text-green-500" title={t('report.submitted', 'Report submitted')}>
-                                                        <CheckCircle2 className="w-3 h-3" />
-                                                    </div>
-                                                )}
-
-                                                {item.englishName && hoveredItemId === item.id && (
-                                                    <div
-                                                        className="absolute bottom-full left-0 mb-2 pointer-events-none z-[100] hidden md:block"
-                                                        style={{ animation: 'reveal 0.2s ease-out' }}
+                                                    <span className="px-2 md:px-1.5 text-xs md:text-[10px] font-black text-dark min-w-[24px] md:min-w-[20px] text-center">
+                                                        {(localQuantities[String(item.id)] || item.quantity)}x
+                                                    </span>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
+                                                        className="p-2 md:p-1 hover:bg-white rounded-lg transition-all active:scale-90"
                                                     >
-                                                        <div className="bg-dark text-white text-[11px] font-bold px-3 py-2 rounded-lg shadow-2xl whitespace-nowrap flex items-center gap-2">
-                                                            <span className="text-emerald-400 text-[9px] font-black bg-emerald-400/10 px-1.5 py-0.5 rounded border border-emerald-400/20">EN</span>
-                                                            {item.englishName}
+                                                        <Plus className="w-3.5 h-3.5 md:w-2.5 md:h-2.5 text-gray-400 hover:text-primary" />
+                                                    </button>
+                                                </div>
+                                                <div className="min-w-0 flex-1 relative flex items-center gap-2">
+                                                    <p
+                                                        className="font-bold text-dark text-xs md:text-sm leading-snug hover:text-primary transition-colors cursor-help truncate"
+                                                        onMouseEnter={() => setHoveredItemId(item.id)}
+                                                        onMouseLeave={() => setHoveredItemId(null)}
+                                                        title={item.name}
+                                                    >
+                                                        {item.name}
+                                                    </p>
+
+                                                    {/* Report Button */}
+                                                    {!reportedItems.has(`${store.id}_${String(item.id)}`) && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setReportingItem({
+                                                                    storeId: String(store.id),
+                                                                    storeName: store.name,
+                                                                    itemId: item.id,
+                                                                    itemName: item.name,
+                                                                    requestedName: item.originalQueryName || item.englishName
+                                                                });
+                                                            }}
+                                                            className="p-2 md:p-1 hover:bg-orange-50 rounded-lg text-gray-300 hover:text-orange-500 transition-all active:scale-95 group/report shrink-0"
+                                                            title={t('report.title', 'Report item issue')}
+                                                        >
+                                                            <Flag className="w-3.5 h-3.5 md:w-3 md:h-3 group-hover/report:fill-current" />
+                                                        </button>
+                                                    )}
+                                                    {reportedItems.has(`${store.id}_${String(item.id)}`) && (
+                                                        <div className="flex items-center text-green-500" title={t('report.submitted', 'Report submitted')}>
+                                                            <CheckCircle2 className="w-3 h-3" />
                                                         </div>
-                                                        <div className="w-2 h-2 bg-dark rotate-45 -mt-1 ml-4"></div>
-                                                    </div>
-                                                )}
+                                                    )}
+
+                                                    {item.englishName && hoveredItemId === item.id && (
+                                                        <div
+                                                            className="absolute bottom-full left-0 mb-2 pointer-events-none z-[100] hidden md:block"
+                                                            style={{ animation: 'reveal 0.2s ease-out' }}
+                                                        >
+                                                            <div className="bg-dark text-white text-[11px] font-bold px-3 py-2 rounded-lg shadow-2xl whitespace-nowrap flex items-center gap-2">
+                                                                <span className="text-emerald-400 text-[9px] font-black bg-emerald-400/10 px-1.5 py-0.5 rounded border border-emerald-400/20">EN</span>
+                                                                {item.englishName}
+                                                            </div>
+                                                            <div className="w-2 h-2 bg-dark rotate-45 -mt-1 ml-4"></div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="text-right shrink-0">
-                                    <div className="flex items-baseline gap-0.5 md:gap-1">
-                                        <span className="font-bold text-dark text-xs md:text-sm leading-none">
-                                            {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
-                                        </span>
-                                        <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase">
-                                            {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).currency}
-                                        </span>
+                                    <div className="text-right shrink-0">
+                                        <div className="flex items-baseline gap-0.5 md:gap-1">
+                                            <span className="font-bold text-dark text-xs md:text-sm leading-none">
+                                                {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
+                                            </span>
+                                            <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase">
+                                                {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).currency}
+                                            </span>
+                                        </div>
+                                        {(localQuantities[item.id] || item.quantity) > 1 && (
+                                            <span className="text-[9px] md:text-[10px] text-gray-400 block mt-0.5 font-bold">
+                                                {formatPriceParts(item.price).amount} / stk
+                                            </span>
+                                        )}
                                     </div>
-                                    {(localQuantities[item.id] || item.quantity) > 1 && (
-                                        <span className="text-[9px] md:text-[10px] text-gray-400 block mt-0.5 font-bold">
-                                            {formatPriceParts(item.price).amount} / stk
-                                        </span>
-                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            ))}
                     </div>
+
+                    {/* Mobile: Show more / less toggle */}
+                    {items.length > MOBILE_ITEMS_LIMIT && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setIsItemsExpanded(prev => !prev); }}
+                            className="md:hidden mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-[11px] font-black text-primary bg-primary/5 rounded-xl border border-primary/10 active:scale-95 transition-all"
+                        >
+                            {isItemsExpanded ? (
+                                <>
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" /></svg>
+                                    Show less
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+                                    Show all {items.length} items
+                                </>
+                            )}
+                        </button>
+                    )}
 
                     {items.length === 0 && (
                         <p className="text-sm text-gray-400 italic">{t('storeCard.noItemsFound')}</p>

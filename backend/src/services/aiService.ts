@@ -14,7 +14,7 @@ interface ParsedQuery {
  */
 class AIService {
     private client: GoogleGenerativeAI;
-    private readonly MODEL = 'gemini-1.5-flash';
+    private readonly MODEL = 'gemini-2.0-flash';
 
     constructor() {
         this.client = new GoogleGenerativeAI(config.geminiApiKey || 'dummy-key');

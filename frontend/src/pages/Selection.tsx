@@ -159,8 +159,8 @@ export function Selection() {
                             >
                                 <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-gray-50 to-white -z-10 rounded-bl-3xl opacity-50 transition-transform group-hover:scale-150 duration-700"></div>
 
-                                <div className="flex items-center gap-5 min-w-0 flex-1">
-                                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-50 to-white rounded-2xl flex items-center justify-center shrink-0 border border-indigo-50 shadow-sm group-hover:rotate-6 transition-transform duration-500">
+                                <div className="flex items-center gap-3 md:gap-5 min-w-0 flex-1">
+                                    <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-indigo-50 to-white rounded-2xl flex items-center justify-center shrink-0 border border-indigo-50 shadow-sm group-hover:rotate-6 transition-transform duration-500">
                                         <ShoppingBag className="w-6 h-6 text-indigo-400 group-hover:text-indigo-600 transition-colors" />
                                     </div>
                                     <div className="truncate pr-4">
@@ -207,13 +207,13 @@ export function Selection() {
                         ))}
 
                         {/* Subtotal Preview */}
-                        <div className="mt-8 bg-white/50 border border-gray-100 rounded-[2rem] p-6 text-right">
+                        <div className="mt-8 bg-white/50 border border-gray-100 rounded-[2rem] p-4 md:p-6 text-right">
                             <p className="text-sm text-gray-400 font-medium uppercase tracking-[0.2em] mb-1">
                                 Estimated Subtotal
                             </p>
-                            <div className="text-3xl font-black text-dark">
+                            <div className="text-2xl md:text-3xl font-black text-dark">
                                 NOK {items.reduce((sum, item) => sum + (item.quantity * 25), 0).toFixed(0)}
-                                <span className="text-lg text-gray-400 font-medium ml-1">*</span>
+                                <span className="text-base md:text-lg text-gray-400 font-medium ml-1">*</span>
                             </div>
                             <p className="text-[10px] text-gray-400 mt-2 italic">* Based on average market prices. We'll find the exact store prices next.</p>
                         </div>
