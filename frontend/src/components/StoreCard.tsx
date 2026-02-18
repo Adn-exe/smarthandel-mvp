@@ -1,6 +1,6 @@
 import { memo, useMemo, useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import { ShoppingCart, Info, TrendingUp, ShoppingBag, Navigation, ChevronRight, CheckCircle2, AlertCircle, ExternalLink, Plus, Minus, Flag } from 'lucide-react';
+import { ShoppingCart, Info, TrendingUp, ShoppingBag, Navigation, ChevronRight, CheckCircle2, AlertCircle, ExternalLink, Plus, Minus, Flag, MapPin } from 'lucide-react';
 import { api } from '../services/api';
 import { ReportModal } from './ReportModal';
 import { formatDistance } from '../utils/format';
@@ -140,6 +140,96 @@ export const StoreCard = memo(function StoreCard({
         return `${baseUrl}${origin}${destination}&travelmode=driving`;
     }, [store.location, userLocation]);
 
+    const isCheapest = efficiencyTags.some(t => t.toLowerCase().includes('cheapest'));
+
+    // Render the new "Scandinavian Minimal" Default Variant
+    if (!isDetailed && !isComparison) {
+        return (
+            <div
+                onClick={onSelect}
+                className={clsx(
+                    "relative w-full rounded-[16px] border transition-all duration-200 overflow-hidden cursor-pointer group select-none",
+                    // Default State styling
+                    "bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200",
+                    // Highlighted "Best / Cheapest" State
+                    isCheapest && "bg-blue-50/30 border-blue-500 shadow-md ring-1 ring-blue-500/20"
+                )}
+            >
+                {/* 1. Top Zone: Badge + Price */}
+                <div className="flex justify-between items-start px-4 pt-4 md:px-5 md:pt-5">
+                    {/* Badge Pill */}
+                    <div>
+                        {isCheapest && (
+                            <div className="bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block mb-2">
+                                Cheapest
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Price Block */}
+                    <div className="text-right">
+                        <div className={clsx(
+                            "text-2xl md:text-[28px] font-bold leading-none tracking-tight",
+                            isCheapest ? "text-blue-600" : "text-gray-900"
+                        )}>
+                            {formatPriceParts(currentTotalCost).amount},
+                            <span className="text-lg md:text-xl">{formatPriceParts(currentTotalCost).amount.split(',')[1] || '-'}</span>
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
+                            NOK Total
+                        </div>
+                    </div>
+                </div>
+
+                {/* 2. Middle Zone: Store Name + Distance */}
+                <div className="px-4 md:px-5 pb-4">
+                    <h3 className="text-lg md:text-[20px] font-semibold text-gray-900 leading-tight mb-1 truncate pr-2">
+                        {store.name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-gray-500">
+                        <MapPin className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-[14px] md:text-[15px] font-medium">
+                            {formatDistance(distance)} away
+                        </span>
+                    </div>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px w-full bg-gray-100 mx-0"></div>
+
+                {/* 3. Bottom Zone: Availability + Action */}
+                <div className="px-4 py-3 md:px-5 md:py-4 flex justify-between items-center bg-transparent">
+                    {/* Availability */}
+                    <div className="flex items-center gap-2 min-w-0">
+                        {stockStatus ? (
+                            <>
+                                <stockStatus.icon className={clsx(
+                                    "w-4 h-4 md:w-[18px] md:h-[18px] shrink-0",
+                                    stockStatus.isFull ? "text-green-500" : "text-amber-500"
+                                )} />
+                                <span className={clsx(
+                                    "text-[14px] md:text-[15px] truncate",
+                                    stockStatus.isFull ? "text-gray-700 font-medium" : "text-gray-900 font-medium"
+                                )}>
+                                    {stockStatus.text}
+                                </span>
+                            </>
+                        ) : (
+                            <span className="text-[14px] text-gray-400">Availability unknown</span>
+                        )}
+                    </div>
+
+                    {/* Action Link */}
+                    <button className="flex items-center gap-0.5 text-primary text-[14px] md:text-[15px] font-medium group-active:text-blue-700 whitespace-nowrap pl-2">
+                        View List
+                        <ChevronRight className="w-4 h-4 md:w-[18px] md:h-[18px] transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Detailed & Comparison Variants (Retaining existing or minimal updates for consistency)
     return (
         <div
             onClick={onSelect}
@@ -365,25 +455,27 @@ export const StoreCard = memo(function StoreCard({
                 </div>
             )}
 
-            {/* Action Footer */}
-            <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
-                <a
-                    href={googleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs font-black text-indigo-700 bg-indigo-50 px-4 py-2.5 md:px-3 md:py-1.5 rounded-xl md:rounded-lg shadow-sm active:scale-95 transition-all"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <ExternalLink className="w-3.5 h-3.5 md:w-3 md:h-3" />
-                    {t('storeCard.getDirections')}
-                </a>
+            {/* Action Footer (Only for Detailed/Comparison - Default variant uses new footer) */}
+            {(isDetailed || isComparison) && (
+                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                    <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-xs font-black text-indigo-700 bg-indigo-50 px-4 py-2.5 md:px-3 md:py-1.5 rounded-xl md:rounded-lg shadow-sm active:scale-95 transition-all"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <ExternalLink className="w-3.5 h-3.5 md:w-3 md:h-3" />
+                        {t('storeCard.getDirections')}
+                    </a>
 
-                {selected && !isDetailed && (
-                    <button className="flex items-center text-sm font-medium text-primary hover:text-red-700 transition-colors">
-                        {t('storeCard.viewDetails')} <ChevronRight className="w-4 h-4 ml-1" />
-                    </button>
-                )}
-            </div>
+                    {selected && !isDetailed && (
+                        <button className="flex items-center text-sm font-medium text-primary hover:text-red-700 transition-colors">
+                            {t('storeCard.viewDetails')} <ChevronRight className="w-4 h-4 ml-1" />
+                        </button>
+                    )}
+                </div>
+            )}
 
             {/* Comparison Badge */}
             {isComparison && items.some(i => i.price === 0) && (
