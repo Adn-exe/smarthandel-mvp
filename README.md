@@ -1,18 +1,19 @@
 # SmartHandel MVP 🛍️
 
-SmartHandel is an AI-powered shopping assistant that helps users find the best prices for their grocery lists across multiple stores. It uses intelligent optimization to recommend whether to shop at a single store or split the trip between multiple locations for maximum savings.
+SmartHandel is an AI-powered shopping assistant that helps users find the best prices for their grocery lists across multiple stores in Trondheim, Norway. It uses intelligent optimization to recommend whether to shop at a single store or split the trip between multiple locations for maximum savings.
 
 ## ✨ Features
 
-- **Mobile-First Experience**: Swipable store columns, sticky price footers, and touch-optimized interactions.
+- **AI-Powered Search**: Natural language processing via **Google Gemini 2.0 Flash** to understand your shopping list.
+- **Price Comparison**: Real-time integration with Norwegian grocery data (Kassalapp API).
+- **Route Optimization**: Intelligent logic to find the cheapest single-store or multi-store options.
+- **Interactive Maps**: Leaflet-powered store locations and optimized road-following routes.
+- **Mobile-First Experience**: Tab-based List/Map toggle, sticky price footer, and touch-optimized interactions.
 - **Multilingual Support**: Fully localized in English and Norwegian (Bokmål).
 - **Price Mismatch Reporting**: Community-driven data accuracy with a built-in reporting system.
 - **Smart Distance Logic**: Automatic switching between meters (m) and kilometers (km) based on proximity.
-- **AI-Powered Search**: Natural language processing to understand your shopping list.
-- **Price Comparison**: Real-time integration with Norwegian grocery data (Kassalapp API).
-- **Route Optimization**: Intelligent logic to find the cheapest single-store or multi-store options.
-- **Interactive Maps**: Visualized store locations and optimized routes (Mapbox/Leaflet).
 - **Performance Optimized**: Lazily loaded components, code splitting, and memoization.
+- **Trondheim Region**: All store searches are geographically constrained to the Trondheim area.
 
 ## 🛠️ Tech Stack
 
@@ -21,6 +22,7 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 - **TypeScript**
 - **Tailwind CSS** (v4.0)
 - **TanStack Query** (React Query)
+- **React Leaflet** (Interactive Maps)
 - **Lucide React** (Icons)
 - **React Router**
 - **i18next** (Multilingual Support)
@@ -28,15 +30,16 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 ### Backend
 - **Node.js** & **Express**
 - **TypeScript**
-- **Google Gemini AI** (Flash Preview) for list parsing
+- **Google Gemini 2.0 Flash** for AI list parsing
 - **Kassalapp API** for grocery pricing and store data
-- **Node-Cache** for performance
+- **Node-Cache** for in-memory performance caching
 - **Helmet & HPP** for security
+- **express-rate-limit** for abuse prevention
 
 ## 🚀 Getting Started
 
 ### 🌍 International Usage
-**Important:** If you are outside Norway, you **must** connect to a VPN server located in **Norway** to use this application (specifically for Kassalapp API data).
+**Important:** If you are outside Norway, you **must** connect to a VPN server located in **Norway** to access Kassalapp API data.
 - **Recommended:** [Urban VPN](https://www.urban-vpn.com/) (Browser Extension or App)
 
 ### Prerequisites
@@ -44,10 +47,9 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 - NPM 9+
 - API Keys:
   - Kassalapp API Key
-  - Gemini API Key
-  - Mapbox Token (Optional)
+  - Google Gemini API Key
 
-### Installation Steps
+### Installation
 
 1. **Clone the repository**:
    ```bash
@@ -57,57 +59,42 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 
 2. **Install dependencies**:
    ```bash
-   # Install root and workspace dependencies
    npm install
    ```
 
 ### Environment Setup
 
-#### Backend Environment Variables (`backend/.env`)
-Copy `backend/.env.example` to `backend/.env` and configure the following:
-
+#### Backend (`backend/.env`)
 ```bash
-# Server Configuration
-export PORT=3001
-export NODE_ENV=development
-
-# API Keys
-export KASSAL_API_KEY=your_kassal_api_key_here
-export GEMINI_API_KEY=your_gemini_api_key_here
-
-# Caching & Security
-export CACHE_TTL=3600
-export ALLOWED_ORIGINS=http://localhost:3000
+PORT=3001
+NODE_ENV=development
+KASSAL_API_KEY=your_kassal_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
+CACHE_TTL=3600
+ALLOWED_ORIGINS=http://localhost:5173
 ```
 
-#### Frontend Environment Variables (`frontend/.env.local`)
-Copy `frontend/.env.example` to `frontend/.env.local` and configure the following:
+#### Frontend (`frontend/.env.local`)
+```bash
+VITE_API_URL=http://localhost:3001
+VITE_ENV=development
+```
+
+### Run the Application
 
 ```bash
-# API Configuration
-export VITE_API_URL=http://localhost:3001
+# Backend
+npm run dev --prefix backend
 
-# Services
-export VITE_MAPBOX_TOKEN=pk.placeholder_token
-
-# Feature Flags & Env
-export VITE_ENABLE_ANALYTICS=true
-export VITE_ENV=development
+# Frontend (in a separate terminal)
+npm run dev --prefix frontend
 ```
-4. **Run the application**:
-   ```bash
-    # Run Backend
-    npm run dev --prefix backend
-    
-    # Run Frontend
-    npm run dev --prefix frontend
-    ```
 
-### 📱 Mobile Development
-To test the app on a mobile device on the same network:
-1. The frontend Vite server is configured to expose the host (`--host`).
-2. Update `frontend/.env.local` to use your computer's local IP address (e.g., `VITE_API_URL=http://192.168.1.14:3001`).
-3. Access the app via `http://<YOUR_LOCAL_IP>:5173`.
+### 📱 Mobile Testing
+To test on a mobile device on the same network:
+1. Find your computer's local IP (e.g. `192.168.1.14`).
+2. Set `VITE_API_URL=http://192.168.1.14:3001` in `frontend/.env.local`.
+3. Access the app at `http://<YOUR_LOCAL_IP>:5173`.
 
 ## 📁 Project Structure
 
@@ -115,16 +102,19 @@ To test the app on a mobile device on the same network:
 smarthandel-mvp/
 ├── backend/                # Express API
 │   ├── src/
-│   │   ├── routes/         # API Endpoints
-│   │   ├── services/       # AI, Pricing, and Comparison logic
+│   │   ├── routes/         # API Endpoints (ai, route, report, health)
+│   │   ├── services/       # AI, Pricing, Comparison, Report logic
+│   │   ├── middleware/     # Error handling, rate limiting
 │   │   └── server.ts       # Entry point
+│   ├── data/               # Persisted report data (item_mismatch_reports.json)
 │   ├── Dockerfile          # Multi-stage production build
 │   └── ecosystem.config.js # PM2 configuration
 ├── frontend/               # React Application
 │   ├── src/
-│   │   ├── components/     # UI Components (Memoized & Lazy)
-│   │   ├── pages/          # Views (Lazy Loaded)
-│   │   └── utils/          # Analytics and Helpers
+│   │   ├── components/     # UI Components (StoreMap, ResultsDisplay, etc.)
+│   │   ├── pages/          # Views (Home, Selection, Results)
+│   │   ├── locales/        # i18n translations (en.json, no.json)
+│   │   └── hooks/          # useLocation and other custom hooks
 │   └── vercel.json         # Vercel SPA configuration
 ├── docker-compose.yml      # Orchestration for local development
 └── railway.json            # Railway deployment configuration
@@ -134,83 +124,63 @@ smarthandel-mvp/
 
 ### Key Endpoints
 
-- `GET /api/health`: Basic system check.
-- `GET /api/health/ready`: Full readiness check (service connectivity).
-- `POST /api/ai/parse`: Uses AI to convert natural language into a product list.
-- `GET /api/products/search`: Search for specific items in the catalog.
-- `POST /api/route/optimize`: Main intelligence engine for store comparison.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/health` | Basic system check |
+| `GET` | `/api/health/ready` | Full readiness check (Kassal, Gemini, Cache) |
+| `POST` | `/api/ai/parse` | Convert natural language to a product list |
+| `GET` | `/api/products/search` | Search for specific items |
+| `POST` | `/api/route/optimize` | Main store comparison & route engine |
+| `POST` | `/api/report` | Submit a product mismatch report |
 
 ### Example Optimization Request
 ```json
 POST /api/route/optimize
 {
-  "items": ["Melk", "Brød"],
-  "userLocation": { "lat": 59.91, "lng": 10.75 },
-  "preferences": { "maxDistance": 5000 }
+  "items": [{ "name": "Melk", "quantity": 1 }, { "name": "Brød", "quantity": 1 }],
+  "userLocation": { "lat": 63.4305, "lng": 10.3951 },
+  "preferences": { "maxStores": 3, "maxDistance": 10000, "sortBy": "cheapest" }
 }
 ```
 
 ## 🧪 Development
 
 ### Available Scripts
-- `npm run dev`: Start development server.
-- `npm run build`: Create production build.
-- `npm run test`: Run test suites.
-- `npm run lint`: Check code quality.
+```bash
+npm run dev      # Start development server
+npm run build    # Create production build
+npm run test     # Run test suites
+npm run lint     # Check code quality
+```
 
 ### Testing
-We use **Vitest** for frontend component testing and **Jest** for backend API testing.
-```bash
-# Backend tests
-cd backend && npm test
-
-# Frontend tests
-cd frontend && npm test
-```
+- **Backend**: Jest (`cd backend && npm test`)
+- **Frontend**: Vitest (`cd frontend && npm test`)
 
 ## 🚢 Deployment
 
 ### Production Build
 ```bash
-# Frontend
 cd frontend && npm run build
-
-# Backend
 cd backend && npm run build
 ```
 
-### Hosting Platforms Support
-- **Backend**: Docker, PM2, or Railway.
-- **Frontend**: Vercel, Netlify, or static hosting.
+### Hosting
+- **Backend**: Docker, PM2, or Railway
+- **Frontend**: Vercel, Netlify, or static hosting
 
-## 🤝 Contributing
-1. Create a feature branch.
-2. Ensure tests pass (`npm test`).
-3. Submit a Pull Request.
+> **Note:** Ensure the `backend/data/` directory exists in production for the mismatch report storage. It is created automatically on first run.
 
 ## 🔧 Troubleshooting
 
-### Common Issues
-
-1.  **API Connection Failed**
-    -   **Issue**: Backend cannot connect to Kassalapp or Gemini AI.
-    -   **Solution**: Check your `.env` file in the `backend/` directory. Ensure `KASSALAPP_API_KEY` and `GEMINI_API_KEY` are set correctly.
-
-2.  **AI Response Error (500/502)**
-    -   **Issue**: The search fails to parse your list.
-    -   **Solution**: The AI model might be overloaded. Try again in a few seconds. If persistent, check your Gemini API quota.
-
-3.  **Map Not Loading**
-    -   **Issue**: Map tiles are blank or gray.
-    -   **Solution**: Check your internet connection. If you are using a custom Mapbox token, verify it in `frontend/.env.local`.
-
-4.  **"Too Many Requests"**
-    -   **Issue**: You are being rate-limited.
-    -   **Solution**: Wait for 1 minute before trying again. The API has strict rate limits to prevent abuse.
-
-5.  **CORS Errors**
-    -   **Issue**: Frontend cannot talk to Backend.
-    -   **Solution**: Ensure both servers are running. Default ports are `3000` (Frontend) and `3001` (Backend).
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| **API Connection Failed** | Missing env vars | Check `KASSAL_API_KEY` and `GEMINI_API_KEY` in `backend/.env` |
+| **AI Parse Error (500)** | Gemini quota or key | Verify `GEMINI_API_KEY` is valid; check Gemini API quota |
+| **Map blank/grey on mobile** | Leaflet init issue | Fixed in latest version — ensure you are on the latest commit |
+| **"Too Many Requests"** | Rate limiting | Wait 1 minute; strict limits prevent abuse |
+| **CORS Errors** | Mismatched origins | Ensure `ALLOWED_ORIGINS` in backend matches the frontend URL |
+| **No stores found** | Outside Trondheim region | All searches are geo-constrained to Trondheim; use a Norway VPN |
 
 ## 📄 License
 This project is licensed under the MIT License.
