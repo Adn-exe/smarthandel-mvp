@@ -27,20 +27,17 @@ export default function Results() {
     // State
     const [selectedStoreId, setSelectedStoreId] = useState<string | number | null>(null);
     const [activeView, setActiveView] = useState<'single' | 'multi' | 'comparison' | null>(null);
+    // isMapVisible controls the desktop Show/Hide Map toggle (only relevant for comparison view on desktop)
     const [isMapVisible, setIsMapVisible] = useState(true);
     const [roadPath, setRoadPath] = useState<LatLngTuple[]>([]);
     const [isRouting, setIsRouting] = useState(false);
+    // mobileActiveTab controls the mobile List/Map toggle — available in ALL views
     const [mobileActiveTab, setMobileActiveTab] = useState<'list' | 'map'>('list');
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
 
-    // Effect to handle map visibility defaults based on view
-    useEffect(() => {
-        if (activeView === 'comparison') {
-            setIsMapVisible(false); // Default hidden for comparison
-        } else {
-            setIsMapVisible(true); // Default visible for others
-        }
-    }, [activeView]);
+    // When switching TO comparison view on desktop, keep map visible by default
+    // (user can hide it via the Show/Hide Map button on desktop only)
+    // Do NOT auto-hide — let the user control it
 
     const [userLocation, setUserLocation] = useState<Location | null>(
         (routerLocation.state as any)?.location || null
@@ -353,26 +350,23 @@ export default function Results() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col lg:flex-row gap-8 animate-fadeSlideIn">
                     {/* Results List Column */}
-                    {/* Use opacity/pointer-events instead of hidden so Leaflet always has real dimensions */}
                     <div className={clsx(
-                        "transition-all duration-500 ease-in-out lg:block",
-                        activeView === 'comparison' && !isMapVisible ? "w-full" : "w-full lg:w-1/2",
-                        // Mobile: keep in DOM but visually hide to preserve Leaflet dimensions
-                        mobileActiveTab === 'map' ? 'hidden lg:block' : 'block'
+                        "transition-all duration-500 ease-in-out",
+                        // Desktop width: full-width when comparison+map hidden, half otherwise
+                        activeView === 'comparison' && !isMapVisible ? "w-full" : "lg:w-1/2",
+                        // Mobile: hide list when map tab is active (always, regardless of activeView)
+                        mobileActiveTab === 'map' ? 'hidden lg:block' : 'block w-full'
                     )}>
                         <div className="space-y-6">
                             <ResultsDisplay
                                 singleStores={(() => {
                                     const candidates = routeData?.singleStoreCandidates || [];
                                     const bestSingle = routeData?.singleStore;
-
-                                    // Robust deduplication: Combine best + candidates, then filter by unique Chain+Name (case insensitive and trimmed)
                                     const allCandidates = bestSingle ? [bestSingle, ...candidates] : candidates;
                                     const uniqueStores = Array.from(new Map(allCandidates.map(c => {
                                         const key = String(c.store.id);
                                         return [key, c];
                                     })).values());
-
                                     return uniqueStores;
                                 })()}
                                 multiStore={routeData?.multiStore || null}
@@ -398,16 +392,20 @@ export default function Results() {
                     </div>
 
                     {/* Map Column */}
-                    {/* CRITICAL: Never use `hidden` on this div — Leaflet needs real dimensions at mount time.
-                        Instead we use a wrapper that keeps the map in the DOM but off-screen on mobile. */}
+                    {/* CRITICAL: On mobile, visibility is ALWAYS controlled by mobileActiveTab.
+                        On desktop, for comparison view, isMapVisible controls it.
+                        We NEVER use `hidden` unconditionally — Leaflet needs real dimensions. */}
                     <div className={clsx(
                         "transition-all duration-500 ease-in-out",
-                        activeView === 'comparison' && !isMapVisible ? "hidden" : "w-full lg:w-1/2",
-                        // Mobile: show/hide via block/hidden but the inner map container stays rendered
-                        mobileActiveTab === 'list' ? 'hidden lg:block' : 'block'
+                        // Desktop: hide map only when comparison view AND user toggled it off
+                        activeView === 'comparison' && !isMapVisible
+                            ? 'hidden'
+                            : 'lg:block lg:w-1/2',
+                        // Mobile: always use mobileActiveTab — works in ALL views including comparison
+                        mobileActiveTab === 'list' ? 'hidden lg:block' : 'block w-full'
                     )}>
                         <div className="sticky top-20 md:top-32">
-                            {/* Map container: always rendered so Leaflet initialises with real dimensions */}
+                            {/* Map container: always in DOM so Leaflet initialises with real dimensions */}
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden aspect-square md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                                 <StoreMap
                                     userLocation={effectiveLocation!}
@@ -416,7 +414,11 @@ export default function Results() {
                                     roadPath={roadPath}
                                     isRouting={isRouting}
                                     selectedStore={String(selectedStoreId)}
-                                    isVisible={mobileActiveTab === 'map'}
+                                    // isVisible: true whenever the map is actually rendered and visible
+                                    // Logic:
+                                    // 1. Mobile: Only when map tab is active
+                                    // 2. Desktop: Always visible UNLESS it's comparison view AND user toggled it off
+                                    isVisible={mobileActiveTab === 'map' || (activeView !== 'comparison' || isMapVisible)}
                                     onStoreClick={(store) => {
                                         setSelectedStoreId(store.id);
                                         trackEvent('store_selected', { type: 'map_click', storeId: store.id });

@@ -89,7 +89,7 @@ export function ComparisonTable({ candidates, requestedItemsCount, isMapVisible,
                 {onToggleMap && (
                     <button
                         onClick={onToggleMap}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-white hover:text-dark hover:shadow-md transition-all active:scale-95 shrink-0"
+                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-600 hover:bg-white hover:text-dark hover:shadow-md transition-all active:scale-95 shrink-0"
                     >
                         {isMapVisible ? (
                             <>
