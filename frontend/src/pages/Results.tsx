@@ -292,17 +292,17 @@ export default function Results() {
                 </div>
             </header >
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex flex-col lg:flex-row gap-8 animate-fadeSlideIn">
+            <main className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-8">
+                <div className="flex flex-col lg:flex-row gap-0 md:gap-8 animate-fadeSlideIn">
                     {/* Results List Column */}
                     <div className={clsx(
-                        "transition-all duration-500 ease-in-out",
+                        "transition-all duration-500 ease-in-out px-4 md:px-0",
                         // Desktop width: full-width when comparison+map hidden, half otherwise
                         activeView === 'comparison' && !isMapVisible ? "w-full" : "lg:w-1/2",
                         // Mobile: hide list when map tab is active (always, regardless of activeView)
-                        mobileActiveTab === 'map' ? 'hidden lg:block' : 'block w-full'
+                        mobileActiveTab === 'map' ? 'hidden lg:block' : 'block w-full pb-20'
                     )}>
-                        <div className="sticky top-[108px] md:top-[116px]">
+                        <div className="sticky top-[108px] md:top-[116px] pt-4 md:pt-0">
                             <div className="space-y-6 lg:min-h-[calc(100vh-10rem)]">
                                 <ResultsDisplay
                                     singleStores={(() => {
@@ -338,10 +338,7 @@ export default function Results() {
                         </div>
                     </div>
 
-                    {/* Map Column */}
-                    {/* CRITICAL: On mobile, visibility is ALWAYS controlled by mobileActiveTab.
-                        On desktop, for comparison view, isMapVisible controls it.
-                        We NEVER use `hidden` unconditionally — Leaflet needs real dimensions. */}
+                    {/* Map Column - Immersive on Mobile */}
                     <div className={clsx(
                         "transition-all duration-500 ease-in-out",
                         // Desktop: hide map only when comparison view AND user toggled it off
@@ -353,7 +350,7 @@ export default function Results() {
                     )}>
                         <div className="sticky top-[108px] md:top-[116px]">
                             {/* Map container: always in DOM so Leaflet initialises with real dimensions */}
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden aspect-square md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
+                            <div className="bg-white md:rounded-2xl border-y md:border border-gray-100 shadow-xl overflow-hidden h-[60vh] md:aspect-[4/5] lg:aspect-auto lg:h-[calc(100vh-12rem)]">
                                 <StoreMap
                                     userLocation={effectiveLocation!}
                                     stores={mapStores}
