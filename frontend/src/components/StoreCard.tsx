@@ -150,194 +150,207 @@ export const StoreCard = memo(function StoreCard({
     // Render the new "Scandinavian Minimal" Default Variant
     if (!isDetailed && !isComparison) {
         return (
-            <div
-                onClick={(e) => {
-                    // Prevent triggering selection/expansion when clicking directions button
-                    if ((e.target as HTMLElement).closest('button')) {
-                        return;
-                    }
-                    onSelect?.();
-                    setIsItemsExpanded(!isItemsExpanded);
-                }}
-                className={clsx(
-                    "relative w-full rounded-[16px] border transition-all duration-200 overflow-hidden cursor-pointer group select-none",
-                    // Default State styling
-                    !highlightBorder && "bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200",
-                    // Custom Border Highlighting
-                    highlightBorder === 'red' && "border-2 border-primary shadow-md ring-1 ring-primary/10",
-                    highlightBorder === 'light-red' && "border-2 border-red-200 shadow-sm bg-red-50/10",
-                    highlightBorder === 'blue' && "border-2 border-secondary shadow-md ring-1 ring-secondary/10",
-                    highlightBorder === 'grey' && "border border-gray-300 shadow-sm bg-gray-50/10",
-                    // Highlighted "Best / Cheapest" State
-                    isCheapest && !highlightBorder && "bg-blue-50/30 border-blue-500 shadow-md ring-1 ring-blue-500/20"
-                )}
-            >
-                {/* Index Badge for Alternatives */}
-                {indexBadge && (
-                    <div className="absolute -left-[1px] -top-[1px] w-8 h-8 rounded-br-2xl bg-gray-900 text-white flex items-center justify-center font-black text-xs z-10 shadow-sm border-r border-b border-gray-100/10">
-                        {indexBadge}
-                    </div>
-                )}
-
-                {/* 1. Top Zone: Badge + Price */}
-                <div className="flex justify-between items-start px-4 pt-4 md:px-5 md:pt-5 pl-10"> {/* Added padding-left to avoid overlap if badge exists */}
-                    {/* Badge Pill */}
-                    <div className="flex gap-2">
-                        {efficiencyTags.map((tag, idx) => (
-                            <div key={idx} className={clsx(
-                                "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block mb-2 shadow-sm border",
-                                tag.toLowerCase().includes('cheapest') ? "bg-green-100 text-green-700 border-green-200" :
-                                    tag.toLowerCase().includes('closest') ? "bg-amber-100 text-amber-700 border-amber-200" :
-                                        tag.toLowerCase().includes('stop') ? "bg-blue-100 text-blue-700 border-blue-200 font-extrabold" :
-                                            "bg-gray-100 text-gray-600 border-gray-200"
-                            )}>
-                                {tag}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Price - LARGE & BLUE */}
-                    <div className="text-right">
-                        <div className="flex items-baseline justify-end gap-1">
-                            <span className="text-2xl md:text-3xl font-black text-blue-600 tracking-tight leading-none">
-                                {formatPriceParts(currentTotalCost).amount}
-                            </span>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase">NOK</span>
+            <>
+                <div
+                    onClick={(e) => {
+                        // Prevent triggering selection/expansion when clicking directions button
+                        if ((e.target as HTMLElement).closest('button')) {
+                            return;
+                        }
+                        onSelect?.();
+                        setIsItemsExpanded(!isItemsExpanded);
+                    }}
+                    className={clsx(
+                        "relative w-full rounded-[16px] border transition-all duration-200 overflow-hidden cursor-pointer group select-none",
+                        // Default State styling
+                        !highlightBorder && "bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200",
+                        // Custom Border Highlighting
+                        highlightBorder === 'red' && "border-2 border-primary shadow-md ring-1 ring-primary/10",
+                        highlightBorder === 'light-red' && "border-2 border-red-200 shadow-sm bg-red-50/10",
+                        highlightBorder === 'blue' && "border-2 border-secondary shadow-md ring-1 ring-secondary/10",
+                        highlightBorder === 'grey' && "border border-gray-300 shadow-sm bg-gray-50/10",
+                        // Highlighted "Best / Cheapest" State
+                        isCheapest && !highlightBorder && "bg-blue-50/30 border-blue-500 shadow-md ring-1 ring-blue-500/20"
+                    )}
+                >
+                    {/* Index Badge for Alternatives */}
+                    {indexBadge && (
+                        <div className="absolute -left-[1px] -top-[1px] w-8 h-8 rounded-br-2xl bg-gray-900 text-white flex items-center justify-center font-black text-xs z-10 shadow-sm border-r border-b border-gray-100/10">
+                            {indexBadge}
                         </div>
-                        {reasoningTag && (
-                            <div className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-md inline-block mt-1 font-medium border border-red-100">
-                                {reasoningTag}
-                            </div>
-                        )}
-                    </div>
-                </div>
+                    )}
 
-                {/* 2. Middle Zone: Store Info */}
-                <div className="px-4 pb-4 md:px-5 md:pb-5 mt-2">
-                    <h3 className="font-bold text-dark text-lg leading-tight mb-1 group-hover:text-primary transition-colors">
-                        {store.name}
-                    </h3>
-                    <div className="flex items-center gap-3 text-xs text-gray-500 font-medium">
-                        <div className="flex items-center gap-1">
-                            <Navigation className="w-3 h-3" />
-                            {formatDistance(distance)}
+                    {/* 1. Top Zone: Badge + Price */}
+                    <div className="flex justify-between items-start px-4 pt-4 md:px-5 md:pt-5 pl-10"> {/* Added padding-left to avoid overlap if badge exists */}
+                        {/* Badge Pill */}
+                        <div className="flex gap-2">
+                            {efficiencyTags.map((tag, idx) => (
+                                <div key={idx} className={clsx(
+                                    "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block mb-2 shadow-sm border",
+                                    tag.toLowerCase().includes('cheapest') ? "bg-green-100 text-green-700 border-green-200" :
+                                        tag.toLowerCase().includes('closest') ? "bg-amber-100 text-amber-700 border-amber-200" :
+                                            tag.toLowerCase().includes('stop') ? "bg-blue-100 text-blue-700 border-blue-200 font-extrabold" :
+                                                "bg-gray-100 text-gray-600 border-gray-200"
+                                )}>
+                                    {tag}
+                                </div>
+                            ))}
                         </div>
-                        <div className="w-1 h-1 rounded-full bg-gray-300"></div>
-                        <div>{store.chain}</div>
-                    </div>
-                </div>
 
-                {/* 3. Bottom Zone: Action Footer (Directions & Stock) */}
-                <div className="mt-auto px-4 py-3 md:px-5 md:py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between gap-4">
-                    {/* Left: Get Directions Button */}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            window.open(googleMapsUrl, '_blank');
-                        }}
-                        className="flex items-center gap-2 bg-white hover:bg-gray-50 text-dark border border-gray-200 px-3 py-2 rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all group/btn"
-                    >
-                        <MapPin className="w-3.5 h-3.5 text-blue-500 group-hover/btn:scale-110 transition-transform" />
-                        {t('storeCard.getDirections', 'Get Directions')}
-                    </button>
-
-                    {/* Right: Stock Status & Expand Chevron */}
-                    <div className="flex items-center gap-3">
-                        {stockStatus && (
-                            <div className={clsx(
-                                "flex items-center gap-1.5 text-xs font-bold",
-                                stockStatus.isFull ? "text-green-600" : "text-amber-600"
-                            )}>
-                                <stockStatus.icon className="w-3.5 h-3.5" />
-                                <span>{stockStatus.text}</span>
+                        {/* Price - LARGE & BLUE */}
+                        <div className="text-right">
+                            <div className="flex items-baseline justify-end gap-1">
+                                <span className="text-2xl md:text-3xl font-black text-blue-600 tracking-tight leading-none">
+                                    {formatPriceParts(currentTotalCost).amount}
+                                </span>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase">NOK</span>
                             </div>
-                        )}
-                        <ChevronRight className={clsx(
-                            "w-4 h-4 text-gray-400 transition-transform duration-300",
-                            isItemsExpanded ? "-rotate-90" : "rotate-90 md:rotate-0"
-                        )} />
+                            {reasoningTag && (
+                                <div className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-md inline-block mt-1 font-medium border border-red-100">
+                                    {reasoningTag}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
 
-                {/* Expanded Items List */}
-                {
-                    isItemsExpanded && (
-                        <div className="px-4 pb-4 md:px-5 md:pb-5 border-t border-gray-50 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <div className="space-y-4">
-                                {items.map((item, idx) => (
-                                    <div key={idx} className="flex justify-between items-center gap-3">
-                                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                                            {/* Product Image */}
-                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                                                {item.image_url && !failedImages.has(String(item.id)) ? (
-                                                    <img
-                                                        src={item.image_url}
-                                                        alt={item.name}
-                                                        className="w-full h-full object-contain p-1"
-                                                        onError={() => setFailedImages(prev => new Set(prev).add(String(item.id)))}
-                                                    />
-                                                ) : (
-                                                    <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-gray-200" />
-                                                )}
-                                            </div>
+                    {/* 2. Middle Zone: Store Info */}
+                    <div className="px-4 pb-4 md:px-5 md:pb-5 mt-2">
+                        <h3 className="font-bold text-dark text-lg leading-tight mb-1 group-hover:text-primary transition-colors">
+                            {store.name}
+                        </h3>
+                        <div className="flex items-center gap-3 text-xs text-gray-500 font-medium">
+                            <div className="flex items-center gap-1">
+                                <Navigation className="w-3 h-3" />
+                                {formatDistance(distance)}
+                            </div>
+                            <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                            <div>{store.chain}</div>
+                        </div>
+                    </div>
 
-                                            <div className="min-w-0 flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <p className="text-sm font-medium text-gray-900 truncate">
-                                                        {item.name}
-                                                    </p>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setReportingItem({
-                                                                storeId: String(store.id),
-                                                                storeName: store.name,
-                                                                itemId: item.id,
-                                                                itemName: item.name,
-                                                                requestedName: item.originalQueryName
-                                                            });
-                                                        }}
-                                                        className="p-1 hover:bg-gray-100 rounded-full transition-colors group/report"
-                                                        title={t('common.reportIssue', 'Report issue')}
-                                                    >
-                                                        <Flag className="w-3 h-3 text-gray-300 group-hover/report:text-red-400" />
-                                                    </button>
+                    {/* 3. Bottom Zone: Action Footer (Directions & Stock) */}
+                    <div className="mt-auto px-4 py-3 md:px-5 md:py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between gap-4">
+                        {/* Left: Get Directions Button */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(googleMapsUrl, '_blank');
+                            }}
+                            className="flex items-center gap-2 bg-white hover:bg-gray-50 text-dark border border-gray-200 px-3 py-2 rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all group/btn"
+                        >
+                            <MapPin className="w-3.5 h-3.5 text-blue-500 group-hover/btn:scale-110 transition-transform" />
+                            {t('storeCard.getDirections', 'Get Directions')}
+                        </button>
+
+                        {/* Right: Stock Status & Expand Chevron */}
+                        <div className="flex items-center gap-3">
+                            {stockStatus && (
+                                <div className={clsx(
+                                    "flex items-center gap-1.5 text-xs font-bold",
+                                    stockStatus.isFull ? "text-green-600" : "text-amber-600"
+                                )}>
+                                    <stockStatus.icon className="w-3.5 h-3.5" />
+                                    <span>{stockStatus.text}</span>
+                                </div>
+                            )}
+                            <ChevronRight className={clsx(
+                                "w-4 h-4 text-gray-400 transition-transform duration-300",
+                                isItemsExpanded ? "-rotate-90" : "rotate-90 md:rotate-0"
+                            )} />
+                        </div>
+                    </div>
+
+                    {/* Expanded Items List */}
+                    {
+                        isItemsExpanded && (
+                            <div className="px-4 pb-4 md:px-5 md:pb-5 border-t border-gray-50 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="space-y-4">
+                                    {items.map((item, idx) => (
+                                        <div key={idx} className="flex justify-between items-center gap-3">
+                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                {/* Product Image */}
+                                                <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                                    {item.image_url && !failedImages.has(String(item.id)) ? (
+                                                        <img
+                                                            src={item.image_url}
+                                                            alt={item.name}
+                                                            className="w-full h-full object-contain p-1"
+                                                            onError={() => setFailedImages(prev => new Set(prev).add(String(item.id)))}
+                                                        />
+                                                    ) : (
+                                                        <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-gray-200" />
+                                                    )}
                                                 </div>
 
-                                                <div className="flex items-center bg-gray-50 rounded-md p-0.5 border border-gray-100 shrink-0 w-fit mt-1">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
-                                                        className="p-1 hover:bg-white rounded transition-all"
-                                                    >
-                                                        <Minus className="w-2.5 h-2.5 text-gray-400" />
-                                                    </button>
-                                                    <span className="px-1.5 text-[9px] font-black text-dark min-w-[18px] text-center">
-                                                        {(localQuantities[String(item.id)] || item.quantity)}x
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                                            {item.name}
+                                                        </p>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setReportingItem({
+                                                                    storeId: String(store.id),
+                                                                    storeName: store.name,
+                                                                    itemId: item.id,
+                                                                    itemName: item.name,
+                                                                    requestedName: item.originalQueryName
+                                                                });
+                                                            }}
+                                                            className="p-1 hover:bg-gray-100 rounded-full transition-colors group/report"
+                                                            title={t('common.reportIssue', 'Report issue')}
+                                                        >
+                                                            <Flag className="w-3 h-3 text-gray-300 group-hover/report:text-red-400" />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="flex items-center bg-gray-50 rounded-md p-0.5 border border-gray-100 shrink-0 w-fit mt-1">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
+                                                            className="p-1 hover:bg-white rounded transition-all"
+                                                        >
+                                                            <Minus className="w-2.5 h-2.5 text-gray-400" />
+                                                        </button>
+                                                        <span className="px-1.5 text-[9px] font-black text-dark min-w-[18px] text-center">
+                                                            {(localQuantities[String(item.id)] || item.quantity)}x
+                                                        </span>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
+                                                            className="p-1 hover:bg-white rounded transition-all"
+                                                        >
+                                                            <Plus className="w-2.5 h-2.5 text-gray-400" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <div className="text-sm font-bold text-gray-900">
+                                                    {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
+                                                    <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">
+                                                        {formatPriceParts(item.price).currency}
                                                     </span>
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
-                                                        className="p-1 hover:bg-white rounded transition-all"
-                                                    >
-                                                        <Plus className="w-2.5 h-2.5 text-gray-400" />
-                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-right shrink-0">
-                                            <div className="text-sm font-bold text-gray-900">
-                                                {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
-                                                <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">
-                                                    {formatPriceParts(item.price).currency}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )
+                    }
+                </div >
+                {
+                    reportingItem && (
+                        <ReportModal
+                            isOpen={!!reportingItem}
+                            onClose={() => setReportingItem(null)}
+                            onSubmit={handleReportSubmit}
+                            itemName={reportingItem.itemName}
+                        />
                     )
                 }
-            </div >
+
+            </>
         );
     }
 

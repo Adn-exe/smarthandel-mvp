@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import React, { useState } from 'react';
 import { X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -50,8 +51,8 @@ export function ReportModal({ isOpen, onClose, onSubmit, itemName }: ReportModal
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-dark/20 animate-in fade-in duration-300">
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-dark/20 animate-in fade-in duration-300">
             <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
                 {/* Header */}
                 <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
@@ -174,6 +175,7 @@ export function ReportModal({ isOpen, onClose, onSubmit, itemName }: ReportModal
                     </form>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
