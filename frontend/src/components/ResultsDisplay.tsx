@@ -182,27 +182,27 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                             </div>
                         )}
 
-                        {/* Choice 2: Best Alternative (Top 2nd Store) */}
+                        {/* Alternative Options (Top 3 Stores) */}
                         {(() => {
-                            // Find the first candidate that is NOT the best store (to avoid duplicates by ID or Name)
-                            const bestStore = singleStores[0]?.store;
-                            const alternative = singleStores.find((s, idx) => {
+                            const bestStoreId = singleStores[0]?.store.id;
+                            const bestStoreName = singleStores[0]?.store.name;
+                            const alternatives = singleStores.filter((s, idx) => {
                                 if (idx === 0) return false;
-                                // Strict check: ID must be different AND Name must be different
-                                return s.store.id !== bestStore?.id && s.store.name !== bestStore?.name;
-                            });
+                                return s.store.id !== bestStoreId && s.store.name !== bestStoreName;
+                            }).slice(0, 3);
 
-                            if (!alternative) return null;
+                            if (alternatives.length === 0) return null;
 
-                            return (
-                                <div className="space-y-4">
+                            return alternatives.map((alternative, index) => (
+                                <div key={alternative.store.id} className="space-y-4">
                                     <div className="flex items-center gap-2 mb-2 px-2">
                                         <div className="h-px bg-gray-100 flex-grow"></div>
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{t('results.bestAlternative', 'Secondary Provider')}</span>
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                                            {index === 0 ? t('results.bestAlternative', 'Secondary Provider') : `${t('results.alternative', 'Option')} ${index + 2}`}
+                                        </span>
                                         <div className="h-px bg-gray-100 flex-grow"></div>
                                     </div>
                                     <div
-                                        key={alternative.store.id}
                                         className="transition-all duration-500"
                                     >
                                         <div
@@ -228,7 +228,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                         </div>
                                     </div>
                                 </div>
-                            );
+                            ));
                         })()}
                     </div>
                 ) : activeView === 'multi' ? (
@@ -269,7 +269,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
 
                                     {/* Savings Tag */}
                                     {routeSavings > 0 && (
-                                        <div className="mt-6 flex items-center gap-2 text-green-600 bg-green-50/50 w-fit px-4 py-2 rounded-xl border border-green-100 font-bold text-xs md:text-sm">
+                                        <div className="mt-6 flex items-center gap-2 text-secondary bg-secondary/10 w-fit px-4 py-2 rounded-xl border border-secondary/20 font-bold text-xs md:text-sm">
                                             <Sparkles className="w-4 h-4" />
                                             {t('results.saveExtra', 'Save {{amount}} extra vs. best single stop', { amount: formatPrice(routeSavings) })}
                                         </div>
@@ -285,8 +285,8 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                             <div key={stop.store.id || idx}>
                                                 {/* Stop Marker & Card Row */}
                                                 <div className="flex items-start gap-6 md:gap-10">
-                                                    {/* Stop Marker - 40px Circle */}
-                                                    <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 ring-4 ring-white shrink-0 z-10 transition-transform hover:scale-110 duration-300">
+                                                    {/* Stop Marker - 40px Circle (Secondary/Blue) */}
+                                                    <div className="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center shadow-lg shadow-secondary/20 ring-4 ring-white shrink-0 z-10 transition-transform hover:scale-110 duration-300">
                                                         <ShoppingCart className="w-5 h-5" />
                                                     </div>
 
@@ -316,9 +316,9 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                             <div className="w-2 h-2 rounded-full bg-gray-200"></div>
                                                         </div>
                                                         <div className="flex items-center gap-3 text-gray-400 font-bold bg-white/40 backdrop-blur-sm px-4 py-2 rounded-2xl border border-gray-50/50 shadow-sm ml-8">
-                                                            <Car className="w-4 h-4 text-primary/40" />
+                                                            <Car className="w-4 h-4 text-secondary/40" />
                                                             <span className="text-[10px] md:text-xs uppercase tracking-[0.1em]">
-                                                                {Math.round(multiStore.stores[idx + 1].distance * 2.5)} min drive ({formatDistance(multiStore.stores[idx + 1].distance)})
+                                                                {Math.round(multiStore.stores[idx + 1].distance * 3.5)} min drive ({formatDistance(multiStore.stores[idx + 1].distance)})
                                                             </span>
                                                             <ArrowRight className="w-3 h-3 ml-1 opacity-30" />
                                                         </div>
