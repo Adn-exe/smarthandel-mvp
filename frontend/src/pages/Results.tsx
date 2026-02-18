@@ -1,7 +1,6 @@
-
-import { useState, useEffect, Suspense, lazy, useMemo, useCallback } from 'react';
+import { useState, useEffect, Suspense, lazy, useMemo } from 'react';
 import { useLocation as useRouterLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { MapPin, Sparkles, List, Share2, Search } from 'lucide-react';
+import { MapPin, Sparkles, List } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTranslation, Trans } from 'react-i18next';
 import i18n from 'i18next';
@@ -99,7 +98,7 @@ export default function Results() {
     }, [confirmedItems, userLocation, query, optimizeRoute]);
 
     const effectiveLocation = routeData?.searchLocation || userLocation;
-    const hasMultiStore = routeData?.multiStore && routeData.multiStore.stores.length > 1;
+    const hasMultiStore = !!(routeData?.multiStore && routeData.multiStore.stores.length > 1);
     const showMulti = activeView === 'multi' && hasMultiStore;
 
     const mapStores = useMemo(() => {
@@ -228,16 +227,16 @@ export default function Results() {
                     )}>
                         <ResultsDisplay
                             singleStores={(() => {
-                                const candidates = routeData?.singleStoreCandidates || [];
-                                const bestSingle = routeData?.singleStore;
+                                const candidates = (routeData?.singleStoreCandidates || []) as SingleStoreOption[];
+                                const bestSingle = routeData?.singleStore as SingleStoreOption | null;
                                 const allCandidates = bestSingle ? [bestSingle, ...candidates] : candidates;
-                                return Array.from(new Map(allCandidates.map(c => [String(c.store.id), c])).values()) as any;
+                                return Array.from(new Map(allCandidates.map(c => [String(c.store.id), c])).values());
                             })()}
                             multiStore={routeData?.multiStore || null}
                             recommendation={routeData?.recommendation || 'single'}
                             activeView={activeView}
                             selectedStoreId={selectedStoreId}
-                            onSelectStore={setSelectedStoreId}
+                            onSelectStore={(id) => setSelectedStoreId(id)}
                             onCreateList={() => alert(t('common.list_coming_soon'))}
                             onReset={() => navigate('/')}
                             totalRequestedItems={selectedItemCount}
@@ -261,7 +260,7 @@ export default function Results() {
                                     route={mapRoute}
                                     roadPath={roadPath}
                                     isRouting={isRouting}
-                                    selectedStore={String(selectedStoreId)}
+                                    selectedStore={selectedStoreId !== null ? String(selectedStoreId) : undefined}
                                     isVisible={isDesktop ? (activeView !== 'comparison' || isMapVisible) : mobileActiveTab === 'map'}
                                     onStoreClick={(store) => setSelectedStoreId(store.id)}
                                 />
@@ -282,7 +281,8 @@ export default function Results() {
                                         <p className="mt-3 text-xs md:text-sm text-indigo-950/70 font-bold leading-relaxed">
                                             {(() => {
                                                 const currentV = activeView || routeData?.recommendation;
-                                                const formatPrice = (p: number) => new Intl.NumberFormat(i18n.language.startsWith('no') ? 'no-NO' : 'en-GB', { style: 'currency', currency: 'NOK', maximumFractionDigits: 0 }).format(p);
+                                                const lang = i18n.language || 'en';
+                                                const formatPrice = (p: number) => new Intl.NumberFormat(lang.startsWith('no') ? 'no-NO' : 'en-GB', { style: 'currency', currency: 'NOK', maximumFractionDigits: 0 }).format(p);
                                                 if (currentV === 'multi' && routeData?.multiStore && routeData.singleStore) {
                                                     const grocerySavings = routeData.singleStore.totalCost - routeData.multiStore.totalCost;
                                                     return (
@@ -322,8 +322,9 @@ export default function Results() {
                         <div className="flex items-baseline gap-2">
                             <span className="text-2xl font-black text-dark tabular-nums">
                                 {(() => {
+                                    const lang = i18n.language || 'en';
                                     const total = activeView === 'multi' ? routeData.multiStore?.totalCost : (routeData.singleStoreCandidates?.find(c => String(c.store.id) === String(selectedStoreId))?.totalCost || routeData.singleStore?.totalCost);
-                                    return new Intl.NumberFormat(i18n.language.startsWith('no') ? 'no-NO' : 'en-GB', { style: 'currency', currency: 'NOK', maximumFractionDigits: 0 }).format(total || 0);
+                                    return new Intl.NumberFormat(lang.startsWith('no') ? 'no-NO' : 'en-GB', { style: 'currency', currency: 'NOK', maximumFractionDigits: 0 }).format(total || 0);
                                 })()}
                             </span>
                             {activeView === 'multi' && routeData.singleStore && (
