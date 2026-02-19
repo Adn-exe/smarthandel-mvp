@@ -3,7 +3,7 @@ import priceIndexService from './PriceIndexService.js';
 import { calculateDistance } from '../utils/distance.js';
 import { Product, Store, ShoppingItem, Location } from '../types/index.js';
 import { ApiError } from '../middleware/errorHandler.js';
-import { selectBestProductForStore } from '../utils/matching.js';
+import { selectBestProductForStore, selectBestProductForStoreWithQuery, getProductMatchLevel, MatchLevel } from '../utils/matching.js';
 
 
 interface ProductWithPrice extends Product {
@@ -19,6 +19,7 @@ interface SingleStoreOption {
     distance: number;
     availabilityScore: number; // 0 to 1 (e.g., 0.8 = 80% of items found)
     missingItems: string[];
+    missedPreferences?: Array<{ itemName: string; expected: string; found: string }>;
 }
 
 interface MultiStoreOption {
@@ -32,6 +33,7 @@ interface MultiStoreOption {
     totalDistance: number;
     savings: number;
     savingsPercent: number;
+    lockedItemsCount?: number;
 }
 
 export interface RouteOptimizationResult {
@@ -43,6 +45,7 @@ export interface RouteOptimizationResult {
     multiStoreReasoning?: string;
     singleStoreCandidates?: SingleStoreOption[];
     allNearbyStores?: Store[];
+    missedPreferences?: Array<{ itemName: string; expected: string; found: string }>;
 }
 
 /**
@@ -71,20 +74,68 @@ class RouteService {
             }
 
             // 1. Fetch & Canonicalize Products
-            const productQueries = items.map(i => i.name);
             const uniqueChains = Array.from(new Set(validStores.map(s => s.chain)));
-            const { products: allProducts, queryMapping } = await dataAggregator.searchProductsWithChainVariety(
-                productQueries,
-                uniqueChains,
-                {
-                    location: userLocation,
-                    radius: (options.maxDistance || 10000) / 1000
-                }
+            const searchPromises = items.map(item =>
+                dataAggregator.searchProductsWithChainVariety(
+                    [item.name],
+                    uniqueChains,
+                    {
+                        location: userLocation,
+                        radius: (options.maxDistance || 10000) / 1000,
+                        lockedStore: item.lockedStore,
+                        lockedProduct: item.lockedBrand
+                    }
+                )
             );
+
+            const searchResults = await Promise.all(searchPromises);
+
+            // Merge all results
+            const allProducts: Product[] = [];
+            const queryMapping = new Map<string, string[]>();
+
+            for (const result of searchResults) {
+                allProducts.push(...result.products);
+                for (const [q, ids] of result.queryMapping.entries()) {
+                    queryMapping.set(q, ids);
+                }
+            }
 
             console.log(`[RouteService] Found ${allProducts.length} total products. Query mapping keys: ${Array.from(queryMapping.keys()).join(', ')}`);
             for (const [q, ids] of queryMapping.entries()) {
                 console.log(`  - Query "${q}": ${ids.length} products`);
+            }
+
+            // 1b. Explicitly Fetch Missing Locked Products
+            // If a user locked a specific product ID that wasn't found in the general search (e.g. out of top 100),
+            // we must fetch it to ensure the preference is respected.
+            const lockedIds = items
+                .filter(i => i.lockedProductId && !queryMapping.get(i.name)?.includes(i.lockedProductId))
+                .map(i => i.lockedProductId!)
+                .filter(id => !allProducts.some(p => String(p.id) === id));
+
+            if (lockedIds.length > 0) {
+                console.log(`[RouteService] Fetching ${lockedIds.length} missing locked products explicitly...`);
+                try {
+                    const extraProducts = await Promise.all(lockedIds.map(id => dataAggregator.getProductById(id)));
+
+                    // Merge into main list
+                    for (const p of extraProducts) {
+                        if (p) {
+                            allProducts.push(p);
+                            // Update mapping for the relevant item
+                            const matchingItem = items.find(i => i.lockedProductId === String(p.id));
+                            if (matchingItem) {
+                                const currentIds = queryMapping.get(matchingItem.name) || [];
+                                currentIds.push(String(p.id));
+                                queryMapping.set(matchingItem.name, currentIds);
+                            }
+                        }
+                    }
+                    console.log(`[RouteService] Successfully added ${extraProducts.length} locked items.`);
+                } catch (err) {
+                    console.error('[RouteService] Failed to fetch some locked products:', err);
+                }
             }
 
             // 2. Score Stores (Availability > Cost)
@@ -117,14 +168,20 @@ class RouteService {
             // Filter alternatives from the ranked list (excluding the best store itself)
             // Phase 2: Store Variety (Chain Diversity)
             const seenChains = new Set<string>();
-            if (bestSingleStore) seenChains.add(bestSingleStore.store.chain.toLowerCase());
+            if (bestSingleStore) {
+                let initialChain = bestSingleStore.store.chain.toLowerCase().trim();
+                if (initialChain.includes('coop')) initialChain = 'coop';
+                seenChains.add(initialChain);
+            }
 
             const alternatives = rankedStores.slice(1).filter(store => {
                 const satisfiesAvailability = store.availabilityScore >= 0.30;
                 const satisfiesCost = bestSingleStore ? store.totalCost <= bestSingleStore.totalCost * 2.0 : true;
 
                 // Chain Diversity: We want to show the best store from DIFFERENT chains if possible
-                const chainKey = store.store.chain.toLowerCase().trim();
+                let chainKey = store.store.chain.toLowerCase().trim();
+                if (chainKey.includes('coop')) chainKey = 'coop';
+
                 const isNewChain = !seenChains.has(chainKey);
 
                 if (satisfiesAvailability && satisfiesCost && isNewChain) {
@@ -140,6 +197,7 @@ class RouteService {
             // Attach metadata - Increased limit from 4 to 6 for better variety
             result.singleStoreCandidates = [bestSingleStore, ...alternatives].filter((s): s is SingleStoreOption => !!s).slice(0, 6);
             result.allNearbyStores = validStores;
+            result.missedPreferences = bestSingleStore?.missedPreferences;
 
             return result;
 
@@ -166,25 +224,103 @@ class RouteService {
     ): SingleStoreOption[] {
         const results: SingleStoreOption[] = [];
 
+        // 0. Pre-calculate "Best Content" map for enrichment
+        // For each query (item name), find the product with the best image/ingredients across ALL stores
+        const bestContentMap = new Map<string, Product>();
+        for (const item of items) {
+            const searchLabel = item.name;
+            const productIdsForThisQuery = queryMapping.get(searchLabel) || [];
+
+            // Find all products matching this query
+            const candidates = allProducts.filter(p => productIdsForThisQuery.includes(String(p.id)));
+
+            // Sort by content quality: Image + Ingredient > Image > Ingredient > Nothing
+            const bestContent = candidates.sort((a, b) => {
+                const scoreA = (a.image_url ? 2 : 0) + (a.ingredients ? 1 : 0);
+                const scoreB = (b.image_url ? 2 : 0) + (b.ingredients ? 1 : 0);
+                return scoreB - scoreA;
+            })[0];
+
+            if (bestContent) {
+                bestContentMap.set(searchLabel, bestContent);
+            }
+        }
+
         for (const store of stores) {
             // Use shared matching utility to find the best candidate per store/query
             const foundItems: ProductWithPrice[] = [];
             let storeTotalCost = 0;
             const foundCanonicalIds = new Set<string>();
 
+            const missedPrefsForStore: Array<{ itemName: string; expected: string; found: string }> = [];
+
             // Map products back to their search terms (queries)
             for (const item of items) {
                 const searchLabel = item.name;
                 const productIdsForThisQuery = queryMapping.get(searchLabel) || [];
 
-                const best = selectBestProductForStore(allProducts, store, productIdsForThisQuery);
+                // SPECIFIC PRODUCT LOCKING LOGIC
+                let matchResult: { product: Product, level: MatchLevel } | null = null;
+                let isMissedPreference = false;
 
-                if (best) {
+                if (item.lockedProductId) {
+                    // Check if this store has this specific product (by Exact Name or ID)
+                    const candidates = allProducts.filter(p => productIdsForThisQuery.includes(String(p.id)));
+                    const exactMatch = candidates.find(p =>
+                        getProductMatchLevel(p, store) !== MatchLevel.NONE &&
+                        (p.name === item.lockedProductId || String(p.id) === item.lockedProductId)
+                    );
+
+                    if (exactMatch) {
+                        matchResult = { product: exactMatch, level: getProductMatchLevel(exactMatch, store) };
+                    } else {
+                        // Store misses the specific item -> Fallback
+                        // Use new method with query context for better relevance
+                        matchResult = selectBestProductForStoreWithQuery(allProducts, store, productIdsForThisQuery, searchLabel);
+                        isMissedPreference = true;
+                    }
+                } else {
+                    // Use new method with query context for better relevance
+                    matchResult = selectBestProductForStoreWithQuery(allProducts, store, productIdsForThisQuery, searchLabel);
+                }
+
+                if (matchResult) {
+                    const { product: best, level: matchLevel } = matchResult;
                     const quantity = item.quantity;
                     const totalPrice = best.price * quantity;
 
+                    // ENRICHMENT: If specific store product misses image/ingredients, use the best available from any store
+                    const enrichedProduct = { ...best };
+                    const bestContent = bestContentMap.get(searchLabel);
+
+                    if (bestContent) {
+                        if (!enrichedProduct.image_url) enrichedProduct.image_url = bestContent.image_url;
+                        if (!enrichedProduct.ingredients) {
+                            enrichedProduct.ingredients = bestContent.ingredients;
+                            enrichedProduct.allergens = bestContent.allergens;
+                        }
+                    }
+
+                    // Check if we missed a preference (double check logic)
+                    if (isMissedPreference && item.lockedProductId) {
+                        missedPrefsForStore.push({
+                            itemName: item.name,
+                            expected: item.lockedProductId,
+                            found: best.name
+                        });
+                        // PENALTY: Make this store less likely to be "Best Store"
+                        storeTotalCost += 1000;
+                    }
+
+                    // BRANCH MATCH BONUS (Bias Mitigation):
+                    // If the match is only at CHAIN or PARENT level (not BRANCH), apply a small penalty.
+                    // This favors stores with EXPLICIT pricing data over stores generic chain data.
+                    if (matchLevel < MatchLevel.BRANCH) {
+                        storeTotalCost += 0.5; // Small heuristic penalty
+                    }
+
                     foundItems.push({
-                        ...best,
+                        ...enrichedProduct,
                         totalPrice,
                         quantity,
                         originalQueryName: searchLabel
@@ -196,6 +332,25 @@ class RouteService {
 
             if (foundItems.length > 0) {
                 const availabilityScore = foundCanonicalIds.size / items.length;
+
+                // Calculate Locked Item Coverage
+                // How many of the user's SPECIFIC locked requests were actually found in this store?
+                const lockedItemsFoundCount = items.reduce((count, item) => {
+                    if (!item.lockedProductId) return count;
+                    const found = foundItems.find(p => p.originalQueryName === item.name);
+                    if (!found) return count;
+
+                    // Check if found product matches lock
+                    const isNameMatch = found.name === item.lockedProductId;
+                    const isIdMatch = String(found.id) === item.lockedProductId;
+
+                    // STORE MATCH BONUS: If user locked "Milk" from "Rema 1000", and this store IS "Rema 1000",
+                    // and we found "Milk" (even if ID is slightly different due to mapping), count it!
+                    const isStoreMatch = item.lockedStore && store.name.toLowerCase().includes(item.lockedStore.toLowerCase());
+
+                    return (isNameMatch || isIdMatch || isStoreMatch) ? count + 1 : count;
+                }, 0);
+
                 const distance = calculateDistance(
                     userLocation.lat, userLocation.lng,
                     store.location.lat, store.location.lng
@@ -207,20 +362,37 @@ class RouteService {
                     totalCost: storeTotalCost,
                     distance,
                     availabilityScore,
-                    missingItems: items.filter(i => !foundCanonicalIds.has(i.name)).map(i => i.name)
-                });
+                    missingItems: items.filter(i => !foundCanonicalIds.has(i.name)).map(i => i.name),
+                    missedPreferences: missedPrefsForStore,
+                    // We can attach custom metrics here if needed for debugging or advanced sorting contexts
+                    // (But we'll use local variables in the sort function below)
+                    _lockedItemsCount: lockedItemsFoundCount
+                } as any);
             }
         }
 
-        // Output Ranking Logic:
-        // 1. Availability Score (High to Low)
-        // 2. Total Cost (Low to High)
-        // Distance is explicitly IGNORED for ranking as requested.
-        return results.sort((a, b) => {
+        // Output Ranking Logic (Updated for Strict Prioritization):
+        // 1. Locked Items Found (Did we get what you specifically asked for?) -> High to Low
+        // 2. Availability Score (Did we get everything else?) -> High to Low
+        // 3. Total Cost (Is it cheap?) -> Low to High
+        // 4. Distance -> Low to High (Tie-breaker only)
+        return results.sort((a: any, b: any) => {
+            // Priority 1: Specific Locked Items Coverage
+            const lockedDiff = (b._lockedItemsCount || 0) - (a._lockedItemsCount || 0);
+            if (lockedDiff !== 0) return lockedDiff;
+
+            // Priority 2: General Availability
             if (b.availabilityScore !== a.availabilityScore) {
                 return b.availabilityScore - a.availabilityScore;
             }
-            return a.totalCost - b.totalCost;
+
+            // Priority 3: Cost
+            if (Math.abs(a.totalCost - b.totalCost) > 0.1) { // Reduced tolerance to 0.1 NOK
+                return a.totalCost - b.totalCost;
+            }
+
+            // Priority 4: Distance
+            return a.distance - b.distance;
         });
     }
 
@@ -230,62 +402,65 @@ class RouteService {
         candidates: SingleStoreOption[],
         bestSingleStore: SingleStoreOption | null
     ): MultiStoreOption | null {
-        // User requested: Smart route should only trigger if number of candidate stores is 2 or more
-        // (i.e. we need at least 2 stores to consider combinatorics)
         if (!candidates.length || candidates.length < 2) return null;
 
-        // Combinatorial: Check combinations of 2 and 3 stores
+        const maxLockedPossible = items.filter(i => !!i.lockedProductId).length;
+        const baselineLocked = bestSingleStore ? (bestSingleStore as any)._lockedItemsCount || 0 : 0;
+        const baselineTotal = bestSingleStore ? bestSingleStore.items.length : 0;
+        const baselineCost = bestSingleStore ? bestSingleStore.totalCost : Infinity;
+
         const combinations = this.generateCombinations(candidates, 3);
-
         let bestCombo: MultiStoreOption | null = null;
-        let minComboCost = Infinity;
-
-        // If best single store exists, that's our baseline to beat
-        const baselineCost = bestSingleStore?.items.length === items.length ? bestSingleStore.totalCost : Infinity;
+        let maxLockedCount = baselineLocked;
+        let maxTotalFound = baselineTotal;
+        let minComboCost = baselineCost;
 
         for (const combo of combinations) {
-            // 1. Calculate Combined Availability & Cost
-            const { totalCost, missingCount, storeAllocations } = this.evaluateCombination(combo, items);
+            const { totalCost, missingCount, lockedFoundCount, storeAllocations } = this.evaluateCombination(combo, items);
+            const totalFound = items.length - missingCount;
 
-            // 2. Strict Constraints:
-            // - Must have 100% availability (missingCount === 0)
-            // - Must be STRICTLY cheaper than best single store (if perfect single store exists)
-            if (missingCount === 0) {
-                // Spec: Prioritize lower total cost AND fewer stores used (stops)
-                const isCheaper = totalCost < baselineCost;
-                const isBetterThanBest = totalCost < minComboCost;
-                const isEqualCostButFewerStops = Math.abs(totalCost - minComboCost) < 0.01 && combo.length < (bestCombo?.stores.length || 4);
+            // COMBINATION RANKING LOGIC:
+            // 1. More Locked Products = BETTER
+            // 2. More Overall Products = BETTER
+            // 3. Lower Cost = BETTER
 
-                if (isCheaper && (isBetterThanBest || isEqualCostButFewerStops)) {
-                    minComboCost = totalCost;
+            const isStrictlyBetterFound = (lockedFoundCount > maxLockedCount) || (lockedFoundCount === maxLockedCount && totalFound > maxTotalFound);
+            const isSameFoundButCheaper = (lockedFoundCount === maxLockedCount && totalFound === maxTotalFound && totalCost < minComboCost - 2); // 2 NOK buffer
 
-                    // Transform to updated MultiStoreOption format
-                    const stores = combo.map(c => {
-                        const allocation = storeAllocations.get(String(c.store.id));
-                        return {
-                            store: c.store,
-                            items: allocation?.items || [],
-                            cost: allocation?.cost || 0,
-                            distance: c.distance
-                        };
-                    }).filter(s => s.items.length > 0); // Remove stores that contributed 0 items in optimal mix
+            if (isStrictlyBetterFound || isSameFoundButCheaper) {
+                // Update baselines for this search
+                maxLockedCount = lockedFoundCount;
+                maxTotalFound = totalFound;
+                minComboCost = totalCost;
 
-                    // Re-sort stores by distance for route logic
-                    // (Visuals only, does not affect selection)
-                    stores.sort((a, b) => a.distance - b.distance);
-
-                    bestCombo = {
-                        stores,
-                        totalCost,
-                        totalDistance: stores.reduce((sum, s) => sum + s.distance, 0),
-                        savings: 0, // Calculated later
-                        savingsPercent: 0
+                const stores = combo.map(c => {
+                    const allocation = storeAllocations.get(String(c.store.id));
+                    return {
+                        store: c.store,
+                        items: allocation?.items || [],
+                        cost: allocation?.cost || 0,
+                        distance: c.distance
                     };
-                }
+                }).filter(s => s.items.length > 0);
+
+                stores.sort((a, b) => a.distance - b.distance);
+
+                bestCombo = {
+                    stores,
+                    totalCost,
+                    totalDistance: stores.reduce((sum, s) => sum + s.distance, 0),
+                    savings: 0,
+                    savingsPercent: 0,
+                    lockedItemsCount: maxLockedCount
+                };
             }
         }
 
-        if (bestCombo && bestCombo.stores.length <= 1) {
+        // Final Verify: Is this combo actually better than the single store?
+        if (!bestCombo || bestCombo.stores.length <= 1) return null;
+
+        // If it's more expensive AND has same/fewer items, reject
+        if (bestCombo.totalCost >= baselineCost && maxTotalFound <= baselineTotal && maxLockedCount <= baselineLocked) {
             return null;
         }
 
@@ -293,26 +468,50 @@ class RouteService {
     }
 
     private evaluateCombination(combo: SingleStoreOption[], items: ShoppingItem[]) {
-        // For every item, pick the cheapest available across the combination stores
+        // For every item, pick the best candidate across the combination stores
+        // Optimization: Respect the locks!
         const storeAllocations = new Map<string, { items: ProductWithPrice[], cost: number }>();
         let totalCost = 0;
         let foundCount = 0;
+        let lockedFoundCount = 0;
 
         combo.forEach(c => storeAllocations.set(String(c.store.id), { items: [], cost: 0 }));
 
         for (const item of items) {
-            let bestPrice = Infinity;
             let bestStoreId: string | null = null;
             let bestProduct: ProductWithPrice | null = null;
+            let isItemLockedMatch = false;
 
-            for (const storeOption of combo) {
-                const product = storeOption.items.find(p =>
-                    (p.originalQueryName || p.name).toLowerCase().trim() === item.name.toLowerCase().trim()
-                );
-                if (product) {
-                    // Normalize price for comparison
-                    if (product.totalPrice < bestPrice) {
-                        bestPrice = product.totalPrice;
+            // 1. Check for Locked Product Match first across all stores in combo
+            if (item.lockedProductId) {
+                for (const storeOption of combo) {
+                    const product = storeOption.items.find(p =>
+                        p.name === item.lockedProductId || String(p.id) === item.lockedProductId
+                    );
+
+                    if (product) {
+                        // Bonus: If this product is in the 'lockedStore', it's the absolute winner
+                        const isIdealStore = item.lockedStore && storeOption.store.name.toLowerCase().includes(item.lockedStore.toLowerCase());
+
+                        if (!bestProduct || isIdealStore || !isItemLockedMatch) {
+                            bestProduct = product;
+                            bestStoreId = String(storeOption.store.id);
+                            isItemLockedMatch = true;
+                            if (isIdealStore) break; // Found the perfect match
+                        }
+                    }
+                }
+            }
+
+            // 2. If no locked match found (or no lock), Fallback to Cheapest available in combo
+            if (!bestProduct) {
+                let minPrice = Infinity;
+                for (const storeOption of combo) {
+                    const product = storeOption.items.find(p =>
+                        (p.originalQueryName || p.name).toLowerCase().trim() === item.name.toLowerCase().trim()
+                    );
+                    if (product && product.totalPrice < minPrice) {
+                        minPrice = product.totalPrice;
                         bestStoreId = String(storeOption.store.id);
                         bestProduct = product;
                     }
@@ -325,12 +524,14 @@ class RouteService {
                 alloc.cost += bestProduct.totalPrice;
                 totalCost += bestProduct.totalPrice;
                 foundCount++;
+                if (isItemLockedMatch) lockedFoundCount++;
             }
         }
 
         return {
             totalCost,
             missingCount: items.length - foundCount,
+            lockedFoundCount,
             storeAllocations
         };
     }
@@ -376,9 +577,11 @@ class RouteService {
                 singleStore: single,
                 multiStore: multi,
                 recommendation: 'multi',
-                reasoning: `Save ${savings.toFixed(0)} NOK by splitting your trip into ${stops} stops.`, // Availability is 100% guaranteed by loop
-                singleStoreReasoning: single ? `Convenient one-stop shop provided by ${single.store.name}.` : 'No single store has all items.',
-                multiStoreReasoning: `Smart Route optimizes for lowest price across top stores.`
+                reasoning: multi.savings > 0
+                    ? `Found a route with better prices and ${multi.lockedItemsCount || 0} of your preferred products.`
+                    : `Smart Route provides better coverage for your specific product preferences.`,
+                singleStoreReasoning: single ? `Convenient one-stop shop at ${single.store.name}.` : 'No single store has all items.',
+                multiStoreReasoning: `Smart Route prioritizes your locked choices and lowest regional prices.`
             };
         }
 

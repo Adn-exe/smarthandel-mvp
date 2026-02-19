@@ -28,27 +28,30 @@ function AnalyticsTracker() {
 }
 
 import { HelmetProvider } from 'react-helmet-async';
+import { ShoppingListProvider } from './context/ShoppingListContext';
 
 function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <ErrorBoundary onReset={() => window.location.reload()}>
-          <Router>
-            <AnalyticsTracker />
-            <Suspense fallback={<RouteLoading message={i18n.t('layout.loading_page')} />}>
-              <Routes>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Home />} />
-                  <Route path="selection" element={<Selection />} />
-                  <Route path="results" element={<Results />} />
-                  <Route path="about" element={<About />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-            </Suspense>
-          </Router>
-        </ErrorBoundary>
+        <ShoppingListProvider>
+          <ErrorBoundary onReset={() => window.location.reload()}>
+            <Router>
+              <AnalyticsTracker />
+              <Suspense fallback={<RouteLoading message={i18n.t('layout.loading_page')} />}>
+                <Routes>
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<Home />} />
+                    <Route path="selection" element={<Selection />} />
+                    <Route path="results" element={<Results />} />
+                    <Route path="about" element={<About />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                </Routes>
+              </Suspense>
+            </Router>
+          </ErrorBoundary>
+        </ShoppingListProvider>
       </QueryClientProvider>
     </HelmetProvider>
   );

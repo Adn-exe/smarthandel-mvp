@@ -161,6 +161,78 @@ Suggestions:`;
     }
 
     /**
+     * Ranks product candidates based on relevance to the query and user preferences.
+     * Uses Gemini to "re-read" product names and determine if they match the user's intent.
+     * 
+     * @param query The user's intended search term (e.g., "sukker")
+     * @param products List of product candidates with name, store, and price
+     * @param preferences Optional user preferences (e.g., locked store/product)
+     * @returns Re-ranked list with updated relevance scores
+     */
+    public async rankProductRelevance(
+        query: string,
+        products: any[],
+        preferences?: { lockedStore?: string; lockedProduct?: string }
+    ): Promise<any[]> {
+        if (!config.geminiApiKey || products.length === 0) return products;
+
+        const cacheKey = `ai:rank:${query}:${JSON.stringify(products.map(p => p.name))}:${JSON.stringify(preferences)}`;
+        const cached = cache.get<any[]>(cacheKey);
+        if (cached) return cached;
+
+        const systemPrompt = `You are a shopping expert. Rank product candidates for the query "${query}".
+Goal: Prioritize pure/generic staple products over flavor variations or byproducts.
+Special Rule: If a user has a "lockedStore" or "lockedProduct", give a significant boost to matches from that store or matching that specific product name, as the user has expressed a strong preference for them.
+
+Ranking Criteria:
+1. Relevance: Is it actually the product requested? (e.g., Milk vs Chocolate Milk). IF IT IS A FRUIT (e.g. Apple, Banana), PENALIZE JUICE/PURÉE HEAVILY (-15000) UNLESS EXPLICITLY REQUESTED.
+2. Preference Boost: If the store matches "${preferences?.lockedStore || 'N/A'}", increase its score significantly.
+3. Clarity: Generic items are usually 1kg, 1L, etc.
+
+Return the input list as a JSON array of objects, adding a "relevanceBonus" field (integer -20000 to +20000) for each "index".
+Format: [{"index": 1, "relevanceBonus": 5000}, ...]`;
+
+        const userPrompt = `Query: ${query}
+User Preferences: ${JSON.stringify(preferences || {})}
+Candidates:
+${products.map((p, i) => `${i + 1}. [${p.store}] ${p.name} - ${p.price} NOK`).join('\n')}
+
+Re-rank and provide bonuses:`;
+
+        try {
+            const model = this.client.getGenerativeModel({
+                model: this.MODEL,
+                systemInstruction: systemPrompt
+            });
+
+            const result = await model.generateContent(userPrompt);
+            const response = await result.response;
+            const text = this.cleanJsonResponse(response.text());
+
+            const rankedBonuses: Array<{ index: number; relevanceBonus: number }> = JSON.parse(text);
+
+            // Map the bonuses back to the original products using the index
+            const updatedProducts = products.map((p, i) => {
+                const bonusObj = rankedBonuses.find(b => b.index === (i + 1));
+                const bonus = bonusObj ? bonusObj.relevanceBonus : 0;
+                return {
+                    ...p,
+                    relevanceScore: (p.relevanceScore || 0) - bonus
+                };
+            });
+
+            // Sort by the new score
+            const sorted = updatedProducts.sort((a, b) => (a.relevanceScore || 0) - (b.relevanceScore || 0));
+
+            cache.set(cacheKey, sorted, 1800); // 30m cache
+            return sorted;
+        } catch (error) {
+            console.error('[AIService] Error ranking products:', error);
+            return products; // Fallback to heuristic-only ranking
+        }
+    }
+
+    /**
      * Checks if the Gemini API is responsive.
      */
     public async checkHealth(): Promise<boolean> {

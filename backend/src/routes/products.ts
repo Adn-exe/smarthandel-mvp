@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { body, param, validationResult } from 'express-validator';
+import { body, param, query, validationResult } from 'express-validator';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { generalLimiter } from '../middleware/rateLimiter.js';
 import aiService from '../services/aiService.js';
@@ -7,6 +7,7 @@ import dataAggregator from '../services/providers/DataAggregator.js';
 import comparisonService from '../services/comparisonService.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import { ensureInRegion } from '../utils/locationUtils.js';
+import { Store } from '../types/index.js';
 
 const router = Router();
 
@@ -121,6 +122,122 @@ router.post(
         res.json({
             success: true,
             comparison,
+        });
+    })
+);
+
+/**
+ * @route   GET /api/products/brands/:canonicalId
+ * @desc    Get brand variations for a canonical product
+ * @access  Public
+ */
+router.get(
+    '/brands/:canonicalId',
+    generalLimiter,
+    [
+        param('canonicalId').notEmpty(),
+        query('lat').optional().isFloat(),
+        query('lng').optional().isFloat(),
+        query('radius').optional().isFloat()
+    ],
+    asyncHandler(async (req: Request, res: Response) => {
+        const canonicalId = req.params.canonicalId as string;
+        const lat = req.query.lat ? parseFloat(req.query.lat as string) : null;
+        const lng = req.query.lng ? parseFloat(req.query.lng as string) : null;
+        const radius = req.query.radius ? parseFloat(req.query.radius as string) : 10;
+
+        const dataAggregator = (await import('../services/providers/DataAggregator.js')).default;
+        const { matchProductToStore, calculateRelevanceScore } = await import('../utils/matching.js');
+
+        // 1. Get regional stores context
+        let stores: Store[] = [];
+
+        if (lat !== null && lng !== null) {
+            stores = await dataAggregator.getStoresNearby({ lat, lng }, radius);
+        }
+
+        // 2. Perform Hybrid Search (Index + Live) - Matches Results page logic
+        const nearbyChains = new Set(stores.map(s => s.chain.toLowerCase()).filter(Boolean));
+        const chains = Array.from(nearbyChains);
+
+        const { products } = await dataAggregator.searchProductsWithChainVariety(
+            [canonicalId],
+            chains,
+            {
+                location: lat !== null && lng !== null ? { lat, lng } : undefined,
+                radius: radius
+            }
+        );
+
+        // 3. Group by product name and aggregate prices across regional stores
+        const productMap = new Map();
+
+        products.forEach(p => {
+            // Filter: Only include if available in a nearby store instance or its chain
+            // Use matchProductToStore for consistency with results/optimization logic
+            const isNearby = stores.length === 0 || stores.some(s => matchProductToStore(p, s));
+
+            if (!isNearby) return;
+
+            const name = p.name;
+            if (!productMap.has(name)) {
+                productMap.set(name, {
+                    name: name,
+                    imageUrl: p.image_url, // Capture first found image
+                    ingredients: p.ingredients,
+                    allergens: p.allergens,
+                    minPrice: p.price,
+                    maxPrice: p.price,
+                    storeCount: 0,
+                    chains: new Set(),
+                    relevanceScore: calculateRelevanceScore(name, canonicalId) // Calculate score once
+                });
+            }
+
+            const regionalProduct = productMap.get(name);
+            regionalProduct.minPrice = Math.min(regionalProduct.minPrice, p.price);
+            regionalProduct.maxPrice = Math.max(regionalProduct.maxPrice, p.price);
+            regionalProduct.storeCount++;
+            if (p.chain) regionalProduct.chains.add(p.chain);
+
+            // DATA ENRICHMENT: If the current product has better data than what we have stored, update it!
+            // Priority: Has Image > Has Ingredients > Existing
+            if (!regionalProduct.imageUrl && p.image_url) {
+                regionalProduct.imageUrl = p.image_url;
+            }
+            if (!regionalProduct.ingredients && p.ingredients) {
+                regionalProduct.ingredients = p.ingredients;
+                regionalProduct.allergens = p.allergens;
+            }
+        });
+
+        const brandList = Array.from(productMap.values())
+            .map(b => ({
+                ...b,
+                chains: Array.from(b.chains)
+            }))
+            // Sort by:
+            // 1. Has Ingredients (High Priority)
+            // 2. Relevance Score (Desc)
+            // 3. Store Count (Desc)
+            .sort((a, b) => {
+                const hasIngredientsA = a.ingredients && a.ingredients.length > 0;
+                const hasIngredientsB = b.ingredients && b.ingredients.length > 0;
+
+                if (hasIngredientsB && !hasIngredientsA) return 1;
+                if (!hasIngredientsB && hasIngredientsA) return -1;
+
+                if (Math.abs(b.relevanceScore - a.relevanceScore) > 10) {
+                    return b.relevanceScore - a.relevanceScore;
+                }
+                return b.storeCount - a.storeCount;
+            })
+            .slice(0, 5); // Limit to top 5
+
+        res.json({
+            success: true,
+            brands: brandList,
+            count: brandList.length
         });
     })
 );

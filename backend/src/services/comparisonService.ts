@@ -14,6 +14,9 @@ interface StoreComparison {
         productId?: string | number;
         quantity: number;
         englishName?: string;
+        image_url?: string;
+        ingredients?: string;
+        allergens?: Array<{ display_name: string; contains: boolean }>;
     }>;
 }
 
@@ -97,7 +100,9 @@ class ComparisonService {
                 {
                     suggestedCategory: shoppingItem.suggestedCategory,
                     location: searchLocation,
-                    radius: 10 // Default 10km radius for variety search
+                    radius: 10, // Default 10km radius for variety search
+                    lockedStore: shoppingItem.lockedStore,
+                    lockedProduct: shoppingItem.lockedBrand // Using brand as shorthand for preference check
                 }
             );
 
@@ -109,22 +114,26 @@ class ComparisonService {
                 const matchingProduct = selectBestProductForStore(products, store, productIdsForThisQuery);
 
                 if (matchingProduct) {
-                    const price = matchingProduct.price * shoppingItem.quantity;
+                    const best = matchingProduct.product;
+                    const price = best.price * shoppingItem.quantity;
 
                     byStore[store.name].total += price;
                     byStore[store.name].items.push({
                         name: shoppingItem.name,
                         found: true,
-                        price: matchingProduct.price,
-                        productId: matchingProduct.id,
+                        price: best.price,
+                        productId: best.id,
                         quantity: shoppingItem.quantity,
                         englishName: shoppingItem.englishName,
+                        image_url: best.image_url,
+                        ingredients: best.ingredients,
+                        allergens: best.allergens
                     });
 
-                    itemComp.prices.push({ storeName: store.name, price: matchingProduct.price });
+                    itemComp.prices.push({ storeName: store.name, price: best.price });
 
-                    if (!itemComp.cheapest || matchingProduct.price < itemComp.cheapest.price) {
-                        itemComp.cheapest = { storeName: store.name, price: matchingProduct.price };
+                    if (!itemComp.cheapest || best.price < itemComp.cheapest.price) {
+                        itemComp.cheapest = { storeName: store.name, price: best.price };
                     }
                 } else {
                     byStore[store.name].items.push({

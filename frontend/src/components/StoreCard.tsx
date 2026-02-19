@@ -7,6 +7,9 @@ import { formatDistance } from '../utils/format';
 import { useTranslation } from 'react-i18next';
 import type { Store as StoreType, ProductWithPrice } from '../types';
 import { getProductFallback, isImageFallback } from '../utils/productIcons';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { Download } from 'lucide-react';
 
 
 
@@ -58,6 +61,90 @@ export const StoreCard = memo(function StoreCard({
     const [reportedItems, setReportedItems] = useState<Set<string>>(new Set());
     const [sessionId] = useState(() => Math.random().toString(36).substring(2, 11));
     const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+    const [showLanguageSelect, setShowLanguageSelect] = useState(false);
+
+    const handleDownloadPDF = (targetLang: 'en' | 'no' = 'en') => {
+        setShowLanguageSelect(false);
+        const doc = new jsPDF();
+        const timestamp = new Date().toLocaleString(targetLang === 'no' ? 'no-NO' : 'en-GB');
+
+        // Helper for translation based on selected language
+        const pdfT = (key: string, options?: any) => {
+            return i18n.getFixedT(targetLang)(key, options);
+        };
+
+        // 1. Header Section
+        doc.setFontSize(22);
+        doc.setTextColor(30, 41, 59); // Slate-800
+        doc.text(store.name, 14, 22);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 116, 139); // Slate-500
+        doc.text(`${store.chain} • ${formatDistance(distance)}`, 14, 30);
+        doc.text(store.address, 14, 35);
+        doc.text(timestamp, 196, 22, { align: 'right' });
+
+        doc.setDrawColor(226, 232, 240); // Slate-200
+        doc.line(14, 40, 196, 40);
+
+        // 2. Table Section
+        const tableData = items.map(item => {
+            const qty = localQuantities[item.id] || item.quantity;
+            const lineTotal = item.price * qty;
+            return [
+                item.name,
+                `${qty}x`,
+                `${item.price.toFixed(2)} NOK`,
+                `${lineTotal.toFixed(2)} NOK`
+            ];
+        });
+
+        autoTable(doc, {
+            startY: 50,
+            head: [[
+                pdfT('storeCard.product'),
+                pdfT('storeCard.qty'),
+                pdfT('storeCard.unitPrice'),
+                pdfT('storeCard.total')
+            ]],
+            body: tableData,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [37, 99, 235], // Blue-600
+                textColor: 255,
+                fontSize: 10,
+                fontStyle: 'bold'
+            },
+            bodyStyles: {
+                fontSize: 9,
+                textColor: 51
+            },
+            columnStyles: {
+                0: { cellWidth: 'auto' },
+                1: { cellWidth: 20, halign: 'center' },
+                2: { cellWidth: 35, halign: 'right' },
+                3: { cellWidth: 35, halign: 'right' }
+            },
+            margin: { top: 50 }
+        });
+
+        // 3. Summary Section
+        const finalY = (doc as any).lastAutoTable.finalY + 10;
+        doc.setFontSize(12);
+        doc.setTextColor(30, 41, 59);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${pdfT('common.total')}: ${currentTotalCost.toFixed(2)} NOK`, 196, finalY, { align: 'right' });
+
+        // Footer
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184); // Slate-400
+        doc.setFont('helvetica', 'normal');
+        doc.text('SmartHandel - Your Smart Grocery Assistant', 105, 285, { align: 'center' });
+
+        // Save file
+        const fileName = `${store.name.replace(/\s+/g, '_')}_Shopping_List.pdf`;
+        doc.save(fileName);
+    };
 
     // Sync state if initial items change
     useEffect(() => {
@@ -227,6 +314,39 @@ export const StoreCard = memo(function StoreCard({
                         </div>
                     </div>
 
+                    {/* Language Selection Popup */}
+                    {showLanguageSelect && (
+                        <div
+                            className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm rounded-[16px] flex items-center justify-center p-6 animate-in fade-in duration-200"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-xl max-w-xs w-full text-center">
+                                <h4 className="font-bold text-slate-900 mb-2">{t('storeCard.selectLanguage')}</h4>
+                                <p className="text-xs text-slate-500 mb-4">{t('storeCard.chooseLanguageDesc')}</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => handleDownloadPDF('en')}
+                                        className="py-2.5 bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl text-xs font-bold border border-slate-200 hover:border-indigo-100 transition-all"
+                                    >
+                                        🇺🇸 English
+                                    </button>
+                                    <button
+                                        onClick={() => handleDownloadPDF('no')}
+                                        className="py-2.5 bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl text-xs font-bold border border-slate-200 hover:border-indigo-100 transition-all"
+                                    >
+                                        🇳🇴 Norsk
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={() => setShowLanguageSelect(false)}
+                                    className="mt-4 text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* 2. Middle Zone: Store Info */}
                     <div className="px-4 pb-4 md:px-5 md:pb-5 mt-2">
                         <h3 className="font-bold text-dark text-lg leading-tight mb-1 group-hover:text-primary transition-colors">
@@ -247,17 +367,27 @@ export const StoreCard = memo(function StoreCard({
                         "mt-auto px-4 py-3 md:px-5 md:py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between gap-4",
                         !isItemsExpanded && "rounded-b-[16px]"
                     )}>
-                        {/* Left: Get Directions Button */}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                window.open(googleMapsUrl, '_blank');
-                            }}
-                            className="flex items-center gap-2 bg-white hover:bg-gray-50 text-dark border border-gray-200 px-3 py-2 rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all group/btn"
-                        >
-                            <MapPin className="w-3.5 h-3.5 text-blue-500 group-hover/btn:scale-110 transition-transform" />
-                            {t('storeCard.getDirections', 'Get Directions')}
-                        </button>
+                        {/* Left: Action Group */}
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(googleMapsUrl, '_blank');
+                                }}
+                                className="flex items-center gap-2 bg-white hover:bg-gray-50 text-dark border border-gray-200 px-3 py-2 rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all group/btn"
+                            >
+                                <MapPin className="w-3.5 h-3.5 text-blue-500 group-hover/btn:scale-110 transition-transform" />
+                                {t('storeCard.getDirections', 'Get Directions')}
+                            </button>
+
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setShowLanguageSelect(true); }}
+                                className="flex items-center gap-2 bg-white hover:bg-gray-50 text-slate-500 border border-gray-200 px-3 py-2 rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all"
+                            >
+                                <Download className="w-3.5 h-3.5 text-blue-500" />
+                                {t('storeCard.downloadPdf')}
+                            </button>
+                        </div>
 
                         {/* Right: Stock Status & Expand Chevron */}
                         <div className="flex items-center gap-3">
@@ -640,11 +770,21 @@ export const StoreCard = memo(function StoreCard({
                         {t('storeCard.getDirections')}
                     </a>
 
-                    {selected && !isDetailed && (
-                        <button className="flex items-center text-sm font-medium text-primary hover:text-red-700 transition-colors">
-                            {t('storeCard.viewDetails')} <ChevronRight className="w-4 h-4 ml-1" />
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setShowLanguageSelect(true); }}
+                            className="flex items-center gap-1.5 text-xs font-black text-slate-500 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 px-4 py-2.5 md:px-3 md:py-1.5 rounded-xl md:rounded-lg transition-all active:scale-95"
+                        >
+                            <Download className="w-3.5 h-3.5 md:w-3 md:h-3" />
+                            {t('storeCard.downloadPdf')}
                         </button>
-                    )}
+
+                        {selected && !isDetailed && (
+                            <button className="flex items-center text-sm font-medium text-primary hover:text-red-700 transition-colors">
+                                {t('storeCard.viewDetails')} <ChevronRight className="w-4 h-4 ml-1" />
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
 

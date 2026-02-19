@@ -13,6 +13,8 @@ export interface Product {
     unit: string;
     originalQueryName?: string;
     priceHistory?: Array<{ price: number; date: string }>;
+    ingredients?: string;
+    allergens?: Array<{ display_name: string; contains: boolean }>;
 }
 
 export interface Store {
@@ -31,6 +33,10 @@ export interface ShoppingItem {
     englishName?: string;
     quantity: number;
     unit?: string;
+    lockedBrand?: string;
+    lockedProductId?: string; // Specific product ID (or name) the user wants
+    lockedProductDetails?: Product; // Snapshot of the locked product
+    lockedStore?: string; // The store where this specific product was found
 }
 
 // --- Comparison Service Types ---
@@ -44,6 +50,9 @@ export interface StoreComparison {
         productId?: string | number;
         quantity: number;
         englishName?: string;
+        image_url?: string;
+        ingredients?: string;
+        allergens?: Array<{ display_name: string; contains: boolean }>;
     }>;
 }
 
@@ -90,6 +99,7 @@ export interface SingleStoreOption {
     distance: number;
     availabilityScore?: number;
     missingItems?: string[];
+    missedPreferences?: Array<{ itemName: string; expected: string; found: string }>;
 }
 
 export interface MultiStoreOption {
@@ -115,6 +125,7 @@ export interface RouteResponse {
     singleStoreCandidates?: SingleStoreOption[];
     allNearbyStores?: Store[];
     searchLocation?: Location;
+    missedPreferences?: Array<{ itemName: string; expected: string; found: string }>;
 }
 
 // --- API Responses ---

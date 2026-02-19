@@ -1,0 +1,20 @@
+# Task: Syncing Product Availability Logic
+
+## Planning & UI Refinement
+- [x] Update implementation plan for regional product display
+- [x] Refine `ItemCard.tsx` UI labels and variable names
+- [x] Identify discrepancy between index-only brands endpoint and hybrid results logic
+
+## Implementation: Backend (Hybrid Brands API)
+- [/] Modify `/api/products/brands/:canonicalId` in `products.ts`:
+    - [x] Import `dataAggregator.searchProductsWithChainVariety`
+    - [x] Capture nearby stores for chain context
+    - [x] Perform hybrid search (index + live)
+    - [ ] Group results by product name for UI consistency
+    - [ ] Align matching logic with `selectBestProductForStore`
+- [ ] Verify endpoint returns results consistent with Results page coverage
+
+## Verification
+- [ ] Verify niche items (not in index) now show "Products available" in Selection page
+- [ ] Verify same items appear in Optimization results
+- [ ] Build and verify no regressions

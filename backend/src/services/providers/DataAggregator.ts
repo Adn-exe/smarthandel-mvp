@@ -49,18 +49,27 @@ class DataAggregator {
         chains: string[],
         options?: ProviderSearchOptions & { bypassIndex?: boolean }
     ): Promise<{ products: Product[], queryMapping: Map<string, string[]> }> {
+        // 0. Build Translation Map locally for this request
+        // We import the shared mappings to ensure consistency with relevance scoring
+        const { QUERY_MAPPINGS } = await import('../../utils/matching.js');
+
         // 1. Check local Deterministic Price Index for canonical items
         const resultsByQuery: { query: string, products: Product[] }[] = [];
-        const queriesToFetch: string[] = [];
+        const queriesToFetch: { original: string, translated: string }[] = [];
 
         for (const q of queries) {
             const normalizedQ = q.toLowerCase().trim().replace(/\s+/g, '_');
-            if (!options?.bypassIndex && priceIndexService.isCanonical(normalizedQ)) {
-                const indexedPrices = priceIndexService.getPricesForCanonicalItem(normalizedQ);
+            // TRANSLATE QUERY: "flour" -> "hvetemel"
+            // Use the mapped query for ALL fallback/API searches to get better relevance
+            const translatedQ = QUERY_MAPPINGS[normalizedQ.replace(/_/g, ' ')] || normalizedQ;
+            const lookupKey = translatedQ.replace(/\s+/g, '_'); // Canonical keys are usually underscored Norwegian
+
+            if (!options?.bypassIndex && priceIndexService.isCanonical(lookupKey)) {
+                const indexedPrices = priceIndexService.getPricesForCanonicalItem(lookupKey);
                 if (indexedPrices.length > 0) {
-                    console.log(`[DataAggregator] Index HIT for canonical item: "${q}" (${indexedPrices.length} entries)`);
+                    console.log(`[DataAggregator] Index HIT for canonical item: "${q}" -> "${lookupKey}" (${indexedPrices.length} entries)`);
                     resultsByQuery.push({
-                        query: q,
+                        query: q, // Keep original query as key
                         products: indexedPrices.map(entry => ({
                             id: `idx-${entry.canonical_product_id}-${entry.store_id}`,
                             name: entry.product_name,
@@ -72,18 +81,20 @@ class DataAggregator {
                             relevanceScore: -10000 // High relevance for indexed items
                         }))
                     });
+                    // REMOVED continue: Always fetch from API too for now to ensure variety until index is mature
                 }
             }
-            // Always Fetch To Ensure Variety & Freshness (unless specifically bypassed)
-            queriesToFetch.push(q);
+
+            // Add to fetch list if not found in index OR to supplement index
+            queriesToFetch.push({ original: q, translated: translatedQ });
         }
 
 
         // 2. Initial global search (only for those not indexed)
         const remoteResultsByQuery = await Promise.all(
-            queriesToFetch.map(async (q) => ({
-                query: q,
-                products: await this.searchProducts(q, options)
+            queriesToFetch.map(async (item) => ({
+                query: item.original,
+                products: await this.searchProducts(item.translated, options) // Search with TRANSLATED term
             }))
         );
 
@@ -99,7 +110,8 @@ class DataAggregator {
         const topChains = uniqueChains.slice(0, 6);
 
         const targetedResultsByQuery = await Promise.all(
-            queriesToFetch.map(async (q) => {
+            queriesToFetch.map(async (item) => {
+                const q = item.original;
                 // Find which chains we already have results for
                 const existingProducts = resultsByQuery.find(r => r.query === q)?.products || [];
 
@@ -116,10 +128,10 @@ class DataAggregator {
 
                 if (missingChains.length === 0) return { query: q, products: [] };
 
-                console.log(`[DataAggregator] Targeted variety search for "${q}" - Coverage sparse for: ${missingChains.join(', ')}`);
+                console.log(`[DataAggregator] Targeted variety search for "${q}" (translated: "${item.translated}") - Coverage sparse for: ${missingChains.join(', ')}`);
 
                 // Limit targeted search to avoid 429
-                const chainQueries = missingChains.slice(0, 3).map(c => `${c} ${q}`);
+                const chainQueries = missingChains.slice(0, 3).map(c => `${c} ${item.translated}`);
 
                 const products = await Promise.all(
                     chainQueries.map(cq => this.searchProducts(cq, options))

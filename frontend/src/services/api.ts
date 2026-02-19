@@ -167,6 +167,21 @@ export const api = {
             console.error('[API Report Error]', error.response?.data || error.message);
             throw new Error(error.response?.data?.message || 'errors.failedReport');
         }
+    },
+
+    /**
+     * Get regional brands/products available for a specific item
+     */
+    getBrands: async (canonicalId: string, lat?: number, lng?: number, radius: number = 10): Promise<any[]> => {
+        try {
+            const response = await apiClient.get<any>(`/api/products/brands/${encodeURIComponent(canonicalId)}`, {
+                params: { lat, lng, radius },
+            });
+            return response.data.brands || [];
+        } catch (error: any) {
+            console.error('[API Brands Error]', error.response?.data || error.message);
+            return [];
+        }
     }
 };
 

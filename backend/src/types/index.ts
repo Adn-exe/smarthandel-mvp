@@ -16,6 +16,8 @@ export interface Product {
     relevanceScore?: number;
     originalQueryName?: string;
     priceHistory?: Array<{ price: number; date: string }>;
+    ingredients?: string;
+    allergens?: Array<{ display_name: string; contains: boolean }>;
 }
 
 
@@ -36,6 +38,10 @@ export interface ShoppingItem {
     suggestedCategory?: string;
     quantity: number;
     unit?: string;
+    lockedBrand?: string;
+    lockedProductId?: string;
+    lockedProductDetails?: any;
+    lockedStore?: string;
 }
 
 export interface RouteOption {

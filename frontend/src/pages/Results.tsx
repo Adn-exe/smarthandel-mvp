@@ -1,9 +1,8 @@
 import { useState, useEffect, Suspense, lazy, useMemo } from 'react';
 import { useLocation as useRouterLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Sparkles, MapPin, List, Search } from 'lucide-react';
+import { MapPin, List, Search } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useTranslation, Trans } from 'react-i18next';
-import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { StoreMap } from '../components/StoreMap';
 import { useOptimizeRoute } from '../lib/queryClient';
 import { ResultsDisplay } from '../components/ResultsDisplay';
@@ -33,7 +32,6 @@ export default function Results() {
     const [isRouting, setIsRouting] = useState(false);
     // mobileActiveTab controls the mobile List/Map toggle — available in ALL views
     const [mobileActiveTab, setMobileActiveTab] = useState<'list' | 'map'>('list');
-    const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
     // Helper to detect desktop view for reliable map rendering logic
     const isDesktop = useMediaQuery('(min-width: 1024px)');
 
@@ -397,68 +395,6 @@ export default function Results() {
                                 />
                             </div>
 
-                            {/* Map Summary / Reasoning */}
-                            {(routeData?.singleStoreReasoning || routeData?.multiStoreReasoning || routeData?.reasoning) && (
-                                <div className="mt-4 md:mt-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-indigo-100 p-4 shadow-sm animate-in fade-in slide-in-from-top-2 duration-700">
-                                    <button
-                                        onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                                        className="w-full flex items-center justify-between group"
-                                    >
-                                        <h4 className="text-[10px] md:text-xs font-black text-indigo-900 uppercase tracking-widest flex items-center gap-2">
-                                            <Sparkles className="w-3 h-3 text-indigo-500 animate-pulse" />
-                                            {t('results.smartSummaryTitle')}
-                                        </h4>
-                                        <div className={clsx(
-                                            "w-5 h-5 rounded-full bg-indigo-50 flex items-center justify-center transition-transform duration-300",
-                                            isSummaryExpanded ? "rotate-180" : ""
-                                        )}>
-                                            <svg className="w-3 h-3 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-                                    </button>
-
-                                    {isSummaryExpanded && (
-                                        <p className="mt-3 text-xs md:text-sm text-indigo-950/70 font-bold leading-relaxed animate-in fade-in slide-in-from-top-1 duration-300">
-                                            {(() => {
-                                                const currentV = activeView || routeData?.recommendation;
-
-                                                // Helper to format price
-                                                const formatPrice = (price: number) => {
-                                                    const locale = i18n.language.startsWith('no') ? 'no-NO' : 'en-GB';
-                                                    // Ensure clean formatting without decimals or currency symbols first
-                                                    const formatter = new Intl.NumberFormat(locale, {
-                                                        style: 'decimal',
-                                                        maximumFractionDigits: 0
-                                                    });
-                                                    // Manually construct the string to guarantee "Amount NOK" format without trailing chars
-                                                    return `${formatter.format(price).replace(/,00$|,-$/, '')} NOK`;
-                                                };
-
-                                                if (currentV === 'multi' && routeData?.multiStore && routeData.singleStore) {
-                                                    const singleTotal = (routeData.singleStore.totalCost || 0);
-                                                    const multiTotal = (routeData.multiStore.totalCost || 0);
-                                                    const grocerySavings = singleTotal - multiTotal;
-
-                                                    return (
-                                                        <Trans
-                                                            i18nKey="results.smartSummaryTemplate"
-                                                            values={{
-                                                                savings: formatPrice(grocerySavings),
-                                                                total: formatPrice(multiTotal)
-                                                            }}
-                                                            components={{ bold: <strong className="text-indigo-900 font-bold" /> }}
-                                                        />
-                                                    );
-                                                }
-
-                                                // Fallback or purely single store
-                                                return (routeData?.singleStoreReasoning || routeData?.reasoning);
-                                            })()}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

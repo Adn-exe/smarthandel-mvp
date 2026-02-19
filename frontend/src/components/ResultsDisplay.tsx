@@ -185,6 +185,39 @@ export const ResultsDisplay = memo(function ResultsDisplay({
             {/* 2. Content Isolation Grid */}
             <div className="grid grid-cols-1 gap-4 md:gap-6">
 
+                {/* Missed Preferences Alert */}
+                {activeView === 'single' && singleStores[0]?.missedPreferences && singleStores[0].missedPreferences.length > 0 && (
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="flex items-start gap-3">
+                            <div className="bg-amber-100 p-2 rounded-lg shrink-0">
+                                <AlertCircle className="w-5 h-5 text-amber-600" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-bold text-amber-900 mb-1">
+                                    {t('results.partialMatch', 'Some specific products were not found')}
+                                </h3>
+                                <p className="text-xs text-amber-700 mb-3 leading-relaxed">
+                                    {t('results.partialMatchDesc', 'The best store doesn\'t have the exact brands/products you requested, so we selected the best available alternatives.')}
+                                </p>
+                                <div className="space-y-2">
+                                    {singleStores[0].missedPreferences.map((miss, idx) => (
+                                        <div key={idx} className="flex items-center justify-between bg-white/60 p-2 rounded border border-amber-100/50 text-xs">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium text-amber-900">{miss.itemName}:</span>
+                                                <span className="text-amber-600 line-through decoration-amber-400/50">{miss.expected}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 text-amber-700 font-bold">
+                                                <ArrowRight className="w-3 h-3" />
+                                                <span>{miss.found}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {activeView === 'single' ? (
                     <div className="space-y-12 md:space-y-16">
                         {/* Choice 1: Best Single Store */}
