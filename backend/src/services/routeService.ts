@@ -3,6 +3,8 @@ import priceIndexService from './PriceIndexService.js';
 import { calculateDistance } from '../utils/distance.js';
 import { Product, Store, ShoppingItem, Location } from '../types/index.js';
 import { ApiError } from '../middleware/errorHandler.js';
+import { selectBestProductForStore } from '../utils/matching.js';
+
 
 interface ProductWithPrice extends Product {
     totalPrice: number;
@@ -163,36 +165,9 @@ class RouteService {
         userLocation: Location
     ): SingleStoreOption[] {
         const results: SingleStoreOption[] = [];
-        const requiredCanonicalIds = new Set(items.map(i => i.name)); // Assuming i.name IS the canonical ID from frontend
 
         for (const store of stores) {
-            // Find products for this store that match valid canonical IDs
-            const storeName = store.name.toLowerCase().replace(/_/g, ' ');
-            const chainName = store.chain.toLowerCase().replace(/_/g, ' ');
-
-            const storeProducts = allProducts.filter(p => {
-                const pStore = p.store.toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
-                const pChain = (p.chain || '').toLowerCase().replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
-
-                // Phase 3: Price Accuracy & Matching
-                // Prefer matches that mention the exact store name or address
-                const isChainMatch = pStore.includes(chainName) || chainName.includes(pStore) ||
-                    pChain.includes(chainName) || chainName.includes(pChain);
-                const isBranchMatch = pStore.includes(storeName) || storeName.includes(pStore);
-
-                // Extra Loosening: Common parent groups or abbreviations
-                const isParentMatch = (pStore.includes('norgesgruppen') && ['meny', 'spar', 'kiwi', 'joker'].some(c => chainName.includes(c))) ||
-                    (pStore.includes('coop') && chainName.includes('coop')) ||
-                    (pChain.includes('norgesgruppen') && ['meny', 'spar', 'kiwi', 'joker'].some(c => chainName.includes(c)));
-
-                if (isBranchMatch) return true; // Branch specific data is best
-                if (isChainMatch) return true; // Chain level is fallback
-                if (isParentMatch) return true; // Parent group is a loose fallback
-
-                return false;
-            });
-
-            // Select cheapest product per canonical ID
+            // Use shared matching utility to find the best candidate per store/query
             const foundItems: ProductWithPrice[] = [];
             let storeTotalCost = 0;
             const foundCanonicalIds = new Set<string>();
@@ -200,30 +175,11 @@ class RouteService {
             // Map products back to their search terms (queries)
             for (const item of items) {
                 const searchLabel = item.name;
-                // Get all product IDs that were returned for this specific search query
                 const productIdsForThisQuery = queryMapping.get(searchLabel) || [];
 
-                // Find candidates in this store that correspond to this search query
-                const candidates = storeProducts.filter(p => productIdsForThisQuery.includes(String(p.id)));
+                const best = selectBestProductForStore(allProducts, store, productIdsForThisQuery);
 
-                if (candidates.length > 0) {
-                    // Pick best candidate: Prioritize Relevance Score, then Price
-                    const best = candidates.reduce((best, curr) => {
-                        const scoreA = best.relevanceScore ?? 0;
-                        const scoreB = curr.relevanceScore ?? 0;
-                        const scoreDiff = scoreB - scoreA;
-
-                        // If current item is significantly more relevant (lower score), pick it
-                        // Threshold of 2000 corresponds to a minor penalty tier in KassalProvider
-                        if (scoreDiff < -2000) return curr;
-
-                        // If best item is significantly more relevant, keep it
-                        if (scoreDiff > 2000) return best;
-
-                        // If relevance is similar, pick the cheaper one
-                        return curr.price < best.price ? curr : best;
-                    });
-
+                if (best) {
                     const quantity = item.quantity;
                     const totalPrice = best.price * quantity;
 
@@ -231,7 +187,7 @@ class RouteService {
                         ...best,
                         totalPrice,
                         quantity,
-                        originalQueryName: searchLabel // Use exact query to ensure frontend matrix matching works
+                        originalQueryName: searchLabel
                     });
                     storeTotalCost += totalPrice;
                     foundCanonicalIds.add(searchLabel);
@@ -267,6 +223,7 @@ class RouteService {
             return a.totalCost - b.totalCost;
         });
     }
+
 
     private calculateSmartRoute(
         items: ShoppingItem[],

@@ -1,7 +1,9 @@
 import dataAggregator from './providers/DataAggregator.js';
 import cache from '../utils/cache.js';
-import { Product, Store, ShoppingItem } from '../types/index.js';
+import { Product, Store, ShoppingItem, Location } from '../types/index.js';
 import { ApiError } from '../middleware/errorHandler.js';
+import { selectBestProductForStore } from '../utils/matching.js';
+
 
 interface StoreComparison {
     total: number;
@@ -53,14 +55,18 @@ class ComparisonService {
      */
     public async compareProductPrices(
         items: ShoppingItem[],
-        stores: Store[]
+        stores: Store[],
+        userLocation?: Location
     ): Promise<ComparisonResult> {
-        const cacheKey = `compare:${JSON.stringify(items)}:${JSON.stringify(stores.map(s => s.name).sort())}`;
+        const cacheKey = `compare:${JSON.stringify(items)}:${JSON.stringify(stores.map(s => s.name).sort())}:${userLocation ? `${userLocation.lat},${userLocation.lng}` : 'no-loc'}`;
         const cached = cache.get<ComparisonResult>(cacheKey);
         if (cached) return cached;
 
         const byStore: Record<string, StoreComparison> = {};
         const byItem: Record<string, ItemComparison> = {};
+
+        // Use the first store's location as a fallback for search context if userLocation is missing
+        const searchLocation = userLocation || (stores.length > 0 ? stores[0].location : undefined);
 
         // Initialize byStore
         stores.forEach(store => {
@@ -83,21 +89,24 @@ class ComparisonService {
                 prices: [],
             };
 
-            // Search for the product in the Kassal API
-            // In a real scenario, we might want to filter search by vendor/store if possible
-            const products = await dataAggregator.searchProducts(shoppingItem.name, {
-                suggestedCategory: shoppingItem.suggestedCategory
-            });
+            // Perform a robust search with chain variety to ensure we get results from all relevant stores
+            const uniqueChains = Array.from(new Set(stores.map(s => s.chain)));
+            const { products, queryMapping } = await dataAggregator.searchProductsWithChainVariety(
+                [shoppingItem.name],
+                uniqueChains,
+                {
+                    suggestedCategory: shoppingItem.suggestedCategory,
+                    location: searchLocation,
+                    radius: 10 // Default 10km radius for variety search
+                }
+            );
+
+
+            const productIdsForThisQuery = queryMapping.get(shoppingItem.name) || [];
 
             for (const store of stores) {
-                // Find the specific product offered by this store/chain
-                // Kassal API maps stores to products via p.store.name or p.vendor
-                const matchingProduct = products.find((p: Product) => {
-                    const productStore = p.store.toLowerCase().replace(/_/g, ' ');
-                    const chain = store.chain.toLowerCase().replace(/_/g, ' ');
-                    const name = store.name.toLowerCase().replace(/_/g, ' ');
-                    return productStore.includes(chain) || productStore.includes(name) || chain.includes(productStore);
-                });
+                // Use centralized matching logic to find the best candidate for this specific store
+                const matchingProduct = selectBestProductForStore(products, store, productIdsForThisQuery);
 
                 if (matchingProduct) {
                     const price = matchingProduct.price * shoppingItem.quantity;
@@ -109,7 +118,7 @@ class ComparisonService {
                         price: matchingProduct.price,
                         productId: matchingProduct.id,
                         quantity: shoppingItem.quantity,
-                        englishName: shoppingItem.englishName, // Propagate translation
+                        englishName: shoppingItem.englishName,
                     });
 
                     itemComp.prices.push({ storeName: store.name, price: matchingProduct.price });
@@ -140,6 +149,7 @@ class ComparisonService {
                 // Priority 2: Cost (Lower is better)
                 return a[1].total - b[1].total;
             });
+
 
         const cheapestStore = storeTotals.length > 0 ? storeTotals[0][0] : null;
         const mostExpensiveStore = storeTotals.length > 0 ? storeTotals[storeTotals.length - 1][0] : null;

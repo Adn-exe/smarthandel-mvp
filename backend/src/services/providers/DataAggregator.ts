@@ -58,7 +58,7 @@ class DataAggregator {
             if (!options?.bypassIndex && priceIndexService.isCanonical(normalizedQ)) {
                 const indexedPrices = priceIndexService.getPricesForCanonicalItem(normalizedQ);
                 if (indexedPrices.length > 0) {
-                    console.log(`[DataAggregator] Cache HIT (Index) for canonical item: "${q}" (${indexedPrices.length} entries)`);
+                    console.log(`[DataAggregator] Index HIT for canonical item: "${q}" (${indexedPrices.length} entries)`);
                     resultsByQuery.push({
                         query: q,
                         products: indexedPrices.map(entry => ({
@@ -72,11 +72,12 @@ class DataAggregator {
                             relevanceScore: -10000 // High relevance for indexed items
                         }))
                     });
-                    continue;
                 }
             }
+            // Always Fetch To Ensure Variety & Freshness (unless specifically bypassed)
             queriesToFetch.push(q);
         }
+
 
         // 2. Initial global search (only for those not indexed)
         const remoteResultsByQuery = await Promise.all(
@@ -89,30 +90,36 @@ class DataAggregator {
         // Merge indexed and remote
         resultsByQuery.push(...remoteResultsByQuery);
 
-        // 2. Targeted searches for variety (only if global/index search missed some chains)
+        // 2. Targeted searches for variety (only if global/index search results are sparse for some chains)
         const uniqueChains = Array.from(new Set(chains.map(c => {
             const parts = c.split(' ');
             return (parts.length > 1 ? `${parts[0]} ${parts[1]}` : parts[0]).toUpperCase();
         })));
-        const topChains = uniqueChains.slice(0, 6);
+        // Increase limit of chains to check for variety
+        const topChains = uniqueChains.slice(0, 8);
 
         const targetedResultsByQuery = await Promise.all(
             queriesToFetch.map(async (q) => {
                 // Find which chains we already have results for
                 const existingProducts = resultsByQuery.find(r => r.query === q)?.products || [];
-                const foundChains = new Set(existingProducts.map(p => {
-                    const parts = (p.chain || '').split(' ');
-                    return (parts.length > 1 ? `${parts[0]} ${parts[1]}` : parts[0]).toUpperCase();
-                }));
 
-                const missingChains = topChains.filter(tc => !foundChains.has(tc));
+                // Count products per chain to detect low coverage
+                const chainCoverage = new Map<string, number>();
+                existingProducts.forEach(p => {
+                    const parts = (p.chain || '').split(' ');
+                    const cKey = (parts.length > 1 ? `${parts[0]} ${parts[1]}` : parts[0]).toUpperCase();
+                    chainCoverage.set(cKey, (chainCoverage.get(cKey) || 0) + 1);
+                });
+
+                // A chain is "missing" if it has 0 or 1 product (low variety)
+                const missingChains = topChains.filter(tc => (chainCoverage.get(tc) || 0) < 2);
 
                 if (missingChains.length === 0) return { query: q, products: [] };
 
-                console.log(`[DataAggregator] Targeted variety search for "${q}" - Missing chains: ${missingChains.join(', ')}`);
+                console.log(`[DataAggregator] Targeted variety search for "${q}" - Coverage sparse for: ${missingChains.join(', ')}`);
 
-                // Don't do too many targeted searches to avoid 429
-                const chainQueries = missingChains.slice(0, 3).map(c => `${c} ${q}`);
+                // Don't do too many targeted searches to avoid 429, but slightly more than before
+                const chainQueries = missingChains.slice(0, 5).map(c => `${c} ${q}`);
                 const products = await Promise.all(
                     chainQueries.map(cq => this.searchProducts(cq, options))
                 );
@@ -122,6 +129,7 @@ class DataAggregator {
                 };
             })
         );
+
 
         // 3. Build the mapping and flat list
         const queryMapping = new Map<string, string[]>(); // canonicalQuery -> productIds[]

@@ -6,6 +6,8 @@ import { ReportModal } from './ReportModal';
 import { formatDistance } from '../utils/format';
 import { useTranslation } from 'react-i18next';
 import type { Store as StoreType, ProductWithPrice } from '../types';
+import { getProductFallback } from '../utils/productIcons';
+
 
 interface StoreCardProps {
     store: StoreType;
@@ -292,9 +294,12 @@ export const StoreCard = memo(function StoreCard({
                                                             onError={() => setFailedImages(prev => new Set(prev).add(String(item.id)))}
                                                         />
                                                     ) : (
-                                                        <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-gray-200" />
+                                                        <span className="text-xl md:text-2xl" role="img" aria-label={item.name}>
+                                                            {getProductFallback(item.name)}
+                                                        </span>
                                                     )}
                                                 </div>
+
 
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center gap-2">
@@ -467,24 +472,24 @@ export const StoreCard = memo(function StoreCard({
                             .map((item, idx) => (
                                 <div key={idx} className="flex justify-between items-start gap-2">
                                     <div className="flex items-start gap-2 md:gap-3 min-w-0 flex-1">
-                                        {item.image_url ? (
+                                        {item.image_url && !failedImages.has(String(item.id)) ? (
                                             <img
                                                 src={item.image_url}
                                                 alt={item.name}
                                                 className="w-10 h-10 md:w-12 md:h-12 object-contain bg-white rounded-lg border border-gray-50 p-0.5 shrink-0"
                                                 loading="lazy"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.onerror = null; // Prevent infinite loop
-                                                    target.src = '/images/placeholder.png';
-                                                    target.className = 'w-10 h-10 md:w-12 md:h-12 object-contain bg-gray-50 rounded-lg p-1.5 opacity-60';
+                                                onError={() => {
+                                                    setFailedImages(prev => new Set(prev).add(String(item.id)));
                                                 }}
                                             />
                                         ) : (
-                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg flex items-center justify-center text-gray-300 shrink-0">
-                                                <ShoppingBag className="w-5 h-5" />
+                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg flex items-center justify-center shrink-0">
+                                                <span className="text-xl md:text-2xl" role="img" aria-label={item.name}>
+                                                    {getProductFallback(item.name)}
+                                                </span>
                                             </div>
                                         )}
+
                                         <div className="flex flex-col min-w-0 flex-1">
                                             <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-2">
                                                 <div className="flex items-center bg-gray-50 md:bg-gray-50/50 rounded-xl md:rounded-lg p-1 md:p-0.5 border border-gray-100 md:border-gray-100/50 shrink-0 w-fit">

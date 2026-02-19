@@ -50,7 +50,7 @@ router.post(
         }
 
         // 3. Compare prices for all extracted items across found stores
-        const comparison = await comparisonService.compareProductPrices(parsedQuery.items, stores);
+        const comparison = await comparisonService.compareProductPrices(parsedQuery.items, stores, searchLocation);
 
         res.setHeader('Cache-Control', 'public, max-age=300'); // Cache for 5 mins
         res.json({
@@ -115,7 +115,8 @@ router.post(
         );
 
         const stores = await dataAggregator.getStoresNearby(searchLocation, searchRadius);
-        const comparison = await comparisonService.compareProductPrices(shoppingItems, stores);
+        const comparison = await comparisonService.compareProductPrices(shoppingItems, stores, searchLocation);
+
 
         res.json({
             success: true,

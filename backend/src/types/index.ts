@@ -12,10 +12,12 @@ export interface Product {
     chain: string;
     image_url: string;
     unit: string;
+    address?: string;
     relevanceScore?: number;
     originalQueryName?: string;
     priceHistory?: Array<{ price: number; date: string }>;
 }
+
 
 export interface Store {
     id: string | number;

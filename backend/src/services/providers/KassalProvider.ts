@@ -267,9 +267,11 @@ export class KassalProvider implements BaseProvider {
             chain: p.store?.code || p.store?.group || p.store?.name || 'Unknown Chain',
             image_url: p.image || '',
             unit: p.nutrition?.[0]?.unit || 'stk',
+            address: p.store?.address,
             priceHistory: p.price_history
         };
     }
+
 
     private applyRelevanceScoring(products: Product[], query: string, options: any, rawProducts: any[]): Product[] {
         const lowerQuery = query.toLowerCase().trim();

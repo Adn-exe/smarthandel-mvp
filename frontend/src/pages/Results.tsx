@@ -131,32 +131,54 @@ export default function Results() {
 
     const mapStores = useMemo(() => {
         if (!routeData) return [];
+
+        // 1. Smart Route (Multi-store) shows markers for all stops
         if (showMulti) {
             return routeData.multiStore!.stores.map((s: any) => s.store);
         }
+
+        // 2. Single Store View: Show all candidate stores so user can compare them on the map
         if (activeView === 'single') {
-            return routeData.singleStoreCandidates?.[0] ? [routeData.singleStoreCandidates[0].store] : (routeData.singleStore ? [routeData.singleStore.store] : []);
+            const candidates = routeData.singleStoreCandidates || [];
+            const best = routeData.singleStore;
+            const all = best ? [best.store, ...candidates.map(c => c.store)] : candidates.map(c => c.store);
+
+            // De-duplicate in case best is also in candidates
+            return Array.from(new Map(all.map(s => [String(s.id), s])).values());
         }
+
+        // 3. Comparison View: Show markers for all involved candidates
         if (routeData.singleStoreCandidates && routeData.singleStoreCandidates.length > 0) {
             return routeData.singleStoreCandidates.map(c => c.store);
         }
+
         return routeData.singleStore ? [routeData.singleStore.store] : [];
     }, [showMulti, activeView, routeData]);
 
+
     const mapRoute = useMemo(() => {
         if (!routeData) return undefined;
+
+        // 1. Smart Route (Multi-store) always shows the full path
         if (showMulti) {
             return routeData.multiStore!.stores.map((s: any) => s.store);
         }
-        if (activeView === 'single') {
-            return routeData.singleStoreCandidates?.[0] ? [routeData.singleStoreCandidates[0].store] : (routeData.singleStore ? [routeData.singleStore.store] : undefined);
+
+        // 2. If a specific store is selected (either in Single or Comparison view), show its specific route
+        if (selectedStoreId) {
+            const allCandidates = [
+                ...(routeData.singleStore ? [routeData.singleStore] : []),
+                ...(routeData.singleStoreCandidates || [])
+            ];
+            const selected = allCandidates.find(c => String(c.store.id) === String(selectedStoreId));
+            if (selected) return [selected.store];
         }
-        if (routeData.singleStoreCandidates && routeData.singleStoreCandidates.length > 0) {
-            const selected = routeData.singleStoreCandidates.find(c => String(c.store.id) === String(selectedStoreId));
-            return [selected?.store || routeData.singleStoreCandidates[0].store];
-        }
-        return routeData.singleStore ? [routeData.singleStore.store] : undefined;
-    }, [showMulti, activeView, routeData, selectedStoreId]);
+
+        // 3. Default Fallback: Show the best single store
+        const defaultSingle = routeData.singleStore || routeData.singleStoreCandidates?.[0];
+        return defaultSingle ? [defaultSingle.store] : undefined;
+    }, [showMulti, routeData, selectedStoreId]);
+
 
     // Road-following path effect
     useEffect(() => {
