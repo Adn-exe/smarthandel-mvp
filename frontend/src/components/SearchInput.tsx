@@ -148,7 +148,6 @@ export const SearchInput = memo(function SearchInput({
             return next;
         });
         setInputValue(''); // Clear input after selection
-        inputRef.current?.focus();
     };
 
     // Close dropdown when clicking outside

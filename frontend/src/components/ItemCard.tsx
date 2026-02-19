@@ -283,19 +283,19 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                                     )}>
                                                                         {product.store}
                                                                     </span>
-                                                                    {product.ingredients && (
-                                                                        <button
-                                                                            onClick={(e) => toggleIngredients(product.id, e)}
-                                                                            className="flex items-center gap-1 text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition-colors bg-slate-100 hover:bg-indigo-50 px-1.5 py-0.5 rounded ml-2 z-10 relative"
-                                                                        >
-                                                                            <Info className="w-3 h-3" />
-                                                                            {t('itemCard.viewIngredients')}
-                                                                        </button>
-                                                                    )}
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex items-center gap-3">
+                                                            <div className="flex items-center gap-2">
+                                                                {product.ingredients && (
+                                                                    <button
+                                                                        onClick={(e) => toggleIngredients(product.id, e)}
+                                                                        className="flex items-center gap-1 text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition-colors bg-slate-100 hover:bg-indigo-50 px-1.5 py-0.5 rounded z-10 relative whitespace-nowrap"
+                                                                    >
+                                                                        <Info className="w-3 h-3" />
+                                                                        {t('itemCard.viewIngredients')}
+                                                                    </button>
+                                                                )}
                                                                 <span className={clsx(
                                                                     "text-sm font-bold whitespace-nowrap px-2 py-1 rounded-lg transition-colors",
                                                                     isLocked

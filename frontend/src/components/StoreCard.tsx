@@ -28,6 +28,7 @@ interface StoreCardProps {
     highlightBorder?: 'red' | 'blue' | 'grey' | 'light-red';
     indexBadge?: number;
     showItemCount?: boolean;
+    hidePdfButton?: boolean;
 }
 
 export const StoreCard = memo(function StoreCard({
@@ -43,7 +44,8 @@ export const StoreCard = memo(function StoreCard({
     userLocation,
     highlightBorder,
     indexBadge,
-    showItemCount
+    showItemCount,
+    hidePdfButton
 }: StoreCardProps) {
     const { t, i18n } = useTranslation();
     const [localQuantities, setLocalQuantities] = useState<Record<string | number, number>>(() =>
@@ -380,13 +382,15 @@ export const StoreCard = memo(function StoreCard({
                                 {t('storeCard.getDirections', 'Get Directions')}
                             </button>
 
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setShowLanguageSelect(true); }}
-                                className="flex items-center gap-2 bg-white hover:bg-gray-50 text-slate-500 border border-gray-200 px-3 py-2 rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all"
-                            >
-                                <Download className="w-3.5 h-3.5 text-blue-500" />
-                                {t('storeCard.downloadPdf')}
-                            </button>
+                            {!hidePdfButton && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowLanguageSelect(true); }}
+                                    className="flex items-center gap-2 bg-white hover:bg-gray-50 text-slate-500 border border-gray-200 px-3 py-2 rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all"
+                                >
+                                    <Download className="w-3.5 h-3.5 text-blue-500" />
+                                    {t('storeCard.downloadPdf')}
+                                </button>
+                            )}
                         </div>
 
                         {/* Right: Stock Status & Expand Chevron */}

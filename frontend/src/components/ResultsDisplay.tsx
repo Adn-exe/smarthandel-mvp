@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { List, AlertCircle, Car, ShoppingCart, ArrowRight, Sparkles } from 'lucide-react';
+import { List, AlertCircle, Car, ShoppingCart, ArrowRight, Sparkles, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { SingleStoreOption, MultiStoreOption } from '../types';
 import { StoreCard } from './StoreCard';
@@ -7,6 +7,8 @@ import { StoreCard } from './StoreCard';
 import { ComparisonTable } from './ComparisonTable';
 import { formatDistance, calculateTravelTime } from '../utils/format';
 import { type ShoppingItem } from '../types';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface ResultsDisplayProps {
     singleStores: SingleStoreOption[];
@@ -27,6 +29,7 @@ interface ResultsDisplayProps {
 export const ResultsDisplay = memo(function ResultsDisplay({
     singleStores,
     multiStore,
+    recommendation,
     onCreateList,
     onReset,
     selectedStoreId,
@@ -113,6 +116,69 @@ export const ResultsDisplay = memo(function ResultsDisplay({
         }
         return baseCandidates;
     }, [singleStores, multiStore, t]);
+
+    const handleDownloadRoutePDF = () => {
+        if (!multiStore) return;
+        const doc = new jsPDF();
+        const timestamp = new Date().toLocaleString();
+
+        doc.setFontSize(22);
+        doc.setTextColor(30, 41, 59);
+        doc.text(t('results.smartRoutePDFTitle', 'Optimized Smart Route'), 14, 22);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`${multiStore.stores.length} ${t('results.stops', 'Stops')} • ${formatDistance(multiStore.totalDistance)} • ${formatPrice(multiStore.totalCost)}`, 14, 30);
+        doc.text(timestamp, 196, 22, { align: 'right' });
+
+        doc.setDrawColor(226, 232, 240);
+        doc.line(14, 35, 196, 35);
+
+        let currentY = 45;
+
+        multiStore.stores.forEach((stop, index) => {
+            if (currentY > 240) {
+                doc.addPage();
+                currentY = 20;
+            }
+
+            doc.setFontSize(14);
+            doc.setTextColor(37, 99, 235);
+            doc.text(`${t('results.stop', 'Stop')} ${index + 1}: ${stop.store.name}`, 14, currentY);
+            currentY += 6;
+
+            doc.setFontSize(9);
+            doc.setTextColor(100, 116, 139);
+            doc.text(`${stop.store.chain} • ${stop.store.address}`, 14, currentY);
+            currentY += 10;
+
+            const tableData = stop.items.map(item => [
+                item.name,
+                `${item.quantity}x`,
+                `${item.price.toFixed(2)} NOK`,
+                `${(item.price * item.quantity).toFixed(2)} NOK`
+            ]);
+
+            autoTable(doc, {
+                startY: currentY,
+                head: [[
+                    t('storeCard.product'),
+                    t('storeCard.qty'),
+                    t('storeCard.unitPrice'),
+                    t('storeCard.total')
+                ]],
+                body: tableData,
+                theme: 'striped',
+                headStyles: { fillColor: [37, 99, 235], fontSize: 9 },
+                bodyStyles: { fontSize: 8 },
+                margin: { left: 14, right: 14 }
+            });
+
+            currentY = (doc as any).lastAutoTable.finalY + 15;
+        });
+
+        doc.save('SmartRoute_Shopping_List.pdf');
+    };
 
     if (singleStores.length === 0 && !multiStore) {
         return (
@@ -314,6 +380,30 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                     /* Smart Multi-Store Route View - Redesigned Timeline */
                     <div className="space-y-6 md:space-y-10 px-2 lg:px-0">
                         {multiStore && (
+                            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 mb-8 animate-in fade-in slide-in-from-top-4">
+                                <div className="flex items-start gap-4">
+                                    <div className="bg-blue-100 p-3 rounded-xl shrink-0">
+                                        <Sparkles className="w-6 h-6 text-blue-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-bold text-blue-900 mb-2">
+                                            {t('results.smartRouteOptimized', 'Optimized Route Strategy')}
+                                        </h3>
+                                        <p className="text-sm text-blue-800 leading-relaxed mb-6">
+                                            {recommendation}
+                                        </p>
+                                        <button
+                                            onClick={handleDownloadRoutePDF}
+                                            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-xs shadow-lg shadow-blue-200 transition-all active:scale-95"
+                                        >
+                                            <Download className="w-4 h-4" />
+                                            {t('results.downloadFullRoute', 'Download Full Route PDF')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {multiStore && (
                             <>
                                 {/* Trip Header: Compact & Clean */}
                                 <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm mb-6 flex flex-wrap md:flex-nowrap items-center justify-around md:justify-between text-center gap-4">
@@ -379,7 +469,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
 
                                                     {/* Right Aligned Card */}
                                                     <div
-                                                        className="flex-grow min-w-0 cursor-pointer pb-8 md:pb-12"
+                                                        className="flex-grow min-w-0 cursor-pointer pb-12 md:pb-20"
                                                         onClick={() => onSelectStore?.(stop.store.id)}
                                                     >
                                                         <StoreCard
@@ -394,6 +484,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                             userLocation={userLocation}
                                                             highlightBorder="blue"
                                                             showItemCount={true}
+                                                            hidePdfButton={true}
                                                         />
                                                     </div>
                                                 </div>

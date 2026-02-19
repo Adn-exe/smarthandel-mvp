@@ -9,6 +9,7 @@ const mockAi = {
 };
 
 const mockAggregator = {
+    searchProductsWithChainVariety: jest.fn(),
     searchProducts: jest.fn(),
     getStoresNearby: jest.fn(),
     checkHealth: jest.fn(),
@@ -33,7 +34,7 @@ const { dataAggregator } = (await import('../services/providers/DataAggregator.j
 const { default: cache } = await import('../utils/cache.js');
 
 // ─── Shared Test Data ──────────────────────────────────────────────
-const osloLocation = { lat: 59.9139, lng: 10.7522 };
+const trondheimLocation = { lat: 63.4305, lng: 10.3951 };
 
 const mockStores = [
     { id: 1, name: 'REMA 1000 Grünerløkka', chain: 'REMA', location: { lat: 59.922, lng: 10.759 }, address: 'Thorvald Meyers gate 51', distance: 0.5 },
@@ -91,6 +92,10 @@ describe('SmartHandel API Integration Tests', () => {
             });
             dataAggregator.getStoresNearby.mockResolvedValue([mockStores[0]]);
             dataAggregator.searchProducts.mockResolvedValue([mockProducts[0]]);
+            dataAggregator.searchProductsWithChainVariety.mockResolvedValue({
+                products: [mockProducts[0]],
+                queryMapping: new Map([['melk', [mockProducts[0].id]]])
+            });
         };
 
         it('should return products for a valid search query', async () => {
@@ -98,7 +103,7 @@ describe('SmartHandel API Integration Tests', () => {
 
             const res = await request(app)
                 .post('/api/products/search')
-                .send({ query: 'kjøp melk og brød', location: osloLocation });
+                .send({ query: 'kjøp melk og brød', location: trondheimLocation });
 
             expect(res.status).toBe(200);
             expect(res.body.success).toBe(true);
@@ -109,7 +114,7 @@ describe('SmartHandel API Integration Tests', () => {
 
             // Verify service call chain
             expect(aiService.parseShoppingQuery).toHaveBeenCalledWith('kjøp melk og brød');
-            expect(dataAggregator.getStoresNearby).toHaveBeenCalledWith(osloLocation);
+            expect(dataAggregator.getStoresNearby).toHaveBeenCalledWith(trondheimLocation);
         });
 
         it('should return 400 for invalid location coordinates', async () => {
@@ -127,7 +132,7 @@ describe('SmartHandel API Integration Tests', () => {
         it('should return 400 for empty query', async () => {
             const res = await request(app)
                 .post('/api/products/search')
-                .send({ query: '', location: osloLocation });
+                .send({ query: '', location: trondheimLocation });
 
             expect(res.status).toBe(400);
             expect(aiService.parseShoppingQuery).not.toHaveBeenCalled();
@@ -139,13 +144,13 @@ describe('SmartHandel API Integration Tests', () => {
             // First request — populates comparison cache
             const res1 = await request(app)
                 .post('/api/products/search')
-                .send({ query: 'melk', location: osloLocation });
+                .send({ query: 'melk', location: trondheimLocation });
             expect(res1.status).toBe(200);
 
             // Second identical request — comparison cache should be hit
             const res2 = await request(app)
                 .post('/api/products/search')
-                .send({ query: 'melk', location: osloLocation });
+                .send({ query: 'melk', location: trondheimLocation });
             expect(res2.status).toBe(200);
 
             // AI service is always called (no route-level caching on /products/search)
@@ -166,7 +171,7 @@ describe('SmartHandel API Integration Tests', () => {
 
             const res = await request(app)
                 .get('/api/stores/nearby')
-                .query({ lat: osloLocation.lat, lng: osloLocation.lng });
+                .query({ lat: trondheimLocation.lat, lng: trondheimLocation.lng });
 
             expect(res.status).toBe(200);
             expect(res.body.success).toBe(true);
@@ -183,7 +188,7 @@ describe('SmartHandel API Integration Tests', () => {
 
             const res = await request(app)
                 .get('/api/stores/nearby')
-                .query({ lat: osloLocation.lat, lng: osloLocation.lng, radius: 5 });
+                .query({ lat: trondheimLocation.lat, lng: trondheimLocation.lng, radius: 5 });
 
             expect(res.status).toBe(200);
             const distances = res.body.stores.map((s: any) => s.distance);
@@ -198,7 +203,7 @@ describe('SmartHandel API Integration Tests', () => {
 
             const res = await request(app)
                 .get('/api/stores/nearby')
-                .query({ lat: osloLocation.lat, lng: osloLocation.lng, radius: 1 });
+                .query({ lat: trondheimLocation.lat, lng: trondheimLocation.lng, radius: 1 });
 
             expect(res.status).toBe(200);
             expect(res.body.radius).toBe(1);
@@ -206,7 +211,7 @@ describe('SmartHandel API Integration Tests', () => {
 
             // Verify the service was called with the radius
             expect(dataAggregator.getStoresNearby).toHaveBeenCalledWith(
-                { lat: osloLocation.lat, lng: osloLocation.lng },
+                { lat: trondheimLocation.lat, lng: trondheimLocation.lng },
                 1
             );
         });
@@ -237,6 +242,10 @@ describe('SmartHandel API Integration Tests', () => {
         const setupOptimizeMocks = (stores = [mockStores[0]], products = mockProducts.slice(0, 1)) => {
             dataAggregator.getStoresNearby.mockResolvedValue(stores);
             dataAggregator.searchProducts.mockResolvedValue(products);
+            dataAggregator.searchProductsWithChainVariety.mockResolvedValue({
+                products: products,
+                queryMapping: new Map(products.map(p => [(p as any).originalQueryName || p.name, [String(p.id)]]))
+            });
         };
 
         it('should return single and multi-store options', async () => {
@@ -252,7 +261,7 @@ describe('SmartHandel API Integration Tests', () => {
                 .post('/api/route/optimize')
                 .send({
                     items: [{ name: 'Melk', quantity: 1 }, { name: 'Brød', quantity: 1 }],
-                    userLocation: osloLocation,
+                    userLocation: trondheimLocation,
                 });
 
             expect(res.status).toBe(200);
@@ -268,22 +277,35 @@ describe('SmartHandel API Integration Tests', () => {
         it('should calculate savings correctly in multi-store mode', async () => {
             // Two stores with different prices so multi-store can calculate savings
             dataAggregator.getStoresNearby.mockResolvedValue([mockStores[0], mockStores[1]]);
-            // Return different prices per call — first for 'Melk', second for 'Brød'
-            dataAggregator.searchProducts
-                .mockResolvedValueOnce([
-                    { id: 'p1', name: 'Melk', price: 15, store: 'REMA 1000 Grünerløkka', chain: 'REMA', unit: 'l' },
-                    { id: 'p2', name: 'Melk', price: 25, store: 'KIWI Tøyen', chain: 'KIWI', unit: 'l' },
-                ])
-                .mockResolvedValueOnce([
-                    { id: 'p3', name: 'Brød', price: 30, store: 'REMA 1000 Grünerløkka', chain: 'REMA', unit: 'stk' },
-                    { id: 'p4', name: 'Brød', price: 20, store: 'KIWI Tøyen', chain: 'KIWI', unit: 'stk' },
-                ]);
+
+            dataAggregator.searchProductsWithChainVariety.mockImplementation((queries: string[]) => {
+                const query = queries[0];
+                if (query === 'Melk') {
+                    return Promise.resolve({
+                        products: [
+                            { id: 'p1', name: 'Melk', price: 15, store: 'REMA 1000 Grünerløkka', chain: 'REMA', unit: 'l' },
+                            { id: 'p2', name: 'Melk', price: 25, store: 'KIWI Tøyen', chain: 'KIWI', unit: 'l' },
+                        ],
+                        queryMapping: new Map([[query, ['p1', 'p2']]])
+                    });
+                }
+                if (query === 'Brød') {
+                    return Promise.resolve({
+                        products: [
+                            { id: 'p3', name: 'Brød', price: 30, store: 'REMA 1000 Grünerløkka', chain: 'REMA', unit: 'stk' },
+                            { id: 'p4', name: 'Brød', price: 20, store: 'KIWI Tøyen', chain: 'KIWI', unit: 'stk' },
+                        ],
+                        queryMapping: new Map([[query, ['p3', 'p4']]])
+                    });
+                }
+                return Promise.resolve({ products: [], queryMapping: new Map() });
+            });
 
             const res = await request(app)
                 .post('/api/route/optimize')
                 .send({
                     items: [{ name: 'Melk', quantity: 1 }, { name: 'Brød', quantity: 1 }],
-                    userLocation: osloLocation,
+                    userLocation: trondheimLocation,
                 });
 
             expect(res.status).toBe(200);
@@ -316,7 +338,7 @@ describe('SmartHandel API Integration Tests', () => {
                 .post('/api/route/optimize')
                 .send({
                     items: [{ name: 'Sjelden Ost', quantity: 1 }],
-                    userLocation: osloLocation,
+                    userLocation: trondheimLocation,
                 });
 
             // When no products are found, the service throws a 404 or 500
@@ -334,7 +356,7 @@ describe('SmartHandel API Integration Tests', () => {
 
             const payload = {
                 items: [{ name: 'Melk', quantity: 1 }],
-                userLocation: osloLocation,
+                userLocation: trondheimLocation,
             };
 
             // First request — should generate fresh result
@@ -345,11 +367,17 @@ describe('SmartHandel API Integration Tests', () => {
             expect(res1.headers['x-cache']).toBeUndefined(); // First call = no cache hit
 
             // Second identical request — should serve from cache
-            const res2 = await request(app)
-                .post('/api/route/optimize')
-                .send(payload);
-            expect(res2.status).toBe(200);
-            expect(res2.headers['x-cache']).toBe('HIT');
+            const originalNodeEnv = process.env.NODE_ENV;
+            process.env.NODE_ENV = 'production';
+            try {
+                const res2 = await request(app)
+                    .post('/api/route/optimize')
+                    .send(payload);
+                expect(res2.status).toBe(200);
+                expect(res2.headers['x-cache']).toBe('HIT');
+            } finally {
+                process.env.NODE_ENV = originalNodeEnv;
+            }
 
             // dataAggregator should only be called once (first request)
             expect(dataAggregator.getStoresNearby).toHaveBeenCalledTimes(1);
@@ -358,7 +386,7 @@ describe('SmartHandel API Integration Tests', () => {
         it('should return 400 for missing items array', async () => {
             const res = await request(app)
                 .post('/api/route/optimize')
-                .send({ userLocation: osloLocation });
+                .send({ userLocation: trondheimLocation });
 
             expect(res.status).toBe(400);
         });
