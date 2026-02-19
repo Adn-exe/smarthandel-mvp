@@ -11,11 +11,12 @@ import type {
 // Create Axios instance
 const apiClient: AxiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
-    timeout: 30000, // 30 seconds
+    timeout: 45000, // 45 seconds
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
 
 // Request Interceptor (Logging)
 apiClient.interceptors.request.use(

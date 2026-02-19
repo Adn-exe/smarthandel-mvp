@@ -96,7 +96,7 @@ class DataAggregator {
             return (parts.length > 1 ? `${parts[0]} ${parts[1]}` : parts[0]).toUpperCase();
         })));
         // Increase limit of chains to check for variety
-        const topChains = uniqueChains.slice(0, 8);
+        const topChains = uniqueChains.slice(0, 6);
 
         const targetedResultsByQuery = await Promise.all(
             queriesToFetch.map(async (q) => {
@@ -111,15 +111,16 @@ class DataAggregator {
                     chainCoverage.set(cKey, (chainCoverage.get(cKey) || 0) + 1);
                 });
 
-                // A chain is "missing" if it has 0 or 1 product (low variety)
-                const missingChains = topChains.filter(tc => (chainCoverage.get(tc) || 0) < 2);
+                // A chain is "missing" if it has 0 results (SPARSE)
+                const missingChains = topChains.filter(tc => (chainCoverage.get(tc) || 0) === 0);
 
                 if (missingChains.length === 0) return { query: q, products: [] };
 
                 console.log(`[DataAggregator] Targeted variety search for "${q}" - Coverage sparse for: ${missingChains.join(', ')}`);
 
-                // Don't do too many targeted searches to avoid 429, but slightly more than before
-                const chainQueries = missingChains.slice(0, 5).map(c => `${c} ${q}`);
+                // Limit targeted search to avoid 429
+                const chainQueries = missingChains.slice(0, 3).map(c => `${c} ${q}`);
+
                 const products = await Promise.all(
                     chainQueries.map(cq => this.searchProducts(cq, options))
                 );

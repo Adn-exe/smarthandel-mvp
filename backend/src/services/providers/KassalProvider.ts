@@ -38,9 +38,11 @@ export class KassalProvider implements BaseProvider {
     }
 
     private activeRequests = 0;
-    private readonly MAX_CONCURRENT = 3;
+    private readonly MAX_CONCURRENT = 5;
 
     private async withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+        const timeoutMs = 8000; // 8s per individual API attempt
+
         let retries = maxRetries;
 
         while (true) {
