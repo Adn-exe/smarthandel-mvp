@@ -103,8 +103,8 @@ export default function Results() {
                 }
             }, {
                 onSuccess: (res: any) => {
-                    const hasMulti = !!(res.multiStore && res.multiStore.stores && res.multiStore.stores.length > 1);
-                    setActiveView(hasMulti ? res.recommendation : 'single');
+                    setActiveView('single');
+
 
                     trackEvent('route_optimized', {
                         query,
