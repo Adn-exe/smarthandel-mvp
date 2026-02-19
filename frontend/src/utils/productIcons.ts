@@ -1,6 +1,6 @@
 
 /**
- * Utility to provide emoji fallbacks for product categories/names
+ * Utility to provide emoji fallbacks or image placeholders for products
  * when actual images are unavailable.
  */
 
@@ -61,9 +61,19 @@ const keywordToEmoji: Record<string, string> = {
     'godteri': '🍬',
     'pizza': '🍕',
     'yogurt': '🍦',
-    'yoghurt': '🍦'
+    'yoghurt': '🍦',
+    'candy': '🍬',
+    'godt': '🍬',
+    'chips': '🍿',
+    'soap': '🧼',
+    'såpe': '🧼',
+    'toilet': '🧻',
+    'papir': '🧻'
 };
 
+/**
+ * Returns either an emoji string or a path to a placeholder image.
+ */
 export function getProductFallback(name: string): string {
     const lowerName = name.toLowerCase();
 
@@ -74,6 +84,13 @@ export function getProductFallback(name: string): string {
         }
     }
 
-    // Default fallback
-    return '🛍️';
+    // Default fallback: Premium 3D Basket Image
+    return '/images/product-placeholder.png';
+}
+
+/**
+ * Helper to determine if the fallback is a path or an emoji.
+ */
+export function isImageFallback(fallback: string): boolean {
+    return fallback.startsWith('/');
 }

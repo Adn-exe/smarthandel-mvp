@@ -6,7 +6,8 @@ import { ReportModal } from './ReportModal';
 import { formatDistance } from '../utils/format';
 import { useTranslation } from 'react-i18next';
 import type { Store as StoreType, ProductWithPrice } from '../types';
-import { getProductFallback } from '../utils/productIcons';
+import { getProductFallback, isImageFallback } from '../utils/productIcons';
+
 
 
 interface StoreCardProps {
@@ -294,10 +295,21 @@ export const StoreCard = memo(function StoreCard({
                                                             onError={() => setFailedImages(prev => new Set(prev).add(String(item.id)))}
                                                         />
                                                     ) : (
-                                                        <span className="text-xl md:text-2xl" role="img" aria-label={item.name}>
-                                                            {getProductFallback(item.name)}
-                                                        </span>
+                                                        <>
+                                                            {isImageFallback(getProductFallback(item.name)) ? (
+                                                                <img
+                                                                    src={getProductFallback(item.name)}
+                                                                    alt=""
+                                                                    className="w-full h-full object-contain p-1 opacity-80"
+                                                                />
+                                                            ) : (
+                                                                <span className="text-xl md:text-2xl" role="img" aria-label={item.name}>
+                                                                    {getProductFallback(item.name)}
+                                                                </span>
+                                                            )}
+                                                        </>
                                                     )}
+
                                                 </div>
 
 
@@ -484,11 +496,20 @@ export const StoreCard = memo(function StoreCard({
                                             />
                                         ) : (
                                             <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg flex items-center justify-center shrink-0">
-                                                <span className="text-xl md:text-2xl" role="img" aria-label={item.name}>
-                                                    {getProductFallback(item.name)}
-                                                </span>
+                                                {isImageFallback(getProductFallback(item.name)) ? (
+                                                    <img
+                                                        src={getProductFallback(item.name)}
+                                                        alt=""
+                                                        className="w-7 h-7 md:w-8 md:h-8 object-contain opacity-70"
+                                                    />
+                                                ) : (
+                                                    <span className="text-xl md:text-2xl" role="img" aria-label={item.name}>
+                                                        {getProductFallback(item.name)}
+                                                    </span>
+                                                )}
                                             </div>
                                         )}
+
 
                                         <div className="flex flex-col min-w-0 flex-1">
                                             <div className="flex flex-col md:flex-row md:items-center gap-1.5 md:gap-2">

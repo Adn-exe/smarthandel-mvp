@@ -5,7 +5,8 @@ import { MapPin, List } from 'lucide-react';
 import { clsx } from 'clsx';
 import { formatDistance } from '../utils/format';
 import type { ShoppingItem, SingleStoreOption, ProductWithPrice } from '../types';
-import { getProductFallback } from '../utils/productIcons';
+import { getProductFallback, isImageFallback } from '../utils/productIcons';
+
 
 
 interface ComparisonTableProps {
@@ -196,13 +197,22 @@ export function ComparisonTable({ candidates, requestedItems, isMapVisible, onTo
                                         <tr key={rowItem.originalQueryName || rowItem.name} className="group hover:bg-blue-50/30 transition-colors border-b border-gray-50/50 last:border-0 text-sm">
                                             <td className="py-3 px-4 md:px-6 sticky left-0 bg-white group-hover:bg-blue-50 transition-colors z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-r border-gray-100/30">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-base md:text-lg shrink-0" role="img" aria-label={rowLabel}>
-                                                        {getProductFallback(rowLabel)}
-                                                    </span>
+                                                    {isImageFallback(getProductFallback(rowLabel)) ? (
+                                                        <img
+                                                            src={getProductFallback(rowLabel)}
+                                                            alt=""
+                                                            className="w-5 h-5 md:w-6 md:h-6 object-contain opacity-60"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-base md:text-lg shrink-0" role="img" aria-label={rowLabel}>
+                                                            {getProductFallback(rowLabel)}
+                                                        </span>
+                                                    )}
                                                     <div className="font-heading font-black text-dark text-[11px] md:text-sm leading-tight uppercase tracking-tight">
                                                         {rowLabel}
                                                     </div>
                                                 </div>
+
 
                                                 {(rowItem.quantity > 1 || rowItem.unit) && (
                                                     <div className="text-[9px] md:text-[10px] text-gray-400 font-bold flex items-center gap-1 mt-0.5">
