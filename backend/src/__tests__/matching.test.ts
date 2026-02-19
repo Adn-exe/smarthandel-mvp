@@ -41,7 +41,7 @@ describe('Matching Utility', () => {
         } as Product;
 
         const best = selectBestProductForStore([branchProduct, chainProduct], mockStore, ['p-branch', 'p-chain']);
-        expect(best?.id).toBe('p-branch');
+        expect(best?.product.id).toBe('p-branch');
     });
 
     it('should prioritize house brand over cheaper generic brand', () => {
@@ -49,7 +49,7 @@ describe('Matching Utility', () => {
         const houseP = { id: 'house', name: 'REMA 1000 Milk', price: 20, store: 'REMA 1000', chain: 'REMA', relevanceScore: 0 } as Product;
 
         const best = selectBestProductForStore([genericP, houseP], mockStore, ['generic', 'house']);
-        expect(best?.id).toBe('house'); // House brand bonus wins
+        expect(best?.product.id).toBe('house'); // House brand bonus wins
     });
 
     it('should prioritize First Price at KIWI as house brand', () => {
@@ -58,7 +58,7 @@ describe('Matching Utility', () => {
         const firstPriceP = { id: 'fp', name: 'First Price Egg', price: 35, store: 'KIWI', chain: 'KIWI', relevanceScore: 0 } as Product;
 
         const best = selectBestProductForStore([genericP, firstPriceP], kiwiStore, ['g', 'fp']);
-        expect(best?.id).toBe('fp');
+        expect(best?.product.id).toBe('fp');
     });
 });
 
