@@ -248,12 +248,12 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                                 setIsExpanded(false);
                                                             }}
                                                             className={clsx(
-                                                                "w-full p-4 flex items-center gap-4 text-left",
+                                                                "w-full p-3 sm:p-4 flex items-center gap-3 sm:gap-4 text-left",
                                                                 isLocked && "bg-indigo-50 border-indigo-200 text-indigo-900 shadow-sm"
                                                             )}
                                                         >
                                                             {/* Product Image */}
-                                                            <div className="w-12 h-12 bg-white rounded-xl overflow-hidden flex items-center justify-center shrink-0 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
+                                                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl overflow-hidden flex items-center justify-center shrink-0 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
                                                                 {product.imageUrl ? (
                                                                     <img
                                                                         src={product.imageUrl}
@@ -265,46 +265,47 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                                         }}
                                                                     />
                                                                 ) : (
-                                                                    <ShoppingBag className="w-6 h-6 text-gray-200" />
+                                                                    <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-gray-200" />
                                                                 )}
                                                             </div>
 
-                                                            <div className="flex flex-col flex-1 min-w-0 mr-3">
+                                                            <div className="flex flex-col flex-1 min-w-0 mr-2 sm:mr-3">
                                                                 <span className={clsx(
-                                                                    "text-sm font-medium truncate transition-colors",
+                                                                    "text-sm font-medium line-clamp-2 transition-colors",
                                                                     isLocked ? "text-indigo-900" : "text-dark"
                                                                 )}>
                                                                     {product.name}
                                                                 </span>
-                                                                <div className="flex items-center gap-2 text-xs mt-1">
+                                                                <div className="flex items-center gap-1.5 sm:gap-2 mt-1 flex-wrap">
                                                                     <span className={clsx(
-                                                                        "font-medium",
+                                                                        "text-[11px] sm:text-xs font-medium",
                                                                         isLocked ? "text-indigo-700" : "text-slate-500"
                                                                     )}>
                                                                         {product.store}
                                                                     </span>
+                                                                    <span className={clsx(
+                                                                        "text-[10px] font-bold whitespace-nowrap px-1.5 py-0.5 rounded transition-colors",
+                                                                        isLocked
+                                                                            ? "bg-indigo-100 text-indigo-700"
+                                                                            : "bg-slate-50 text-slate-700 group-hover:bg-indigo-50 group-hover:text-indigo-600"
+                                                                    )}>
+                                                                        {product.price.toFixed(2)} kr
+                                                                    </span>
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-1.5 sm:gap-2 tracking-tight shrink-0">
                                                                 {product.ingredients && (
                                                                     <button
                                                                         onClick={(e) => toggleIngredients(product.id, e)}
-                                                                        className="flex items-center gap-1 text-[10px] font-bold text-slate-400 hover:text-indigo-600 transition-colors bg-slate-100 hover:bg-indigo-50 px-1.5 py-0.5 rounded z-10 relative whitespace-nowrap"
+                                                                        className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors bg-emerald-50 hover:bg-emerald-100 px-1.5 sm:px-2 py-1 rounded-lg z-10 relative whitespace-nowrap shrink-0"
                                                                     >
-                                                                        <Info className="w-3 h-3" />
-                                                                        {t('itemCard.viewIngredients')}
+                                                                        <Info className="w-3.5 h-3.5 shrink-0" />
+                                                                        <span className="hidden sm:inline">{t('itemCard.viewIngredients')}</span>
+                                                                        <span className="sm:hidden">{t('itemCard.ingredients')}</span>
                                                                     </button>
                                                                 )}
-                                                                <span className={clsx(
-                                                                    "text-sm font-bold whitespace-nowrap px-2 py-1 rounded-lg transition-colors",
-                                                                    isLocked
-                                                                        ? "bg-indigo-100 text-indigo-700"
-                                                                        : "bg-slate-50 text-slate-700 group-hover:bg-indigo-50 group-hover:text-indigo-600"
-                                                                )}>
-                                                                    {product.price.toFixed(2)} kr
-                                                                </span>
-                                                                {isLocked ? <Lock className="w-3.5 h-3.5 text-indigo-500" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-300 -rotate-90 group-hover:text-indigo-600 transition-transform" />}
+                                                                {isLocked ? <Lock className="w-3.5 h-3.5 text-indigo-500 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-300 -rotate-90 group-hover:text-indigo-600 transition-transform shrink-0" />}
                                                             </div>
                                                         </button>
 
