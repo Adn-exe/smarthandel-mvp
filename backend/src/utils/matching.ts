@@ -149,6 +149,21 @@ export const QUERY_MAPPINGS: Record<string, string> = {
     'cleaning spray': 'rengjøringsspray',
 };
 
+/**
+ * Ensures that a query word exists as a standalone word in the product name.
+ * Prevents "Mellomleggspapir" from matching "egg".
+ */
+export function isStrictWordMatch(productName: string, query: string): boolean {
+    const normalizedName = productName.toLowerCase();
+    const normalizedQuery = query.toLowerCase();
+    const mappedQuery = QUERY_MAPPINGS[normalizedQuery] || normalizedQuery;
+
+    // Word boundary regex: \bquery\b
+    // We also allow the word to be followed by numbers (e.g. "egg 12pk") or spaces
+    const strictRegex = new RegExp(`\\b${mappedQuery}(\\b|\\d|\\s|-)`, 'i');
+    return strictRegex.test(normalizedName);
+}
+
 export function calculateRelevanceScore(productName: string, query: string): number {
     const normalizedName = productName.toLowerCase();
     const normalizedQuery = query.toLowerCase();
@@ -182,10 +197,53 @@ export function calculateRelevanceScore(productName: string, query: string): num
         score += 40;
     }
 
+    // 5b. SEARCH INTEGRITY GUARD: Mandatory word boundary match
+    // If the word isn't a standalone word (e.g. "egg" inside "Mellomleggspapir"), apply massive penalty
+    if (!isStrictWordMatch(productName, query)) {
+        score -= 10000; // Force it below any reasonable threshold
+    }
+
     // 6. Length penalty (shorter names preferred) to avoid specific variations when generic requested
     score -= (normalizedName.length - mappedQuery.length) * 0.5;
 
     // 7. Contextual Boosts/Penalties (STAPLE PROTECTION)
+
+    // RICE PROTECTION
+    if (mappedQuery === 'ris' || mappedQuery === 'rice') {
+        const RICE_BYPRODUCTS = ['kake', 'kjeks', 'grøt', 'mel', 'melk', 'drikk', 'nudler', 'chips', 'snacks', 'pudding', 'risotto', 'ferdig', 'miks'];
+        if (RICE_BYPRODUCTS.some(b => normalizedName.includes(b))) {
+            score -= 2000;
+        }
+
+        const RAW_RICE = ['basmati', 'jasmin', 'middag', 'middagsris', 'boil', 'tørr', 'langkornet', 'fullkorn'];
+        if (RAW_RICE.some(r => normalizedName.includes(r))) {
+            score += 500;
+        }
+
+        // Literal exact matches for 'ris' 
+        if (normalizedName === 'ris' || normalizedName.startsWith('ris 1kg') || normalizedName.startsWith('ris 2kg')) {
+            score += 800;
+        }
+    }
+
+    // GENERIC FRUIT PROTECTION
+    const FRUITS = ['epler', 'appelsiner', 'pærer', 'druer', 'sitron', 'sitroner', 'lime', 'mandariner', 'klementiner', 'mango', 'kiwi'];
+    if (FRUITS.includes(mappedQuery) || FRUITS.includes(mappedQuery + 'er')) {
+        const FRUIT_BYPRODUCTS = [
+            'juice', 'saft', 'nektar', 'syltetøy', 'mos', 'smoothie',
+            'yoghurt', 'is ', 'kake', 'pai', 'snacks', 'gull', 'chips',
+            'vann', 'drikke', 'limonade', 'terte', 'godteri', 'pastill'
+        ];
+
+        if (FRUIT_BYPRODUCTS.some(b => normalizedName.includes(b))) {
+            score -= 2000;
+        }
+
+        const RAW_FRUIT_SIGNALS = ['løsvekt', 'kurv', 'bama', 'norske', 'nett', 'stk', 'kg', 'importert', 'bunt'];
+        if (RAW_FRUIT_SIGNALS.some(s => normalizedName.includes(s))) {
+            score += 300;
+        }
+    }
 
     // Baby Food / Non-Staple Penalty
     // If query is a staple, avoid baby food or ready meals

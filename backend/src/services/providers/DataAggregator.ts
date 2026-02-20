@@ -130,8 +130,8 @@ class DataAggregator {
 
                 console.log(`[DataAggregator] Targeted variety search for "${q}" (translated: "${item.translated}") - Coverage sparse for: ${missingChains.join(', ')}`);
 
-                // Limit targeted search to avoid 429
-                const chainQueries = missingChains.slice(0, 3).map(c => `${c} ${item.translated}`);
+                // Limit targeted search to avoid 429 but increase from 3 to 5 for better variety
+                const chainQueries = missingChains.slice(0, 5).map(c => `${c} ${item.translated}`);
 
                 const products = await Promise.all(
                     chainQueries.map(cq => this.searchProducts(cq, options))

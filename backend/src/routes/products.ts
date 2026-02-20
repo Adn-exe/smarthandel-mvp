@@ -182,6 +182,7 @@ router.get(
             const name = p.name;
             if (!productMap.has(name)) {
                 productMap.set(name, {
+                    id: p.id,
                     name: name,
                     imageUrl: p.image_url, // Capture first found image
                     ingredients: p.ingredients,

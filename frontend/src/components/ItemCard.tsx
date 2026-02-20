@@ -18,7 +18,7 @@ import { useShoppingList } from '../context/ShoppingListContext';
 import { api } from '../services/api';
 
 interface RegionalProduct {
-    id: string; // Unique ID for the product offer
+    id: string | number; // Unique ID for the product offer
     name: string;
     store: string; // Name of the store where it's found
     price: number;
@@ -95,7 +95,7 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
 
             // Map the API response to the RegionalProduct interface
             const mapped: RegionalProduct[] = brandResults.map((p: any) => ({
-                id: p.name, // Use name as ID for locking since that's how we track it
+                id: p.id || p.name, // Use the real ID for perfect locked matching
                 name: p.name,
                 store: p.chains && p.chains.length > 0 ? p.chains.join(', ') : 'Unknown',
                 price: p.minPrice,
@@ -239,10 +239,10 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                             onClick={() => {
                                                                 // When unlocking/locking, pass specific product details
                                                                 // If unlocking (isLocked=true), pass undefined
-                                                                // If locking (isLocked=false), pass product.name (as ID), product.name (as brand), and the full product object
+                                                                // If locking (isLocked=false), pass product.name (as brand), String(product.id) (as productId), and the full product object
                                                                 onLockBrand(
                                                                     isLocked ? undefined : product.name,
-                                                                    isLocked ? undefined : product.name,
+                                                                    isLocked ? undefined : String(product.id),
                                                                     isLocked ? undefined : product
                                                                 );
                                                                 setIsExpanded(false);
@@ -297,7 +297,7 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                             <div className="flex items-center gap-1.5 sm:gap-2 tracking-tight shrink-0">
                                                                 {product.ingredients && (
                                                                     <button
-                                                                        onClick={(e) => toggleIngredients(product.id, e)}
+                                                                        onClick={(e) => toggleIngredients(String(product.id), e)}
                                                                         className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors bg-emerald-50 hover:bg-emerald-100 px-1.5 sm:px-2 py-1 rounded-lg z-10 relative whitespace-nowrap shrink-0"
                                                                     >
                                                                         <Info className="w-3.5 h-3.5 shrink-0" />
@@ -311,7 +311,7 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
 
                                                         {/* Ingredients Expansion */}
                                                         <AnimatePresence>
-                                                            {expandedIngredients.has(product.id) && (
+                                                            {expandedIngredients.has(String(product.id)) && (
                                                                 <motion.div
                                                                     initial={{ height: 0, opacity: 0 }}
                                                                     animate={{ height: 'auto', opacity: 1 }}

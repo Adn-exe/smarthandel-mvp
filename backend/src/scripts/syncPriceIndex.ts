@@ -2,6 +2,7 @@ import dataAggregator from '../services/providers/DataAggregator.js';
 import priceIndexService, { PriceIndexEntry } from '../services/PriceIndexService.js';
 import { KassalProvider } from '../services/providers/KassalProvider.js';
 import { Product, Store } from '../types/index.js';
+import { isStrictWordMatch } from '../utils/matching.js';
 
 const CANONICAL_MAPPING = [
     { id: 'milk', queries: ['Melk', 'Tine Melk', 'Q-meieriene Melk'], category: 'Dairy' },
@@ -34,7 +35,7 @@ const CHAINS = ['REMA 1000', 'KIWI', 'MENY', 'COOP EXTRA', 'SPAR', 'JOKER'];
 const NEGATIVE_KEYWORDS: Record<string, string[]> = {
     'milk': ['pulver', 'erstatning', 'sjokolade', 'sjoko', 'choco', 'kakao', 'maskin', 'steking', 'mousse', 'smoothie', 'smudi', 'm/', 'med ', 'kokos', 'havre', 'mandel', 'ris', 'soya', 'is', 'muffins', 'shake', 'ringe', 'syret', 'kaffefløte'],
     'breads': ['smør', 'pålagg', 'skjærer', 'pose', 'skive', 'mix', 'mel', 'pølsebrød', 'hamburgerbrød', 'wienerbrød', 'rundstykke'],
-    'eggs': ['eggehvite', 'eggeplomme', 'beger', 'salat', 'nudler', 'smoothie', 'smudi', 'juice', 'nektar', 'mango', 'frukt', 'pålegg', 'stryhns', 'salat', 'truseinnlegg', 'pastasaus', 'saus', 'reker', 'majones'],
+    'eggs': ['eggehvite', 'eggeplomme', 'beger', 'salat', 'nudler', 'smoothie', 'smudi', 'juice', 'nektar', 'mango', 'frukt', 'pålegg', 'stryhns', 'salat', 'truseinnlegg', 'pastasaus', 'saus', 'reker', 'majones', 'papir', 'mellomlegg', 'parmesan', 'revet'],
     'chicken': ['suppe', 'nuggets', 'pølse', 'postei', 'gryte', 'lår', 'vinger', 'vinge', 'vingeklubb', 'marinert', 'krydret', 'soltørket', 'hane', 'lever', 'buljong', 'satay', 'fyll', 'couscous', 'salat', 'skiver'],
     'minced_meat': ['kake', 'bolle', 'deig-krydder', 'toro', 'saus', 'gryte', 'fyll', 'boller', 'pasta'],
     'salmon': ['salat', 'postei', 'suppe', 'mousse', 'beger', 'smøreost', 'naturnes', 'nestle', '8md', '12md'],
@@ -114,8 +115,15 @@ async function sync() {
                     if (item.id === 'milk' && (nameLower.includes('ringe') || nameLower.includes('beger') || nameLower.includes('choco'))) continue;
                     if (item.id === 'rice' && (nameLower.includes('farris') || nameLower.includes('frus') || nameLower.includes('is'))) continue;
                     if (item.id === 'pizza' && (nameLower.includes('fyll') || nameLower.includes('saus') || nameLower.includes('bunn') || nameLower.includes('topping'))) continue;
-                    if (item.id === 'bread' && (nameLower.includes('wiener') || nameLower.includes('rund'))) continue;
+                    if (item.id === 'bread' && (nameLower.includes('wiener') || nameLower.includes('rund') || nameLower.includes('papir'))) continue;
+                    if (item.id === 'eggs' && (nameLower.includes('papir') || nameLower.includes('mellomlegg'))) continue;
                     if (item.id === 'chicken' && (nameLower.includes('lår') || nameLower.includes('ving') || nameLower.includes('postei'))) continue;
+
+                    // 2b. SEARCH INTEGRITY GUARD: Centralized Strict Matching
+                    // If the word isn't a standalone word, skip it for the price index
+                    if (!isStrictWordMatch(p.name, query)) {
+                        continue;
+                    }
 
                     // 3. Price Reasonability (Guard against errors/extremes)
                     if (p.price <= 1 || p.price > 2000) continue;

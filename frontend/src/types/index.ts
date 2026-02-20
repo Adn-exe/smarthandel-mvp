@@ -108,6 +108,7 @@ export interface MultiStoreOption {
         items: ProductWithPrice[];
         cost: number;
         distance: number;
+        missingItems?: string[];
     }>;
     totalCost: number;
     totalDistance: number;

@@ -9,6 +9,7 @@ import {
     Location
 } from '../../types/index.js';
 import { ApiError } from '../../middleware/errorHandler.js';
+import { isStrictWordMatch } from '../../utils/matching.js';
 import { BaseProvider, ProviderSearchOptions } from './BaseProvider.js';
 import { aiService } from '../aiService.js';
 
@@ -446,15 +447,24 @@ export class KassalProvider implements BaseProvider {
             }
 
             if (unintendedMatch && (lowerQuery === 'melk' || suggestedCategory === 'melk' || suggestedCategory === 'meieri')) {
-                score += 10000;
+                score += 20000; // Increased from 10000 to be sure it's above 15000 threshold
+            }
+
+            // 7b. Mandatory Keyword Match (Ensure we don't return random items just because API did)
+            // If the name doesn't contain the standalone word query, hit it hard.
+            // Using a stricter word boundary match to avoid "Parmareggio" matching "egg"
+            if (!isStrictWordMatch(p.name, query)) {
+                score += 20000; // Force above 15000 threshold
+            } else {
+                score -= 500; // Bonus for actually containing the word
             }
 
             // 8. Specific penalties for highly deceptive items
             if (name.includes('farris') || name.includes('frus') || name.includes('friskis')) {
-                score += 20000;
+                score += 30000;
             }
             if (name.includes('smudi') || name.includes('smoothie')) {
-                score += 20000;
+                score += 30000;
             }
 
             // Special fix for "Brødrene" / "Brødr" matching "brød"
@@ -490,7 +500,7 @@ export class KassalProvider implements BaseProvider {
                     'dekor', 'eyes', 'perler', 'pasta', 'brød', 'hjerter', 'pynt'
                 ];
                 if (deceptiveSugar.some(word => name.includes(word))) {
-                    score += 25000;
+                    score += 30000;
                 }
                 if (name.includes('sukker') || name.includes('sugar') || name.includes('dansukker')) {
                     score -= 5000; // Broad boost for anything actually containing sugar/brand
@@ -505,7 +515,7 @@ export class KassalProvider implements BaseProvider {
             if (isBananaSearch) {
                 const bananaByproducts = ['juice', 'nektar', 'drikk', 'smoothie', 'yoghurt', 'skum', 'godt', 'chips', 'kake'];
                 if (bananaByproducts.some(word => name.includes(word))) {
-                    score += 25000;
+                    score += 30000;
                 }
                 if (name.includes('klase') || name.includes('bama') || name.includes('vekt') || name.includes('first price')) {
                     score -= 3000;
@@ -517,7 +527,7 @@ export class KassalProvider implements BaseProvider {
             if (isPotatoSearch) {
                 const potatoByproducts = ['med potet', 'fløte', 'gratinerte', 'mos ', 'stappe', 'chips', 'gull', 'frites', 'salat', 'blanding', 'suppe', 'gryte'];
                 if (potatoByproducts.some(word => name.includes(word))) {
-                    score += 25000;
+                    score += 30000;
                 }
                 if (name.includes('kg') || name.includes('pose') || name.includes('nett') || name.includes('løsvekt') || name.includes('norsk') || name.includes('vasket')) {
                     score -= 3000;
@@ -530,7 +540,7 @@ export class KassalProvider implements BaseProvider {
         });
 
         return products
-            .filter(p => (p.relevanceScore || 0) <= 5000) // Stricter threshold to clean up results
+            .filter(p => (p.relevanceScore || 0) <= 15000) // Looser threshold (up from 5000) to ensure availability
             .sort((a, b) => (a.relevanceScore || 0) - (b.relevanceScore || 0));
     }
 

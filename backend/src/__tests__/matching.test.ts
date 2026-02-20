@@ -1,4 +1,4 @@
-import { selectBestProductForStore, MatchLevel, getProductMatchLevel } from '../utils/matching.js';
+import { selectBestProductForStore, MatchLevel, getProductMatchLevel, calculateRelevanceScore } from '../utils/matching.js';
 import { Product, Store } from '../types/index.js';
 
 describe('Matching Utility', () => {

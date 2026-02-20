@@ -29,6 +29,7 @@ interface StoreCardProps {
     indexBadge?: number;
     showItemCount?: boolean;
     hidePdfButton?: boolean;
+    missingItems?: string[];
 }
 
 export const StoreCard = memo(function StoreCard({
@@ -45,7 +46,8 @@ export const StoreCard = memo(function StoreCard({
     highlightBorder,
     indexBadge,
     showItemCount,
-    hidePdfButton
+    hidePdfButton,
+    missingItems
 }: StoreCardProps) {
     const { t, i18n } = useTranslation();
     const [localQuantities, setLocalQuantities] = useState<Record<string | number, number>>(() =>
@@ -505,11 +507,50 @@ export const StoreCard = memo(function StoreCard({
                                             </div>
                                         </div>
                                     ))}
+
+                                    {/* Missing Items UI Addition */}
+                                    {missingItems && missingItems.length > 0 && (
+                                        <div className="mt-4 pt-4 border-t border-gray-100/50 space-y-3">
+                                            <div className="flex items-center gap-2">
+                                                <AlertCircle className="w-4 h-4 text-orange-400" />
+                                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('storeCard.missingItemsHeading', 'Not Available in Store')}</span>
+                                            </div>
+                                            {missingItems.map((missingName, idx) => (
+                                                <div key={`missing-${idx}`} className="flex justify-between items-center gap-3 opacity-60 grayscale bg-gray-50/50 p-2 rounded-lg border border-gray-100">
+                                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100/50 rounded-lg border border-gray-200/50 flex flex-shrink-0 items-center justify-center overflow-hidden">
+                                                            {isImageFallback(getProductFallback(missingName)) ? (
+                                                                <img
+                                                                    src={getProductFallback(missingName)}
+                                                                    alt=""
+                                                                    className="w-full h-full object-contain p-1 opacity-40"
+                                                                />
+                                                            ) : (
+                                                                <span className="text-xl md:text-2xl" role="img" aria-label={missingName}>
+                                                                    {getProductFallback(missingName)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-sm font-medium text-gray-400 line-through truncate">
+                                                                    {missingName}
+                                                                </p>
+                                                            </div>
+                                                            <div className="text-[10px] font-bold text-orange-400 mt-0.5">
+                                                                {t('storeCard.outOfStock', 'Out of Stock')}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )
                     }
-                </div >
+                </div>
                 {
                     reportingItem && (
                         <ReportModal
@@ -756,6 +797,43 @@ export const StoreCard = memo(function StoreCard({
 
                     {items.length === 0 && (
                         <p className="text-sm text-gray-400 italic">{t('storeCard.noItemsFound')}</p>
+                    )}
+
+                    {/* Missing Items UI for Detailed List */}
+                    {missingItems && missingItems.length > 0 && (
+                        <div className="mt-6 pt-4 border-t border-gray-100 border-dashed space-y-3">
+                            <h4 className="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <AlertCircle className="w-3 h-3" />
+                                {t('storeCard.missingItemsHeading', 'Not Available in Store')}
+                            </h4>
+                            {missingItems.map((missingName, idx) => (
+                                <div key={`missing-detailed-${idx}`} className="flex justify-between items-start gap-2 opacity-50 grayscale bg-gray-50 p-2 rounded-lg">
+                                    <div className="flex items-start gap-2 md:gap-3 min-w-0 flex-1">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                                            {isImageFallback(getProductFallback(missingName)) ? (
+                                                <img
+                                                    src={getProductFallback(missingName)}
+                                                    alt=""
+                                                    className="w-full h-full object-contain p-1 opacity-40"
+                                                />
+                                            ) : (
+                                                <span className="text-xl md:text-2xl" role="img" aria-label={missingName}>
+                                                    {getProductFallback(missingName)}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col min-w-0 flex-1 justify-center h-10 md:h-12">
+                                            <p className="font-bold text-gray-500 line-through text-xs md:text-sm leading-snug truncate">
+                                                {missingName}
+                                            </p>
+                                            <p className="text-[10px] text-orange-500 font-bold uppercase tracking-wider mt-0.5">
+                                                {t('storeCard.outOfStock', 'Out of Stock')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
             )}

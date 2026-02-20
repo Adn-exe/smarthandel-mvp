@@ -68,13 +68,45 @@ const keywordToEmoji: Record<string, string> = {
     'soap': '🧼',
     'såpe': '🧼',
     'toilet': '🧻',
-    'papir': '🧻'
+    'papir': '🧻',
+    'sausage': '🌭',
+    'pølse': '🌭',
+    'ham': '🍖',
+    'skinke': '🍖',
+    'bacon': '🥓',
+    'jam': '🍯',
+    'syltetøy': '🍯',
+    'honey': '🍯',
+    'honning': '🍯',
+    'oil': '🧴',
+    'olje': '🧴',
+    'salt': '🧂',
+    'pepper': '🌶️',
+    'spice': '🌶️',
+    'krydder': '🌶️',
+    'tea': '🍵',
+    'te': '🍵',
+    'sugar': '🍬',
+    'sukker': '🍬',
+    'garlic': '🧄',
+    'hvitløk': '🧄',
+    'ginger': '🫚',
+    'ingefær': '🫚',
+    'lemon': '🍋',
+    'sitron': '🍋',
+    'lime': '🍋',
+    'orange': '🍊',
+    'appelsin': '🍊',
+    'grapes': '🍇',
+    'druer': '🍇',
+    'strawberry': '🍓',
+    'jordbær': '🍓'
 };
 
 /**
  * Returns either an emoji string or a path to a placeholder image.
  */
-export function getProductFallback(name: string): string {
+export function getProductFallback(name: string, forceEmoji = false): string {
     const lowerName = name.toLowerCase();
 
     // Check for exact word matches first
@@ -84,8 +116,10 @@ export function getProductFallback(name: string): string {
         }
     }
 
-    // Default fallback: Premium 3D Basket Image
-    return '/images/product-placeholder.png';
+    if (forceEmoji) return '📦'; // Universal item emoji
+
+    // Default fallback: 2D Strike-through Bag (New)
+    return '/images/not-available.png';
 }
 
 /**

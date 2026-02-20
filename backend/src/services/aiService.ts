@@ -40,7 +40,10 @@ class AIService {
             throw new ApiError(503, 'AI service configuration error');
         }
 
-        const cacheKey = `ai:parse:${userQuery.trim().toLowerCase()}`;
+        // Normalize query to increase cache hit rate for semantic identicals
+        const normalizedQuery = userQuery.trim().toLowerCase()
+            .replace(/^(jeg trenger |i need |jeg vil ha |i want |vil ha |trenger |kan du finne |can you find )/g, '');
+        const cacheKey = `ai:parse:${normalizedQuery}`;
         const cached = cache.get<ParsedQuery>(cacheKey);
         if (cached) return cached;
 
@@ -78,7 +81,8 @@ Rules:
 
             const model = this.client.getGenerativeModel({
                 model: this.MODEL,
-                systemInstruction: systemPrompt
+                systemInstruction: systemPrompt,
+                generationConfig: { responseMimeType: 'application/json' }
             });
 
             const result = await model.generateContent(userQuery);
@@ -139,7 +143,8 @@ Suggestions:`;
         try {
             const model = this.client.getGenerativeModel({
                 model: this.MODEL,
-                systemInstruction: systemPrompt
+                systemInstruction: systemPrompt,
+                generationConfig: { responseMimeType: 'application/json' }
             });
 
             const result = await model.generateContent(userPrompt);
@@ -202,7 +207,8 @@ Re-rank and provide bonuses:`;
         try {
             const model = this.client.getGenerativeModel({
                 model: this.MODEL,
-                systemInstruction: systemPrompt
+                systemInstruction: systemPrompt,
+                generationConfig: { responseMimeType: 'application/json' }
             });
 
             const result = await model.generateContent(userPrompt);

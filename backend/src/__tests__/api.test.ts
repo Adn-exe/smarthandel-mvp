@@ -331,7 +331,12 @@ describe('SmartHandel API Integration Tests', () => {
 
         it('should handle items not found in any store gracefully', async () => {
             dataAggregator.getStoresNearby.mockResolvedValue([mockStores[0]]);
-            // Return empty array — no products found for the item
+            // Return empty result — no products found for the item
+            dataAggregator.searchProductsWithChainVariety.mockResolvedValue({
+                products: [],
+                queryMapping: new Map()
+            });
+            // Also mock searchProducts for older service logic if still used
             dataAggregator.searchProducts.mockResolvedValue([]);
 
             const res = await request(app)
@@ -341,9 +346,10 @@ describe('SmartHandel API Integration Tests', () => {
                     userLocation: trondheimLocation,
                 });
 
-            // When no products are found, the service throws a 404 or 500
-            // (generateRecommendation throws 404 when both single and multi are null)
-            expect([404, 500]).toContain(res.status);
+            // When no products are found, the service handles it gracefully and returns 200 with metadata
+            expect(res.status).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.singleStore).toBeNull();
         });
 
         it('should return cached result for identical optimize requests', async () => {

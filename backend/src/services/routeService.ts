@@ -95,9 +95,15 @@ class RouteService {
             const queryMapping = new Map<string, string[]>();
 
             for (const result of searchResults) {
-                allProducts.push(...result.products);
-                for (const [q, ids] of result.queryMapping.entries()) {
-                    queryMapping.set(q, ids);
+                if (!result) {
+                    console.warn('[RouteService] One of the search results was undefined. Skipping.');
+                    continue;
+                }
+                allProducts.push(...(result.products || []));
+                if (result.queryMapping) {
+                    for (const [q, ids] of result.queryMapping.entries()) {
+                        queryMapping.set(q, ids);
+                    }
                 }
             }
 
@@ -250,6 +256,7 @@ class RouteService {
             // Use shared matching utility to find the best candidate per store/query
             const foundItems: ProductWithPrice[] = [];
             let storeTotalCost = 0;
+            let storeSortingPenalty = 0;
             const foundCanonicalIds = new Set<string>();
 
             const missedPrefsForStore: Array<{ itemName: string; expected: string; found: string }> = [];
@@ -289,15 +296,13 @@ class RouteService {
                     const quantity = item.quantity;
                     const totalPrice = best.price * quantity;
 
-                    // ENRICHMENT: If specific store product misses image/ingredients, use the best available from any store
+                    // ENRICHMENT: Only enrich the image if the current product lacks one
                     const enrichedProduct = { ...best };
                     const bestContent = bestContentMap.get(searchLabel);
 
                     if (bestContent) {
-                        if (!enrichedProduct.image_url) enrichedProduct.image_url = bestContent.image_url;
-                        if (!enrichedProduct.ingredients) {
-                            enrichedProduct.ingredients = bestContent.ingredients;
-                            enrichedProduct.allergens = bestContent.allergens;
+                        if (!enrichedProduct.image_url && bestContent.image_url) {
+                            enrichedProduct.image_url = bestContent.image_url;
                         }
                     }
 
@@ -308,15 +313,15 @@ class RouteService {
                             expected: item.lockedProductId,
                             found: best.name
                         });
-                        // PENALTY: Make this store less likely to be "Best Store"
-                        storeTotalCost += 1000;
+                        // PENALTY: Make this store less likely to be "Best Store" without artificially inflating cost
+                        storeSortingPenalty += 1000;
                     }
 
                     // BRANCH MATCH BONUS (Bias Mitigation):
                     // If the match is only at CHAIN or PARENT level (not BRANCH), apply a small penalty.
                     // This favors stores with EXPLICIT pricing data over stores generic chain data.
                     if (matchLevel < MatchLevel.BRANCH) {
-                        storeTotalCost += 0.5; // Small heuristic penalty
+                        storeSortingPenalty += 0.5; // Small heuristic penalty
                     }
 
                     foundItems.push({
@@ -341,8 +346,12 @@ class RouteService {
                     if (!found) return count;
 
                     // Check if found product matches lock
-                    const isNameMatch = found.name === item.lockedProductId;
+                    // LOCKED PRODUCT PRIORITY RE-EVALUATED
+                    // The frontend now correctly passes the numeric API ID as lockedProductId.
+                    // Meanwhile the locked brand name comes as lockedBrand on the item object.
+
                     const isIdMatch = String(found.id) === item.lockedProductId;
+                    const isNameMatch = item.lockedBrand ? found.name === item.lockedBrand : false;
 
                     // STORE MATCH BONUS: If user locked "Milk" from "Rema 1000", and this store IS "Rema 1000",
                     // and we found "Milk" (even if ID is slightly different due to mapping), count it!
@@ -366,7 +375,8 @@ class RouteService {
                     missedPreferences: missedPrefsForStore,
                     // We can attach custom metrics here if needed for debugging or advanced sorting contexts
                     // (But we'll use local variables in the sort function below)
-                    _lockedItemsCount: lockedItemsFoundCount
+                    _lockedItemsCount: lockedItemsFoundCount,
+                    _sortingPenalty: storeSortingPenalty
                 } as any);
             }
         }
@@ -386,9 +396,11 @@ class RouteService {
                 return b.availabilityScore - a.availabilityScore;
             }
 
-            // Priority 3: Cost
-            if (Math.abs(a.totalCost - b.totalCost) > 0.1) { // Reduced tolerance to 0.1 NOK
-                return a.totalCost - b.totalCost;
+            // Priority 3: Cost with Penalties Applied
+            const costA = a.totalCost + (a._sortingPenalty || 0);
+            const costB = b.totalCost + (b._sortingPenalty || 0);
+            if (Math.abs(costA - costB) > 0.1) { // Reduced tolerance to 0.1 NOK
+                return costA - costB;
             }
 
             // Priority 4: Distance

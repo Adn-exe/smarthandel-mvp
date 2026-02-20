@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, memo, useMemo } from 'react';
-import { Search, X, Loader2, ArrowRight, Check } from 'lucide-react';
+import { Search, X, Loader2, Plus, Check } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -289,152 +289,167 @@ export const SearchInput = memo(function SearchInput({
                                         : "bg-slate-50 text-slate-400"
                                 )}
                             >
-                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                             </button>
                         )}
                     </div>
 
-                    {/* Footer Area - Only show in default mode */}
-                    {variant !== 'compact' && (
-                        <div className="mt-4 flex items-end justify-between gap-4">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                <span className="w-1 h-1 rounded-full bg-indigo-400"></span>
-                                {selectedItems.size} {t('storeCard.items', 'items')} selected
-                            </span>
-
-                            <div className="flex items-center gap-2">
-                                {(selectedItems.size > 0 || inputValue) && (
-                                    <button
-                                        onClick={handleClear}
-                                        className="p-2 text-gray-400 hover:text-dark hover:bg-gray-100 rounded-full transition-all"
-                                        type="button"
-                                        aria-label="Clear selection"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
-                                )}
-
-                                <button
-                                    type="submit"
-                                    disabled={(selectedItems.size === 0 && !inputValue.trim()) || loading}
-                                    className={clsx(
-                                        "flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all duration-300 text-sm",
-                                        "disabled:opacity-30 disabled:cursor-not-allowed",
-                                        (selectedItems.size > 0 || inputValue.trim()) && !loading
-                                            ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200 transform active:scale-95"
-                                            : "bg-slate-50 text-slate-400"
-                                    )}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                            <span>{t('common.thinking')}</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span>{t('common.shop')}</span>
-                                            <ArrowRight className="w-5 h-5" />
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
+                    {/* Dropdown Relist Button (Compact Mode) */}
+                    {variant === 'compact' && !isDropdownOpen && (
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsDropdownOpen(true);
+                            }}
+                            className="absolute -bottom-2 translate-y-full left-1/2 -translate-x-1/2 bg-white border border-slate-200 text-indigo-600 rounded-full p-2 shadow-lg hover:bg-slate-50 transition-all hover:scale-110 active:scale-95 group flex items-center gap-2 px-4 whitespace-nowrap"
+                        >
+                            <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">{t('common.describe_need')}</span>
+                        </button>
                     )}
                 </div>
 
-                {/* Dropdown Panel */}
-                {isDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-4 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 animate-in fade-in slide-in-from-top-4 duration-200 z-50 max-h-[400px] overflow-y-auto">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                                {filteredProducts.length > 0
-                                    ? (inputValue ? t('common.matches', 'Matches found') : t('common.describe_need', 'Select items'))
-                                    : t('common.ai_fallback', 'No matches?')}
-                            </h3>
+                {/* Footer Area - Only show in default mode */}
+                {variant !== 'compact' && (
+                    <div className="mt-4 flex items-end justify-between gap-4">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <span className="w-1 h-1 rounded-full bg-indigo-400"></span>
+                            {selectedItems.size} {t('storeCard.items', 'items')} selected
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                            {(selectedItems.size > 0 || inputValue) && (
+                                <button
+                                    onClick={handleClear}
+                                    className="p-2 text-gray-400 hover:text-dark hover:bg-gray-100 rounded-full transition-all"
+                                    type="button"
+                                    aria-label="Clear selection"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            )}
+
                             <button
-                                type="button"
-                                onClick={() => setIsDropdownOpen(false)}
-                                className="text-gray-400 hover:text-dark p-1"
+                                type="submit"
+                                disabled={(selectedItems.size === 0 && !inputValue.trim()) || loading}
+                                className={clsx(
+                                    "flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all duration-300 text-sm",
+                                    "disabled:opacity-30 disabled:cursor-not-allowed",
+                                    (selectedItems.size > 0 || inputValue.trim()) && !loading
+                                        ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200 transform active:scale-95"
+                                        : "bg-slate-50 text-slate-400"
+                                )}
                             >
-                                <X className="w-5 h-5" />
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <span>{t('common.thinking')}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>{t('common.shop')}</span>
+                                        <Plus className="w-5 h-5" />
+                                    </>
+                                )}
                             </button>
                         </div>
-
-                        {/* Category Tabs (Only when not searching) */}
-                        {!inputValue && (
-                            <div className="flex gap-2 overflow-x-auto pb-4 mb-2 custom-scrollbar -mx-4 px-6 md:mx-0 md:px-0">
-                                {[
-                                    { id: 'groceries', label: '🛒 Groceries', color: 'bg-orange-50 text-orange-600 border-orange-100' },
-                                    { id: 'fruit', label: '🍎 Fruit', color: 'bg-red-50 text-red-600 border-red-100' },
-                                    { id: 'vegetable', label: '🥕 Veggies', color: 'bg-green-50 text-green-600 border-green-100' },
-                                    { id: 'meat', label: '🥩 Meat', color: 'bg-rose-50 text-rose-600 border-rose-100' },
-                                    { id: 'dairy', label: '🥛 Dairy', color: 'bg-blue-50 text-blue-600 border-blue-100' },
-                                    { id: 'bakery', label: '🍞 Bakery', color: 'bg-amber-50 text-amber-600 border-amber-100' },
-                                    { id: 'pantry', label: '🍝 Pantry', color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
-                                    { id: 'snack', label: '🍫 Snack', color: 'bg-purple-50 text-purple-600 border-purple-100' },
-                                    { id: 'beverage', label: '🥤 Drinks', color: 'bg-cyan-50 text-cyan-600 border-cyan-100' },
-                                ].map((cat) => (
-                                    <button
-                                        key={cat.id}
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedCategory(cat.id);
-                                        }}
-                                        className={clsx(
-                                            "flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border",
-                                            selectedCategory === cat.id
-                                                ? `${cat.color} shadow-sm border-transparent transform scale-105`
-                                                : "bg-white text-slate-400 border-slate-100 hover:border-slate-200 hover:text-slate-600"
-                                        )}
-                                    >
-                                        {cat.label}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-
-                        {filteredProducts.length > 0 ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                                {filteredProducts.map((product) => {
-                                    const isSelected = selectedItems.has(product.id);
-                                    return (
-                                        <button
-                                            key={product.id}
-                                            type="button"
-                                            onClick={() => toggleItem(product.id)}
-                                            className={clsx(
-                                                "flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left border",
-                                                isSelected
-                                                    ? "bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm"
-                                                    : "bg-slate-50 border-transparent text-slate-600 hover:bg-white hover:shadow-sm hover:border-slate-100"
-                                            )}
-                                        >
-                                            <span className="text-2xl">{product.emoji}</span>
-                                            <span className="font-medium text-sm sm:text-base truncate">
-                                                {t(product.nameKey)}
-                                            </span>
-                                            {isSelected && (
-                                                <Check className="w-4 h-4 ml-auto" />
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <div className="py-8 text-center">
-                                <Search className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-                                <p className="text-gray-500 font-medium">
-                                    "{inputValue}" not in list.
-                                </p>
-                                <p className="text-sm text-gray-400">
-                                    Press Enter to search with AI.
-                                </p>
-                            </div>
-                        )}
                     </div>
                 )}
             </form>
+
+            {/* Dropdown Panel */}
+            {isDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-4 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 animate-in fade-in slide-in-from-top-4 duration-200 z-50 max-h-[400px] overflow-y-auto">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                            {filteredProducts.length > 0
+                                ? (inputValue ? t('common.matches', 'Matches found') : t('common.describe_need', 'Select items'))
+                                : t('common.ai_fallback', 'No matches?')}
+                        </h3>
+                        <button
+                            type="button"
+                            onClick={() => setIsDropdownOpen(false)}
+                            className="text-gray-400 hover:text-dark p-1"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    {/* Category Tabs (Only when not searching) */}
+                    {!inputValue && (
+                        <div className="flex gap-2 overflow-x-auto pb-4 mb-2 custom-scrollbar -mx-4 px-6 md:mx-0 md:px-0">
+                            {[
+                                { id: 'groceries', label: '🛒 Groceries', color: 'bg-orange-50 text-orange-600 border-orange-100' },
+                                { id: 'fruit', label: '🍎 Fruit', color: 'bg-red-50 text-red-600 border-red-100' },
+                                { id: 'vegetable', label: '🥕 Veggies', color: 'bg-green-50 text-green-600 border-green-100' },
+                                { id: 'meat', label: '🥩 Meat', color: 'bg-rose-50 text-rose-600 border-rose-100' },
+                                { id: 'dairy', label: '🥛 Dairy', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+                                { id: 'bakery', label: '🍞 Bakery', color: 'bg-amber-50 text-amber-600 border-amber-100' },
+                                { id: 'pantry', label: '🍝 Pantry', color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
+                                { id: 'snack', label: '🍫 Snack', color: 'bg-purple-50 text-purple-600 border-purple-100' },
+                                { id: 'beverage', label: '🥤 Drinks', color: 'bg-cyan-50 text-cyan-600 border-cyan-100' },
+                            ].map((cat) => (
+                                <button
+                                    key={cat.id}
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedCategory(cat.id);
+                                    }}
+                                    className={clsx(
+                                        "flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border",
+                                        selectedCategory === cat.id
+                                            ? `${cat.color} shadow-sm border-transparent transform scale-105`
+                                            : "bg-white text-slate-400 border-slate-100 hover:border-slate-200 hover:text-slate-600"
+                                    )}
+                                >
+                                    {cat.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {filteredProducts.length > 0 ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+                            {filteredProducts.map((product) => {
+                                const isSelected = selectedItems.has(product.id);
+                                return (
+                                    <button
+                                        key={product.id}
+                                        type="button"
+                                        onClick={() => toggleItem(product.id)}
+                                        className={clsx(
+                                            "flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left border",
+                                            isSelected
+                                                ? "bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm"
+                                                : "bg-slate-50 border-transparent text-slate-600 hover:bg-white hover:shadow-sm hover:border-slate-100"
+                                        )}
+                                    >
+                                        <span className="text-2xl">{product.emoji}</span>
+                                        <span className="font-medium text-sm sm:text-base truncate">
+                                            {t(product.nameKey)}
+                                        </span>
+                                        {isSelected && (
+                                            <Check className="w-4 h-4 ml-auto" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="py-8 text-center">
+                            <Search className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                            <p className="text-gray-500 font-medium">
+                                "{inputValue}" not in list.
+                            </p>
+                            <p className="text-sm text-gray-400">
+                                Press Enter to search with AI.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Hint Text */}
             {!isDropdownOpen && (
@@ -447,3 +462,5 @@ export const SearchInput = memo(function SearchInput({
         </div>
     );
 });
+
+

@@ -312,6 +312,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                             totalRequestedItems={requestedItems.length}
                                             userLocation={userLocation}
                                             highlightBorder="red"
+                                            missingItems={singleStores[0].missingItems}
                                             efficiencyTags={(() => {
                                                 const tags = [];
                                                 if (singleStores[0].store.id === cheapestStoreId) tags.push('Cheapest');
@@ -363,6 +364,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                 userLocation={userLocation}
                                                 highlightBorder="light-red"
                                                 indexBadge={index + 1}
+                                                missingItems={alternative.missingItems}
                                                 efficiencyTags={(() => {
                                                     const tags = [];
                                                     if (alternative.store.id === cheapestStoreId) tags.push('Cheapest');
@@ -485,6 +487,7 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                             highlightBorder="blue"
                                                             showItemCount={true}
                                                             hidePdfButton={true}
+                                                            missingItems={stop.missingItems}
                                                         />
                                                     </div>
                                                 </div>
