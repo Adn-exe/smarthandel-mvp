@@ -27,6 +27,11 @@ export interface Store {
     open_now?: boolean;
 }
 
+export interface MissingItem {
+    name: string;
+    englishName?: string;
+}
+
 export interface ShoppingItem {
     name: string;
     originalName?: string;
@@ -144,3 +149,4 @@ export interface ApiErrorResponse {
     statusCode?: number;
     isOperational?: boolean;
 }
+// --- End of Types ---

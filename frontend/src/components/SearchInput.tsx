@@ -225,7 +225,7 @@ export const SearchInput = memo(function SearchInput({
                         <Search className={clsx(
                             "transition-colors duration-300 shrink-0",
                             variant === 'compact' ? "w-5 h-5 mt-0.5" : "w-6 h-6 mt-1",
-                            isDropdownOpen ? "text-indigo-500" : "text-slate-400"
+                            isDropdownOpen ? "text-indigo-400" : "text-slate-300"
                         )} />
 
                         <div className="flex-grow min-w-0">
@@ -294,20 +294,7 @@ export const SearchInput = memo(function SearchInput({
                         )}
                     </div>
 
-                    {/* Dropdown Relist Button (Compact Mode) */}
-                    {variant === 'compact' && !isDropdownOpen && (
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsDropdownOpen(true);
-                            }}
-                            className="absolute -bottom-2 translate-y-full left-1/2 -translate-x-1/2 bg-white border border-slate-200 text-indigo-600 rounded-full p-2 shadow-lg hover:bg-slate-50 transition-all hover:scale-110 active:scale-95 group flex items-center gap-2 px-4 whitespace-nowrap"
-                        >
-                            <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">{t('common.describe_need')}</span>
-                        </button>
-                    )}
+                    {/* Dropdown Relist Button (Compact Mode) - REMOVED per user request */}
                 </div>
 
                 {/* Footer Area - Only show in default mode */}
@@ -349,7 +336,6 @@ export const SearchInput = memo(function SearchInput({
                                 ) : (
                                     <>
                                         <span>{t('common.shop')}</span>
-                                        <Plus className="w-5 h-5" />
                                     </>
                                 )}
                             </button>

@@ -54,7 +54,7 @@ afterAll(() => server.close());
 describe('SearchInput Component', () => {
     it('renders correctly with placeholder', () => {
         render(<SearchInput onSearch={vi.fn()} placeholder="Test placeholder" />);
-        expect(screen.getByText('Test placeholder')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Test placeholder')).toBeInTheDocument();
     });
 
     it('shows loading state', () => {

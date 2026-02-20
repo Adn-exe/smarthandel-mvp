@@ -6,7 +6,7 @@ import {
     ShoppingBag,
     AlertCircle
 } from 'lucide-react';
-import { useParseQuery } from '../lib/queryClient';
+import { useParseQuery, queryClient } from '../lib/queryClient';
 import SEO from '../components/SEO';
 import { trackEvent } from '../utils/analytics';
 import { SearchInput } from '../components/SearchInput';
@@ -33,7 +33,7 @@ export function Selection() {
     } = useShoppingList();
 
     const [isThinking, setIsThinking] = useState(false);
-    const userLocation = (locationState.state as any)?.location || savedLocation;
+    const userLocation = (locationState.state as { location?: { lat: number; lng: number } })?.location || savedLocation;
 
     // 1. Parsing Query via AI
     const {
@@ -57,7 +57,7 @@ export function Selection() {
     useEffect(() => {
         if (parsedData?.items) {
             // Smart Merge: Preserve user-modified fields (quantity, lockedBrand)
-            const merged = parsedData.items.map((newItem: any) => {
+            const merged = parsedData.items.map((newItem) => {
                 const normalizedNewName = (newItem.englishName || newItem.name).toLowerCase();
                 const existing = items.find(item =>
                     (item.englishName || item.name).toLowerCase() === normalizedNewName
@@ -82,7 +82,7 @@ export function Selection() {
         if (userLocation && !savedLocation) {
             setLocation(userLocation);
         }
-    }, [parsedData, userLocation, savedLocation, setItems, setLocation, items]);
+    }, [parsedData, userLocation, savedLocation, setItems, setLocation, items]); // Added 'items' to satisfy lint, JSON.stringify guard prevents loops
 
     const handleAddItems = (newQuery: string) => {
         const currentQuery = query || '';
@@ -91,6 +91,33 @@ export function Selection() {
         console.log(`[Selection] Syncing logic: Navigating with combined query: "${combinedQuery}"`);
 
         navigate(`/selection?q=${encodeURIComponent(combinedQuery)}`, {
+            state: locationState.state,
+            replace: true
+        });
+    };
+
+    const handleRemoveItem = (index: number) => {
+        // 1. Calculate the hypothetical remaining items
+        const remainingItems = items.filter((_, i) => i !== index);
+
+        // 2. Derive the new query string
+        const newQuery = remainingItems
+            .map(item => item.originalName || item.name)
+            .join(', ');
+
+        // 3. OPTIMIZATION: Prefill the React Query cache for the new query.
+        // This ensures the useParseQuery(newQuery) hook finds data instantly,
+        // skipping the 'isPending' (isParsingInitial) state and the Thinking Screen.
+        queryClient.setQueryData(['parse', newQuery], {
+            items: remainingItems,
+            budget: parsedData?.budget
+        });
+
+        // 4. Update local context state
+        removeItem(index);
+
+        // 5. Update URL
+        navigate(`/selection?q=${encodeURIComponent(newQuery)}`, {
             state: locationState.state,
             replace: true
         });
@@ -197,7 +224,7 @@ export function Selection() {
                                 <ItemCard
                                     item={item}
                                     onUpdateQuantity={(delta: number) => updateQuantity(idx, delta)}
-                                    onRemove={() => removeItem(idx)}
+                                    onRemove={() => handleRemoveItem(idx)}
                                     onLockBrand={(brandName: string | undefined) => lockBrand(idx, brandName)}
                                 />
                             </div>

@@ -312,7 +312,13 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                             totalRequestedItems={requestedItems.length}
                                             userLocation={userLocation}
                                             highlightBorder="red"
-                                            missingItems={singleStores[0].missingItems}
+                                            missingItems={singleStores[0].missingItems?.map(name => {
+                                                const requested = requestedItems.find(i => i.name === name || i.originalName === name);
+                                                return {
+                                                    name: name,
+                                                    englishName: requested?.englishName
+                                                };
+                                            })}
                                             efficiencyTags={(() => {
                                                 const tags = [];
                                                 if (singleStores[0].store.id === cheapestStoreId) tags.push('Cheapest');
@@ -364,7 +370,13 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                 userLocation={userLocation}
                                                 highlightBorder="light-red"
                                                 indexBadge={index + 1}
-                                                missingItems={alternative.missingItems}
+                                                missingItems={alternative.missingItems?.map(name => {
+                                                    const requested = requestedItems.find(i => i.name === name || i.originalName === name);
+                                                    return {
+                                                        name: name,
+                                                        englishName: requested?.englishName
+                                                    };
+                                                })}
                                                 efficiencyTags={(() => {
                                                     const tags = [];
                                                     if (alternative.store.id === cheapestStoreId) tags.push('Cheapest');
@@ -487,7 +499,13 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                                                             highlightBorder="blue"
                                                             showItemCount={true}
                                                             hidePdfButton={true}
-                                                            missingItems={stop.missingItems}
+                                                            missingItems={stop.missingItems?.map(name => {
+                                                                const requested = requestedItems.find(i => i.name === name || i.originalName === name);
+                                                                return {
+                                                                    name: name,
+                                                                    englishName: requested?.englishName
+                                                                };
+                                                            })}
                                                         />
                                                     </div>
                                                 </div>

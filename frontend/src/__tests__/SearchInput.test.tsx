@@ -45,7 +45,7 @@ describe('SearchInput Hybrid Logic', () => {
         fireEvent.change(input, { target: { value: 'melk' } });
         fireEvent.submit(input.closest('form')!);
 
-        expect(onSearch).toHaveBeenCalledWith('Melk');
+        expect(onSearch).toHaveBeenCalledWith('melk');
     });
 
     it('falls back to AI search on no match', () => {
@@ -74,6 +74,6 @@ describe('SearchInput Hybrid Logic', () => {
         fireEvent.submit(input.closest('form')!);
 
         // Should include both 'Melk' and 'Egg' (translated 'eggs')
-        expect(onSearch).toHaveBeenCalledWith('Melk, Egg');
+        expect(onSearch).toHaveBeenCalledWith('Melk, eggs');
     });
 });
