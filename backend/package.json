@@ -4,6 +4,9 @@
   "description": "Backend for SmartHandel MVP",
   "main": "dist/server.js",
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "nodemon",
     "build": "tsc",

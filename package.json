@@ -14,5 +14,8 @@
     "workspaces": [
         "backend",
         "frontend"
-    ]
+    ],
+    "engines": {
+        "node": ">=20.0.0"
+    }
 }
