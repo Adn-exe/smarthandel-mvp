@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, TrendingUp, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Search, MapPin, TrendingUp, ShoppingBag, ArrowRight, Users, Sparkles, Check } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
 import { SearchInput } from '../components/SearchInput';
 import SEO from '../components/SEO';
@@ -53,56 +53,53 @@ export function Home() {
             <SEO title={t('seo.homeTitle')} />
 
             {/* Hero Section */}
-            <section className="relative z-20 pt-24 md:pt-32 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 min-h-[80vh] md:min-h-[85vh] flex items-center">
-                {/* Morphing Gradient Orbs */}
+            <section className="relative z-20 pt-24 md:pt-32 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 min-h-[70vh] md:min-h-[75vh] flex items-center">
+                {/* Subtle Gradient Orbs */}
                 <div className="absolute inset-0 -z-20 bg-[#fafafa] overflow-hidden">
                     <div
-                        className="absolute top-[-5%] left-[-5%] w-[80%] md:w-[45%] h-[45%] bg-gradient-to-br from-primary/30 to-pink-400/20"
-                        style={{ animation: 'morph 8s ease-in-out infinite, pulse-glow 4s ease-in-out infinite' }}
+                        className="absolute top-[-5%] left-[-5%] w-[70%] md:w-[40%] h-[40%] bg-gradient-to-br from-primary/12 to-pink-400/8 rounded-full blur-3xl"
+                        style={{ animation: 'morph 12s ease-in-out infinite' }}
                     ></div>
                     <div
-                        className="absolute top-[20%] right-[-10%] w-[70%] md:w-[35%] h-[35%] bg-gradient-to-bl from-secondary/25 to-cyan-400/15"
-                        style={{ animation: 'morph 10s ease-in-out infinite 2s, pulse-glow 5s ease-in-out infinite 1s' }}
-                    ></div>
-                    <div
-                        className="absolute bottom-[-10%] left-[30%] w-[60%] md:w-[30%] h-[30%] bg-gradient-to-tr from-accent/20 to-orange-300/10"
-                        style={{ animation: 'morph 12s ease-in-out infinite 4s, pulse-glow 6s ease-in-out infinite 2s' }}
+                        className="absolute top-[20%] right-[-10%] w-[60%] md:w-[30%] h-[30%] bg-gradient-to-bl from-secondary/10 to-cyan-400/6 rounded-full blur-3xl"
+                        style={{ animation: 'morph 16s ease-in-out infinite 3s' }}
                     ></div>
                 </div>
 
-                {/* Floating Grocery Emojis */}
-                <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none opacity-30 md:opacity-100">
-                    {['🥛', '🍞', '🧀', '🥕', '🍗', '🥚', '🍎', '🥦'].map((emoji, i) => (
-                        <span
-                            key={i}
-                            className="absolute text-xl sm:text-3xl select-none opacity-0"
-                            style={{
-                                left: `${5 + i * 12}%`,
-                                bottom: '-40px',
-                                animation: `drift ${12 + i * 2}s linear infinite ${i * 1.5}s`,
-                            }}
-                        >
-                            {emoji}
-                        </span>
-                    ))}
-                </div>
+                {/* Subtle Dot Grid Pattern */}
+                <div className="absolute inset-0 -z-10 bg-[radial-gradient(#d1d5db_0.8px,transparent_0.8px)] [background-size:24px_24px] opacity-[0.25] pointer-events-none"></div>
 
                 <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
-                    <h1 className="text-4xl sm:text-6xl md:text-[5rem] font-heading font-black text-dark mb-6 animate-reveal [animation-delay:200ms] [animation-fill-mode:forwards] leading-[1.1] tracking-tight">
+                    <h1 className="text-4xl sm:text-6xl md:text-[5rem] font-heading font-black text-dark mb-6 animate-reveal [animation-delay:200ms] [animation-fill-mode:forwards] leading-[1.05] tracking-tighter">
                         <Trans i18nKey="home.title">
                             Handle <span className="bg-gradient-to-r from-primary via-red-400 to-primary bg-clip-text text-transparent shimmer-text inline-block">smartere</span>, ikke dyrere
                         </Trans>
                     </h1>
 
-                    <p className="text-base sm:text-xl text-gray-400 mb-10 md:mb-14 max-w-xl mx-auto animate-reveal [animation-delay:400ms] [animation-fill-mode:forwards] leading-relaxed font-medium px-4 md:px-0">
+                    <p className="text-base sm:text-xl text-gray-400 mb-8 md:mb-10 max-w-xl mx-auto animate-reveal [animation-delay:400ms] [animation-fill-mode:forwards] leading-relaxed font-medium px-4 md:px-0">
                         {t('home.subtitle')}
                     </p>
+
+                    {/* Trust Badges */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-8 md:mb-10 animate-reveal [animation-delay:500ms] [animation-fill-mode:forwards] px-4 md:px-0">
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 backdrop-blur-sm border border-gray-100 rounded-full text-[11px] sm:text-xs font-bold text-gray-600 shadow-sm">
+                            <Users className="w-3.5 h-3.5 text-primary" /> 15k+ Users
+                        </span>
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 backdrop-blur-sm border border-gray-100 rounded-full text-[11px] sm:text-xs font-bold text-gray-600 shadow-sm">
+                            <Sparkles className="w-3.5 h-3.5 text-secondary" /> AI-Powered
+                        </span>
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/80 backdrop-blur-sm border border-gray-100 rounded-full text-[11px] sm:text-xs font-bold text-green-600 shadow-sm">
+                            <Check className="w-3.5 h-3.5" /> 100% Free
+                        </span>
+                    </div>
 
                     <div className="animate-reveal [animation-delay:600ms] [animation-fill-mode:forwards] max-w-2xl mx-auto px-2 md:px-0">
                         <SearchInput
                             onSearch={handleSearch}
-                            className="shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_70px_rgba(255,71,87,0.15)] transition-shadow duration-500"
+                            className="shadow-[0_20px_50px_rgba(0,0,0,0.08)] hover:shadow-[0_20px_60px_rgba(229,57,53,0.12)] transition-shadow duration-500"
                             placeholder={t('home.placeholder')}
+                            initialOpen={true}
+                            isStatic={true}
                         />
                         {locationError && (
                             <p className="mt-6 text-sm text-amber-600 glass px-6 py-2 rounded-full inline-block animate-reveal shadow-lg shadow-amber-500/5">
@@ -111,8 +108,6 @@ export function Home() {
                             </p>
                         )}
                     </div>
-
-
                 </div>
             </section>
 
@@ -173,19 +168,7 @@ export function Home() {
                 </div>
             </section>
 
-            {/*
-       ### Stats & "How it Works" Redesign
-- **Stats Bar**: Replaced the "Data Console" with a classic full-width dark bar matching the "About Us" page.
-- **Updated Values**: Now displays **15k+** users, **2.5M** saved (NOK), and **100%** chain coverage.
-- **"How it Works"**: Section refined to be more compact with smaller cards and cleaner typography.
 
-### Refinement & Bug Fixes
-- **Aurora Removal**: Removed the dynamic aurora background after experimentation to maintain a cleaner, more readable look.
-- **SEO.tsx Polish**: Removed an unused `Helmet` import that was triggering a lint warning in React 19.
-- **TSConfig Stability**: Removed experimental `erasableSyntaxOnly` and `noUncheckedSideEffectImports` flags from `tsconfig.app.json` and `tsconfig.node.json` which were causing build errors in standard TypeScript environments.
-
-![Final Home Page Redesign](file:///Users/mohammedadnan/.gemini/antigravity/brain/41ad05d8-f5b9-4b51-9102-566be8b6e03c/homepage_top_1771058558085.png)
-            */}
             {/* Stats Section - Classic Dark Bar (Matching About Us) */}
             <section className="bg-dark text-white py-12 md:py-20 px-4">
                 <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 md:gap-12 text-center items-center">

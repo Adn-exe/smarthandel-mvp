@@ -331,6 +331,21 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                             </div>
                         )}
 
+                        {/* Choice 2: Price Comparison Matrix */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-1 px-2">
+                                <div className="h-px bg-gray-100 flex-grow"></div>
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{t('results.priceComparison', 'Price Comparison Matrix')}</span>
+                                <div className="h-px bg-gray-100 flex-grow"></div>
+                            </div>
+                            <ComparisonTable
+                                candidates={comparisonCandidates}
+                                requestedItems={requestedItems}
+                                isMapVisible={isMapVisible}
+                                onToggleMap={onToggleMap}
+                            />
+                        </div>
+
                         {/* Alternative Options (Top 3 Stores) */}
                         {(() => {
                             const bestStoreId = singleStores[0]?.store.id;
@@ -534,13 +549,8 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                         )}
                     </div>
                 ) : (
-                    /* Comparison Table View */
-                    <ComparisonTable
-                        candidates={comparisonCandidates}
-                        requestedItems={requestedItems}
-                        isMapVisible={isMapVisible}
-                        onToggleMap={onToggleMap}
-                    />
+                    /* Comparison view is now embedded into the single view */
+                    null
                 )}
             </div>
 
@@ -553,6 +563,6 @@ export const ResultsDisplay = memo(function ResultsDisplay({
                     {t('results.createShoppingList', 'Generate Shopping List')}
                 </button>
             </div>
-        </div>
+        </div >
     );
 });

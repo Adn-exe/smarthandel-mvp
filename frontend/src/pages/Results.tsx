@@ -295,21 +295,6 @@ export default function Results() {
                                         </button>
                                     )}
 
-                                    <button
-                                        onClick={() => setActiveView('comparison')}
-                                        className={clsx(
-                                            "px-3 md:px-4 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap border-l border-gray-100 ml-0.5 rounded-l-none pl-3 md:pl-5",
-                                            activeView === 'comparison'
-                                                ? "bg-white text-dark shadow-sm border border-gray-200"
-                                                : "text-gray-400 hover:text-gray-600"
-                                        )}
-                                    >
-                                        <div className={clsx(
-                                            "w-1 h-1 md:w-1.5 md:h-1.5 rounded-full",
-                                            activeView === 'comparison' ? "bg-dark" : "bg-gray-300"
-                                        )}></div>
-                                        {t('results.comparePrices', 'Price Matrix')}
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -322,8 +307,8 @@ export default function Results() {
                     {/* Results List Column */}
                     <div className={clsx(
                         "transition-all duration-500 ease-in-out px-4 md:px-0",
-                        // Desktop width: full-width when comparison+map hidden, half otherwise
-                        activeView === 'comparison' && !isMapVisible ? "w-full" : "lg:w-1/2",
+                        // Desktop width: full-width when map hidden (in single or comparison), half otherwise
+                        (activeView === 'single' || activeView === 'comparison') && !isMapVisible ? "w-full" : "lg:w-1/2",
                         // Mobile: hide list when map tab is active (always, regardless of activeView)
                         mobileActiveTab === 'map' ? 'hidden lg:block' : 'block w-full pb-20'
                     )}>
@@ -366,8 +351,8 @@ export default function Results() {
                     {/* Map Column - Immersive on Mobile */}
                     <div className={clsx(
                         "transition-all duration-500 ease-in-out",
-                        // Desktop: hide map only when comparison view AND user toggled it off
-                        activeView === 'comparison' && !isMapVisible
+                        // Desktop: hide map when user toggled it off (in single or comparison)
+                        (activeView === 'single' || activeView === 'comparison') && !isMapVisible
                             ? 'hidden'
                             : 'lg:block lg:w-1/2',
                         // Mobile: always use mobileActiveTab — works in ALL views including comparison
@@ -386,8 +371,8 @@ export default function Results() {
                                     // isVisible: true whenever the map is actually rendered and visible
                                     // Logic:
                                     // 1. Mobile (< 1024px): Only when map tab is active
-                                    // 2. Desktop (>= 1024px): Always visible UNLESS it's comparison view AND user toggled it off
-                                    isVisible={isDesktop ? (activeView !== 'comparison' || isMapVisible) : mobileActiveTab === 'map'}
+                                    // 2. Desktop (>= 1024px): Always visible UNLESS it's comparison/single view AND user toggled it off
+                                    isVisible={isDesktop ? ((activeView !== 'comparison' && activeView !== 'single') || isMapVisible) : mobileActiveTab === 'map'}
                                     onStoreClick={(store) => {
                                         setSelectedStoreId(store.id);
                                         trackEvent('store_selected', { type: 'map_click', storeId: store.id });

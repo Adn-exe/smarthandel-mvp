@@ -1,7 +1,8 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { InstallButton } from './InstallButton';
 
 export function Layout() {
     const { t, i18n } = useTranslation();
@@ -32,9 +33,13 @@ export function Layout() {
                     <div className="flex justify-between items-center h-16">
 
                         {/* Logo */}
-                        <Link to="/" className="flex items-center gap-2 group" onClick={closeMenu}>
-                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white transform group-hover:rotate-12 transition-transform shadow-lg shadow-primary/20">
-                                <ShoppingBag className="w-5 h-5" />
+                        <Link to="/" className="flex items-center gap-2.5 group" onClick={closeMenu}>
+                            <div className="w-9 h-9 transform group-hover:scale-110 group-active:scale-95 transition-all duration-300 drop-shadow-sm">
+                                <img
+                                    src="/icons/icon.svg"
+                                    alt="SmartHandel Logo"
+                                    className="w-full h-full object-contain"
+                                />
                             </div>
                             <span className="font-heading font-bold text-xl text-dark tracking-tight">
                                 Smart<span className="text-primary">Handel</span>
@@ -55,6 +60,8 @@ export function Layout() {
                             >
                                 {t('common.about')}
                             </Link>
+                            <div className="h-4 w-px bg-gray-200"></div>
+                            <InstallButton variant="desktop" />
                             <div className="h-4 w-px bg-gray-200"></div>
                             <div className="flex items-center gap-2">
                                 <button
@@ -128,6 +135,11 @@ export function Layout() {
                             </Link>
                         </div>
 
+                        {/* Install App Button */}
+                        <div className="px-1">
+                            <InstallButton variant="mobile" />
+                        </div>
+
                         {/* Mobile Menu Footer */}
                         <div className="mt-auto pt-8 border-t border-gray-100">
                             <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl">
@@ -154,9 +166,13 @@ export function Layout() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8">
                         <div className="col-span-1 md:col-span-1">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-6 h-6 bg-dark rounded flex items-center justify-center text-white">
-                                    <ShoppingBag className="w-3 h-3" />
+                            <div className="flex items-center gap-2.5 mb-4">
+                                <div className="w-7 h-7">
+                                    <img
+                                        src="/icons/icon.svg"
+                                        alt="SmartHandel Logo"
+                                        className="w-full h-full object-contain"
+                                    />
                                 </div>
                                 <span className="font-heading font-bold text-lg text-dark">SmartHandel</span>
                             </div>

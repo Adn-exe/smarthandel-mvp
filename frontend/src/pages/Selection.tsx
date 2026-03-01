@@ -141,17 +141,35 @@ export function Selection() {
     }
 
     if (parseError) {
+        const isNetworkError = parseError.message.includes('Network Error') || parseError.message.includes('ERR_ADDRESS_UNREACHABLE');
+
         return (
             <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center p-4 text-center">
-                <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
-                <h2 className="text-2xl font-bold text-dark mb-2">{t('errors.generic_title')}</h2>
-                <p className="text-gray-600 mb-6 max-w-md">{t('errors.failedParse')}</p>
-                <button
-                    onClick={() => navigate('/')}
-                    className="bg-dark text-white px-8 py-3 rounded-2xl font-bold hover:bg-black transition-all"
-                >
-                    {t('common.back')}
-                </button>
+                <div className="bg-red-50 p-6 rounded-3xl border border-red-100 max-w-md w-full animate-in fade-in zoom-in-95">
+                    <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <AlertCircle className="w-8 h-8 text-red-500" />
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-900 mb-2">
+                        {isNetworkError ? t('errors.network_title') : t('errors.generic_title')}
+                    </h2>
+                    <p className="text-slate-500 text-sm font-medium mb-8 leading-relaxed">
+                        {isNetworkError ? t('errors.network_message') : t('errors.failedParse')}
+                    </p>
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold hover:bg-black transition-all active:scale-95 shadow-lg shadow-slate-900/10"
+                        >
+                            {t('common.retry')}
+                        </button>
+                        <button
+                            onClick={() => navigate('/')}
+                            className="text-slate-500 font-bold text-sm hover:text-slate-900 transition-colors"
+                        >
+                            {t('common.back')}
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }

@@ -17,5 +17,6 @@ dist/
 .gemini/
 .system_generated/
 backend/src/data/*.json
-!backend/src/data/item_mismatch_reports.json
 backend/response.json
+frontend/dev-dist/
+backend/data/

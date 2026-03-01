@@ -22,9 +22,23 @@ export interface MismatchReport {
 
 const REPORTS_FILE = path.join(process.cwd(), 'data/item_mismatch_reports.json');
 
-// In-memory session cache for anti-abuse
-// Map<sessionId, Map<storeId_itemId, count>>
-const sessionReportCounts = new Map<string, Map<string, number>>();
+// H3: In-memory session cache with TTL to prevent unbounded memory growth
+interface SessionEntry {
+    map: Map<string, number>;
+    createdAt: number;
+}
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const sessionReportCounts = new Map<string, SessionEntry>();
+
+// Sweep stale sessions every hour to free memory
+setInterval(() => {
+    const now = Date.now();
+    for (const [sessionId, entry] of sessionReportCounts.entries()) {
+        if (now - entry.createdAt > SESSION_TTL_MS) {
+            sessionReportCounts.delete(sessionId);
+        }
+    }
+}, 60 * 60 * 1000).unref(); // unref() so this doesn't prevent process exit
 
 export class ReportService {
     /**
@@ -68,8 +82,10 @@ export class ReportService {
      * Checks if a report for this item in this session already exists or exceeds limit
      */
     static canReport(sessionId: string, storeId: string, itemId: string): boolean {
-        const sessionMap = sessionReportCounts.get(sessionId);
-        if (!sessionMap) return true;
+        const entry = sessionReportCounts.get(sessionId);
+        if (!entry) return true;
+
+        const { map: sessionMap } = entry;
 
         // Check if this specific item has already been reported in this session
         const compositeKey = `${storeId}_${itemId}`;
@@ -88,9 +104,9 @@ export class ReportService {
 
     private static incrementSessionReport(sessionId: string, compositeKey: string) {
         if (!sessionReportCounts.has(sessionId)) {
-            sessionReportCounts.set(sessionId, new Map());
+            sessionReportCounts.set(sessionId, { map: new Map(), createdAt: Date.now() });
         }
-        const sessionMap = sessionReportCounts.get(sessionId)!;
-        sessionMap.set(compositeKey, (sessionMap.get(compositeKey) || 0) + 1);
+        const entry = sessionReportCounts.get(sessionId)!;
+        entry.map.set(compositeKey, (entry.map.get(compositeKey) || 0) + 1);
     }
 }

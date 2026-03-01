@@ -1,4 +1,5 @@
 import fs from 'fs';
+import fsPromises from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { Product, Store } from '../types/index.js';
@@ -97,10 +98,11 @@ class PriceIndexService {
         }
     }
 
-    private saveIndex() {
+    private async saveIndex() {
         if (!this.index) return;
         try {
-            fs.writeFileSync(this.INDEX_PATH, JSON.stringify(this.index, null, 2));
+            // M3: Use async write to avoid blocking the event loop during large syncs
+            await fsPromises.writeFile(this.INDEX_PATH, JSON.stringify(this.index, null, 2));
         } catch (error) {
             console.error('[PriceIndexService] Failed to save price index:', error);
         }

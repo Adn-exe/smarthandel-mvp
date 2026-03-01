@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import hpp from 'hpp';
+import fs from 'fs/promises';
+import path from 'path';
 import config from './config/index.js';
 import productsRouter from './routes/products.js';
 import storesRouter from './routes/stores.js';
@@ -14,6 +16,18 @@ import healthRouter from './routes/health.js';
 import { errorHandler, ApiError } from './middleware/errorHandler.js';
 import priceIndexService from './services/PriceIndexService.js';
 
+// Ensure critical data directories and seed files exist before starting
+async function initDataDirectory() {
+    const dataDir = path.join(process.cwd(), 'data');
+    await fs.mkdir(dataDir, { recursive: true });
+    const reportsFile = path.join(dataDir, 'item_mismatch_reports.json');
+    // Create the reports file if it doesn't exist (wx = exclusive create, no overwrite)
+    await fs.writeFile(reportsFile, '[]', { flag: 'wx' }).catch(() => {
+        // File already exists, nothing to do
+    });
+    console.log('[Server] Data directory initialized.');
+}
+
 // Load environment variables
 dotenv.config();
 
@@ -23,8 +37,8 @@ const PORT = config.port || 3001;
 // 1. Basic Middleware
 app.use(helmet()); // Security Headers
 app.use(hpp()); // HTTP Parameter Pollution Protection
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50kb' }));           // M4: Prevent large payload DoS
+app.use(express.urlencoded({ extended: true, limit: '50kb' }));
 
 // 2. Logging (Morgan)
 if (config.nodeEnv === 'development') {
@@ -66,19 +80,25 @@ app.use(errorHandler);
 // 7. Start Server
 let server: ReturnType<typeof app.listen> | undefined;
 if (process.env.NODE_ENV !== 'test') {
-    server = app.listen(PORT, '0.0.0.0', () => {
-        console.log('==========================================');
-        console.log(`🚀 SmartHandel Backend is running!`);
-        console.log(`📡 Port: ${PORT}`);
-        console.log(`🌍 Environment: ${config.nodeEnv}`);
-        console.log(`🔗 Local lookup: http://localhost:${PORT}/api/health`);
-        console.log(`🔗 Network access: http://0.0.0.0:${PORT}/api/health`);
-        console.log('==========================================');
+    // C2: Initialize data directories before starting
+    initDataDirectory().then(() => {
+        server = app.listen(PORT, '0.0.0.0', () => {
+            console.log('==========================================');
+            console.log(`🚀 SmartHandel Backend is running!`);
+            console.log(`📡 Port: ${PORT}`);
+            console.log(`🌍 Environment: ${config.nodeEnv}`);
+            console.log(`🔗 Local lookup: http://localhost:${PORT}/api/health`);
+            console.log(`🔗 Network access: http://0.0.0.0:${PORT}/api/health`);
+            console.log('==========================================');
 
-        // Setup automated price indexing
-        priceIndexService.scheduleSync().catch(err => {
-            console.error('[Server] Price indexing setup failed:', err);
+            // Setup automated price indexing
+            priceIndexService.scheduleSync().catch(err => {
+                console.error('[Server] Price indexing setup failed:', err);
+            });
         });
+    }).catch(err => {
+        console.error('[Server] Failed to initialize data directory. Aborting.', err);
+        process.exit(1);
     });
 }
 

@@ -25,7 +25,7 @@
         "shop": "Søk",
         "thinking": "Tenker...",
         "store": "Butikk",
-        "describe_need": "Beskriv hva du trenger",
+        "describe_need": "Hurtigvalg av varer",
         "press_enter": "Trykk <0>Enter</0> for å søke",
         "meters": "m",
         "kilometers": "km",
@@ -45,7 +45,10 @@
         "show_details": "Vis tekniske detaljer",
         "hide_details": "Skjul detaljer",
         "list": "Liste",
-        "map": "Kart"
+        "map": "Kart",
+        "installApp": "Installer App",
+        "installAppDesc": "Legg til på startskjermen",
+        "offline": "Du er frakoblet — bufret innhold kan være utdatert"
     },
     "home": {
         "title": "Handle <1>smartere</1>, ikke dyrere",
@@ -254,6 +257,11 @@
             "title": "Møt Teamet",
             "description": "SmartHandel er bygget av et dedikert team av ingeniører og dataeksperter i Oslo som mener teknologi kan gjøre hverdagen betydelig rimeligere.",
             "contact": "Kontakt Oss"
+        },
+        "stats": {
+            "users": "Aktive brukere",
+            "saved": "Spart i dagligvarer",
+            "coverage": "Butikkdekning"
         }
     },
     "storeCard": {
@@ -337,7 +345,6 @@
         "tomato": "Tomat",
         "cucumber": "Agurk",
         "broccoli": "Brokkoli",
-        "pasta": "Pasta",
         "rice": "Ris",
         "coffee": "Kaffe",
         "orange_juice": "Appelsinjuice",
@@ -376,6 +383,14 @@
         "lemon": "Sitron",
         "lime": "Lime",
         "avocado": "Avokado",
-        "toilet_paper": "Toalettpapir"
+        "frozen_pizza": "Frossen Pizza",
+        "frozen_peas": "Frosne Erter",
+        "frozen_berries": "Frosne Bær",
+        "fish_sticks": "Fiskepinner",
+        "cheese_spread": "Smøreost",
+        "cinnamon_roll": "Kanelbolle",
+        "jam": "Syltetøy",
+        "pasta": "Pasta",
+        "pizza": "Pizza"
     }
 }

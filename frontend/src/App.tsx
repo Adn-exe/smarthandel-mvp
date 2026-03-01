@@ -29,6 +29,7 @@ function AnalyticsTracker() {
 
 import { HelmetProvider } from 'react-helmet-async';
 import { ShoppingListProvider } from './context/ShoppingListContext';
+import { OfflineBanner } from './components/OfflineBanner';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <ErrorBoundary onReset={() => window.location.reload()}>
             <Router>
               <AnalyticsTracker />
+              <OfflineBanner />
               <Suspense fallback={<RouteLoading message={i18n.t('layout.loading_page')} />}>
                 <Routes>
                   <Route path="/" element={<Layout />}>

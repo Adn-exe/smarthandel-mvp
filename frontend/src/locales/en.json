@@ -25,7 +25,7 @@
         "shop": "Shop",
         "thinking": "Thinking...",
         "store": "Store",
-        "describe_need": "Describe what you need",
+        "describe_need": "Quick Select Products",
         "press_enter": "Press <0>Enter</0> to search",
         "meters": "m",
         "kilometers": "km",
@@ -45,7 +45,10 @@
         "show_details": "Show technical details",
         "hide_details": "Hide details",
         "list": "List",
-        "map": "Map"
+        "map": "Map",
+        "installApp": "Install App",
+        "installAppDesc": "Add to home screen",
+        "offline": "You're offline — cached content may be outdated"
     },
     "home": {
         "title": "Shop <1>smarter</1>, not harder",
@@ -254,6 +257,11 @@
             "title": "Meet the Team",
             "description": "SmartHandel is built by a dedicated team of engineers and data scientists in Oslo who believe technology can make everyday life significantly more affordable.",
             "contact": "Contact Us"
+        },
+        "stats": {
+            "users": "Active Users",
+            "saved": "Saved on Groceries",
+            "coverage": "Store Coverage"
         }
     },
     "storeCard": {
@@ -337,7 +345,6 @@
         "tomato": "Tomato",
         "cucumber": "Cucumber",
         "broccoli": "Broccoli",
-        "pasta": "Pasta",
         "rice": "Rice",
         "orange": "Orange",
         "coffee": "Coffee",
@@ -377,6 +384,14 @@
         "lemon": "Lemon",
         "lime": "Lime",
         "avocado": "Avocado",
-        "toilet_paper": "Toilet Paper"
+        "frozen_pizza": "Frozen Pizza",
+        "frozen_peas": "Frozen Peas",
+        "frozen_berries": "Frozen Berries",
+        "fish_sticks": "Fish Sticks",
+        "cheese_spread": "Cheese Spread",
+        "cinnamon_roll": "Cinnamon Roll",
+        "jam": "Jam",
+        "pasta": "Pasta",
+        "pizza": "Pizza"
     }
 }

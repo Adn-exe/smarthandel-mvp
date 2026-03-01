@@ -6,8 +6,8 @@ import rateLimit from 'express-rate-limit';
  */
 export const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // Increased from 100
-    skip: () => process.env.NODE_ENV === 'development', // Bypass in dev
+    max: 500,
+    skip: () => process.env.NODE_ENV === 'development', // Only skip in explicit dev
     message: {
         success: false,
         message: 'Too many requests, please try again later',
@@ -22,8 +22,8 @@ export const generalLimiter = rateLimit({
  */
 export const strictLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Increased from 20
-    skip: () => process.env.NODE_ENV === 'development', // Bypass in dev
+    max: 100,
+    skip: () => process.env.NODE_ENV === 'development', // Only skip in explicit dev
     message: {
         success: false,
         message: 'High traffic detected for expensive operations. Please slow down and try again later.',

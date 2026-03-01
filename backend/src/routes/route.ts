@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
+import { createHash } from 'crypto';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { strictLimiter } from '../middleware/rateLimiter.js';
 import routeService from '../services/routeService.js';
@@ -37,8 +38,9 @@ router.post(
 
         const { items, userLocation, preferences } = req.body;
 
-        // Cache identical requests for 10 minutes (Bypass in development for easier testing)
-        const cacheKey = `route:optimize:${JSON.stringify(req.body)}`;
+        // H4: Hash the cache key to prevent unbounded string sizes
+        const bodyHash = createHash('md5').update(JSON.stringify(req.body)).digest('hex');
+        const cacheKey = `route:optimize:${bodyHash}`;
         const cachedResponse = process.env.NODE_ENV === 'production' ? cache.get(cacheKey) : null;
         if (cachedResponse) {
             console.log(`[Optimize] Cache HIT for key: ${cacheKey.substring(0, 50)}...`);

@@ -170,8 +170,7 @@ export const StoreCard = memo(function StoreCard({
     };
 
     const [hoveredItemId, setHoveredItemId] = useState<string | number | null>(null);
-    const [isItemsExpanded, setIsItemsExpanded] = useState(false);
-    const MOBILE_ITEMS_LIMIT = 3;
+
 
     const currentTotalCost = useMemo(() => {
         return items.reduce((acc, item) => {
@@ -258,12 +257,11 @@ export const StoreCard = memo(function StoreCard({
             <>
                 <div
                     onClick={(e) => {
-                        // Prevent triggering selection/expansion when clicking directions button
+                        // Prevent triggering selection when clicking directions button
                         if ((e.target as HTMLElement).closest('button')) {
                             return;
                         }
                         onSelect?.();
-                        setIsItemsExpanded(!isItemsExpanded);
                     }}
                     className={clsx(
                         "relative w-full rounded-[16px] border transition-all duration-200 cursor-pointer group select-none",
@@ -368,8 +366,7 @@ export const StoreCard = memo(function StoreCard({
 
                     {/* 3. Bottom Zone: Action Footer (Directions & Stock) */}
                     <div className={clsx(
-                        "mt-auto px-4 py-3 md:px-5 md:py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between gap-4",
-                        !isItemsExpanded && "rounded-b-[16px]"
+                        "mt-auto px-4 py-3 md:px-5 md:py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between gap-4"
                     )}>
                         {/* Left: Action Group */}
                         <div className="flex items-center gap-2">
@@ -406,157 +403,149 @@ export const StoreCard = memo(function StoreCard({
                                     <span>{stockStatus.text}</span>
                                 </div>
                             )}
-                            <ChevronRight className={clsx(
-                                "w-4 h-4 text-gray-400 transition-transform duration-300",
-                                isItemsExpanded ? "-rotate-90" : "rotate-90 md:rotate-0"
-                            )} />
                         </div>
                     </div>
 
                     {/* Expanded Items List */}
-                    {
-                        isItemsExpanded && (
-                            <div className="px-4 pb-4 md:px-5 md:pb-5 border-t border-gray-50 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                <div className="space-y-4">
-                                    {items.map((item, idx) => (
-                                        <div key={idx} className="flex justify-between items-center gap-3">
-                                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                {/* Product Image */}
-                                                <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                                                    {item.image_url && !failedImages.has(String(item.id)) ? (
+                    <div className="px-4 pb-4 md:px-5 md:pb-5 border-t border-gray-50 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="space-y-4">
+                            {items.map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-center gap-3">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                        {/* Product Image */}
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                            {item.image_url && !failedImages.has(String(item.id)) ? (
+                                                <img
+                                                    src={item.image_url}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-contain p-1"
+                                                    onError={() => setFailedImages(prev => new Set(prev).add(String(item.id)))}
+                                                />
+                                            ) : (
+                                                <>
+                                                    {isImageFallback(getProductFallback(item.name)) ? (
                                                         <img
-                                                            src={item.image_url}
-                                                            alt={item.name}
-                                                            className="w-full h-full object-contain p-1"
-                                                            onError={() => setFailedImages(prev => new Set(prev).add(String(item.id)))}
+                                                            src={getProductFallback(item.name)}
+                                                            alt=""
+                                                            className="w-full h-full object-contain p-1 opacity-80"
                                                         />
                                                     ) : (
-                                                        <>
-                                                            {isImageFallback(getProductFallback(item.name)) ? (
-                                                                <img
-                                                                    src={getProductFallback(item.name)}
-                                                                    alt=""
-                                                                    className="w-full h-full object-contain p-1 opacity-80"
-                                                                />
-                                                            ) : (
-                                                                <span className="text-xl md:text-2xl" role="img" aria-label={item.name}>
-                                                                    {getProductFallback(item.name)}
-                                                                </span>
-                                                            )}
-                                                        </>
+                                                        <span className="text-xl md:text-2xl" role="img" aria-label={item.name}>
+                                                            {getProductFallback(item.name)}
+                                                        </span>
                                                     )}
+                                                </>
+                                            )}
 
+                                        </div>
+
+
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-medium text-gray-900 truncate">
+                                                    {item.name}
+                                                </p>
+                                                {!reportedItems.has(`${store.id}_${String(item.id)}`) ? (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setReportingItem({
+                                                                storeId: String(store.id),
+                                                                storeName: store.name,
+                                                                itemId: item.id,
+                                                                itemName: item.name,
+                                                                requestedName: item.originalQueryName
+                                                            });
+                                                        }}
+                                                        className="p-1 hover:bg-gray-100 rounded-full transition-colors group/report"
+                                                        title={t('common.reportIssue', 'Report issue')}
+                                                    >
+                                                        <Flag className="w-3 h-3 text-gray-300 group-hover/report:text-red-400" />
+                                                    </button>
+                                                ) : (
+                                                    <div className="flex items-center text-green-500" title={t('report.submitted', 'Report submitted')}>
+                                                        <CheckCircle2 className="w-3 h-3" />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center bg-gray-50 rounded-md p-0.5 border border-gray-100 shrink-0 w-fit mt-1">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
+                                                    className="p-1 hover:bg-white rounded transition-all"
+                                                >
+                                                    <Minus className="w-2.5 h-2.5 text-gray-400" />
+                                                </button>
+                                                <span className="px-1.5 text-[9px] font-black text-dark min-w-[18px] text-center">
+                                                    {(localQuantities[String(item.id)] || item.quantity)}x
+                                                </span>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
+                                                    className="p-1 hover:bg-white rounded transition-all"
+                                                >
+                                                    <Plus className="w-2.5 h-2.5 text-gray-400" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <div className="text-sm font-bold text-gray-900">
+                                            {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
+                                            <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">
+                                                {formatPriceParts(item.price).currency}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {/* Missing Items UI Addition */}
+                            {missingItems && missingItems.length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-gray-100/50 space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <AlertCircle className="w-4 h-4 text-orange-400" />
+                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('storeCard.missingItemsHeading', 'Not Available in Store')}</span>
+                                    </div>
+                                    {missingItems.map((missing, idx) => (
+                                        <div key={`missing-${idx}`} className="flex justify-between items-center gap-3 opacity-60 grayscale bg-gray-50/50 p-2 rounded-lg border border-gray-100">
+                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100/50 rounded-lg border border-gray-200/50 flex flex-shrink-0 items-center justify-center overflow-hidden">
+                                                    {isImageFallback(getProductFallback(missing.name)) ? (
+                                                        <img
+                                                            src={getProductFallback(missing.name)}
+                                                            alt=""
+                                                            className="w-full h-full object-contain p-1 opacity-40"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-xl md:text-2xl" role="img" aria-label={missing.name}>
+                                                            {getProductFallback(missing.name)}
+                                                        </span>
+                                                    )}
                                                 </div>
-
-
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center gap-2">
-                                                        <p className="text-sm font-medium text-gray-900 truncate">
-                                                            {item.name}
-                                                        </p>
-                                                        {!reportedItems.has(`${store.id}_${String(item.id)}`) ? (
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setReportingItem({
-                                                                        storeId: String(store.id),
-                                                                        storeName: store.name,
-                                                                        itemId: item.id,
-                                                                        itemName: item.name,
-                                                                        requestedName: item.originalQueryName
-                                                                    });
-                                                                }}
-                                                                className="p-1 hover:bg-gray-100 rounded-full transition-colors group/report"
-                                                                title={t('common.reportIssue', 'Report issue')}
-                                                            >
-                                                                <Flag className="w-3 h-3 text-gray-300 group-hover/report:text-red-400" />
-                                                            </button>
-                                                        ) : (
-                                                            <div className="flex items-center text-green-500" title={t('report.submitted', 'Report submitted')}>
-                                                                <CheckCircle2 className="w-3 h-3" />
-                                                            </div>
-                                                        )}
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-medium text-gray-400 line-through truncate leading-none">
+                                                                {missing.name}
+                                                            </p>
+                                                            {missing.englishName && (
+                                                                <p className="text-[10px] font-bold text-gray-400 opacity-60 mt-1 uppercase tracking-tighter truncate">
+                                                                    {missing.englishName}
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     </div>
-
-                                                    <div className="flex items-center bg-gray-50 rounded-md p-0.5 border border-gray-100 shrink-0 w-fit mt-1">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleDecrement(String(item.id)); }}
-                                                            className="p-1 hover:bg-white rounded transition-all"
-                                                        >
-                                                            <Minus className="w-2.5 h-2.5 text-gray-400" />
-                                                        </button>
-                                                        <span className="px-1.5 text-[9px] font-black text-dark min-w-[18px] text-center">
-                                                            {(localQuantities[String(item.id)] || item.quantity)}x
-                                                        </span>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleIncrement(String(item.id)); }}
-                                                            className="p-1 hover:bg-white rounded transition-all"
-                                                        >
-                                                            <Plus className="w-2.5 h-2.5 text-gray-400" />
-                                                        </button>
+                                                    <div className="text-[10px] font-bold text-orange-400 mt-1">
+                                                        {t('storeCard.outOfStock', 'Out of Stock')}
                                                     </div>
-                                                </div>
-                                            </div>
-                                            <div className="text-right shrink-0">
-                                                <div className="text-sm font-bold text-gray-900">
-                                                    {formatPriceParts(item.price * (localQuantities[item.id] || item.quantity)).amount}
-                                                    <span className="text-[10px] font-bold text-gray-400 ml-1 uppercase">
-                                                        {formatPriceParts(item.price).currency}
-                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
-
-                                    {/* Missing Items UI Addition */}
-                                    {missingItems && missingItems.length > 0 && (
-                                        <div className="mt-4 pt-4 border-t border-gray-100/50 space-y-3">
-                                            <div className="flex items-center gap-2">
-                                                <AlertCircle className="w-4 h-4 text-orange-400" />
-                                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('storeCard.missingItemsHeading', 'Not Available in Store')}</span>
-                                            </div>
-                                            {missingItems.map((missing, idx) => (
-                                                <div key={`missing-${idx}`} className="flex justify-between items-center gap-3 opacity-60 grayscale bg-gray-50/50 p-2 rounded-lg border border-gray-100">
-                                                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100/50 rounded-lg border border-gray-200/50 flex flex-shrink-0 items-center justify-center overflow-hidden">
-                                                            {isImageFallback(getProductFallback(missing.name)) ? (
-                                                                <img
-                                                                    src={getProductFallback(missing.name)}
-                                                                    alt=""
-                                                                    className="w-full h-full object-contain p-1 opacity-40"
-                                                                />
-                                                            ) : (
-                                                                <span className="text-xl md:text-2xl" role="img" aria-label={missing.name}>
-                                                                    {getProductFallback(missing.name)}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <div className="min-w-0 flex-1">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="min-w-0">
-                                                                    <p className="text-sm font-medium text-gray-400 line-through truncate leading-none">
-                                                                        {missing.name}
-                                                                    </p>
-                                                                    {missing.englishName && (
-                                                                        <p className="text-[10px] font-bold text-gray-400 opacity-60 mt-1 uppercase tracking-tighter truncate">
-                                                                            {missing.englishName}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            <div className="text-[10px] font-bold text-orange-400 mt-1">
-                                                                {t('storeCard.outOfStock', 'Out of Stock')}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
-                            </div>
-                        )
-                    }
+                            )}
+                        </div>
+                    </div>
                 </div>
                 {
                     reportingItem && (
@@ -662,7 +651,6 @@ export const StoreCard = memo(function StoreCard({
                     </h4>
                     <div className="space-y-3 md:space-y-4">
                         {items
-                            .slice(0, !isItemsExpanded && items.length > MOBILE_ITEMS_LIMIT ? MOBILE_ITEMS_LIMIT : undefined)
                             .map((item, idx) => (
                                 <div key={idx} className="flex justify-between items-start gap-2">
                                     <div className="flex items-start gap-2 md:gap-3 min-w-0 flex-1">
@@ -782,25 +770,7 @@ export const StoreCard = memo(function StoreCard({
                             ))}
                     </div>
 
-                    {/* Mobile: Show more / less toggle */}
-                    {items.length > MOBILE_ITEMS_LIMIT && (
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setIsItemsExpanded(prev => !prev); }}
-                            className="md:hidden mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-[11px] font-black text-primary bg-primary/5 rounded-xl border border-primary/10 active:scale-95 transition-all"
-                        >
-                            {isItemsExpanded ? (
-                                <>
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" /></svg>
-                                    Show less
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
-                                    Show all {items.length} items
-                                </>
-                            )}
-                        </button>
-                    )}
+                    {/* Items list is now permanently expanded */}
 
                     {items.length === 0 && (
                         <p className="text-sm text-gray-400 italic">{t('storeCard.noItemsFound')}</p>

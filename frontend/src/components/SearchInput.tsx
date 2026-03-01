@@ -10,6 +10,8 @@ interface SearchInputProps {
     placeholder?: string;
     className?: string;
     variant?: 'default' | 'compact';
+    initialOpen?: boolean;
+    isStatic?: boolean;
 }
 
 interface Product {
@@ -17,7 +19,7 @@ interface Product {
     nameKey: string;
     emoji: string;
     keywords: string[];
-    category: 'groceries' | 'fruit' | 'vegetable' | 'meat' | 'dairy' | 'bakery' | 'pantry' | 'snack' | 'beverage';
+    category: 'groceries' | 'fruit' | 'vegetable' | 'meat' | 'dairy' | 'bakery' | 'pantry' | 'snack' | 'beverage' | 'frozen';
 }
 
 // Predefined products with translation keys and keywords for strict matching
@@ -73,14 +75,19 @@ const PRODUCTS: Product[] = [
     { id: 'yogurt', nameKey: 'products.yogurt', emoji: '🥣', keywords: ['yoghurt', 'yogurt', 'skogsbær'], category: 'dairy' },
     { id: 'cream', nameKey: 'products.cream', emoji: '🥛', keywords: ['fløte', 'cream', 'kremfløte', 'matfløte'], category: 'dairy' },
     { id: 'sour_cream', nameKey: 'products.sour_cream', emoji: '🥣', keywords: ['rømme', 'sour cream', 'lettrømme'], category: 'dairy' },
+    { id: 'cheese_spread', nameKey: 'products.cheese_spread', emoji: '🧀', keywords: ['smøreost', 'kavli'], category: 'dairy' },
 
     // BAKERY
     { id: 'baguette', nameKey: 'products.baguette', emoji: '🥖', keywords: ['baguette', 'franskbrød'], category: 'bakery' },
     { id: 'croissant', nameKey: 'products.croissant', emoji: '🥐', keywords: ['croissant'], category: 'bakery' },
     { id: 'buns', nameKey: 'products.buns', emoji: '🥯', keywords: ['boller', 'buns', 'sjokoladebolle'], category: 'bakery' },
+    { id: 'cinnamon_roll', nameKey: 'products.cinnamon_roll', emoji: '🌀', keywords: ['kanelbolle', 'skillingsbolle'], category: 'bakery' },
 
     // PANTRY
     { id: 'taco', nameKey: 'products.taco', emoji: '🌮', keywords: ['taco', 'lefser', 'skjell'], category: 'pantry' },
+    { id: 'jam', nameKey: 'products.jam', emoji: '🍓', keywords: ['syltetøy', 'nora'], category: 'pantry' },
+    { id: 'pasta', nameKey: 'products.pasta', emoji: '🍝', keywords: ['pasta', 'spaghetti', 'makaroni'], category: 'pantry' },
+    { id: 'pizza', nameKey: 'products.pizza', emoji: '🍕', keywords: ['pizza', 'grandiosa'], category: 'pantry' },
 
     // SNACKS
     { id: 'chips', nameKey: 'products.chips', emoji: '🍟', keywords: ['chips', 'potetgull', 'snacks'], category: 'snack' },
@@ -92,7 +99,13 @@ const PRODUCTS: Product[] = [
     { id: 'soda', nameKey: 'products.soda', emoji: '🥤', keywords: ['brus', 'soda', 'cola', 'pepsi'], category: 'beverage' },
     { id: 'orange_juice', nameKey: 'products.orange_juice', emoji: '🧃', keywords: ['appelsinjuice', 'juice'], category: 'beverage' },
     { id: 'water', nameKey: 'products.water', emoji: '💧', keywords: ['vann', 'water', 'farris'], category: 'beverage' },
-    { id: 'energy_drink', nameKey: 'products.energy_drink', emoji: '⚡', keywords: ['energidrikk', 'energy drink', 'red bull'], category: 'beverage' }
+    { id: 'energy_drink', nameKey: 'products.energy_drink', emoji: '⚡', keywords: ['energidrikk', 'energy drink', 'red bull'], category: 'beverage' },
+
+    // FROZEN FOOD
+    { id: 'frozen_pizza', nameKey: 'products.frozen_pizza', emoji: '🍕', keywords: ['pizza', 'grandiosa', 'frossen pizza'], category: 'frozen' },
+    { id: 'frozen_peas', nameKey: 'products.frozen_peas', emoji: '🫛', keywords: ['erter', 'peas', 'frosne erter'], category: 'frozen' },
+    { id: 'frozen_berries', nameKey: 'products.frozen_berries', emoji: '🫐', keywords: ['bær', 'berries', 'frosne bær'], category: 'frozen' },
+    { id: 'fish_sticks', nameKey: 'products.fish_sticks', emoji: '🐟', keywords: ['fiskepinner', 'fish sticks', 'findus'], category: 'frozen' }
 ];
 
 export const SearchInput = memo(function SearchInput({
@@ -100,12 +113,14 @@ export const SearchInput = memo(function SearchInput({
     loading = false,
     placeholder,
     className,
-    variant = 'default'
+    variant = 'default',
+    initialOpen = false,
+    isStatic = false
 }: SearchInputProps) {
     const { t } = useTranslation();
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
     const [selectedCategory, setSelectedCategory] = useState<string>('groceries');
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(initialOpen);
     const [inputValue, setInputValue] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -153,6 +168,7 @@ export const SearchInput = memo(function SearchInput({
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            if (isStatic) return; // Never close if static
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setIsDropdownOpen(false);
             }
@@ -160,7 +176,7 @@ export const SearchInput = memo(function SearchInput({
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    }, [isStatic]);
 
     // Construct search query from both selected items and current input text
     const handleSubmit = (e?: React.FormEvent | React.MouseEvent) => {
@@ -184,7 +200,7 @@ export const SearchInput = memo(function SearchInput({
 
         if (queryParts.length > 0 && !loading) {
             onSearch(queryParts.join(', '));
-            setIsDropdownOpen(false);
+            if (!isStatic) setIsDropdownOpen(false);
             setInputValue(''); // Clear input after successful submit
             setSelectedItems(new Set()); // Clear selection after successful submit
         }
@@ -346,35 +362,41 @@ export const SearchInput = memo(function SearchInput({
 
             {/* Dropdown Panel */}
             {isDropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-4 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 animate-in fade-in slide-in-from-top-4 duration-200 z-50 max-h-[400px] overflow-y-auto">
+                <div className={clsx(
+                    "bg-white rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 animate-in fade-in slide-in-from-top-4 duration-200 z-50 overflow-y-auto custom-scrollbar",
+                    isStatic ? "mt-6 relative shadow-sm border-slate-200" : "absolute top-full left-0 right-0 mt-4 max-h-[400px]"
+                )}>
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                             {filteredProducts.length > 0
                                 ? (inputValue ? t('common.matches', 'Matches found') : t('common.describe_need', 'Select items'))
                                 : t('common.ai_fallback', 'No matches?')}
                         </h3>
-                        <button
-                            type="button"
-                            onClick={() => setIsDropdownOpen(false)}
-                            className="text-gray-400 hover:text-dark p-1"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
+                        {!isStatic && (
+                            <button
+                                type="button"
+                                onClick={() => setIsDropdownOpen(false)}
+                                className="text-gray-400 hover:text-dark p-1"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        )}
                     </div>
 
-                    {/* Category Tabs (Only when not searching) */}
+                    {/* Category Selection (2-row Grid) */}
                     {!inputValue && (
-                        <div className="flex gap-2 overflow-x-auto pb-4 mb-2 custom-scrollbar -mx-4 px-6 md:mx-0 md:px-0">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 mb-8">
                             {[
-                                { id: 'groceries', label: '🛒 Groceries', color: 'bg-orange-50 text-orange-600 border-orange-100' },
-                                { id: 'fruit', label: '🍎 Fruit', color: 'bg-red-50 text-red-600 border-red-100' },
-                                { id: 'vegetable', label: '🥕 Veggies', color: 'bg-green-50 text-green-600 border-green-100' },
-                                { id: 'meat', label: '🥩 Meat', color: 'bg-rose-50 text-rose-600 border-rose-100' },
-                                { id: 'dairy', label: '🥛 Dairy', color: 'bg-blue-50 text-blue-600 border-blue-100' },
-                                { id: 'bakery', label: '🍞 Bakery', color: 'bg-amber-50 text-amber-600 border-amber-100' },
-                                { id: 'pantry', label: '🍝 Pantry', color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
-                                { id: 'snack', label: '🍫 Snack', color: 'bg-purple-50 text-purple-600 border-purple-100' },
-                                { id: 'beverage', label: '🥤 Drinks', color: 'bg-cyan-50 text-cyan-600 border-cyan-100' },
+                                { id: 'groceries', icon: '🛒', label: 'Groceries', color: 'bg-orange-50 text-orange-600 border-orange-100' },
+                                { id: 'fruit', icon: '🍎', label: 'Fruit', color: 'bg-red-50 text-red-600 border-red-100' },
+                                { id: 'vegetable', icon: '🥕', label: 'Veggies', color: 'bg-green-50 text-green-600 border-green-100' },
+                                { id: 'meat', icon: '🥩', label: 'Meat', color: 'bg-rose-50 text-rose-600 border-rose-100' },
+                                { id: 'dairy', icon: '🥛', label: 'Dairy', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+                                { id: 'bakery', icon: '🍞', label: 'Bakery', color: 'bg-amber-50 text-amber-600 border-amber-100' },
+                                { id: 'pantry', icon: '🍝', label: 'Pantry', color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
+                                { id: 'snack', icon: '🍫', label: 'Snack', color: 'bg-purple-50 text-purple-600 border-purple-100' },
+                                { id: 'beverage', icon: '🥤', label: 'Drinks', color: 'bg-cyan-50 text-cyan-600 border-cyan-100' },
+                                { id: 'frozen', icon: '❄️', label: 'Frozen', color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
                             ].map((cat) => (
                                 <button
                                     key={cat.id}
@@ -384,15 +406,25 @@ export const SearchInput = memo(function SearchInput({
                                         setSelectedCategory(cat.id);
                                     }}
                                     className={clsx(
-                                        "flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border",
+                                        "flex items-center gap-2.5 p-2.5 rounded-xl text-[11px] font-bold transition-all border duration-300",
                                         selectedCategory === cat.id
-                                            ? `${cat.color} shadow-sm border-transparent transform scale-105`
-                                            : "bg-white text-slate-400 border-slate-100 hover:border-slate-200 hover:text-slate-600"
+                                            ? `${cat.color} shadow-sm border-transparent transform scale-[1.02] ring-1 ring-current/10`
+                                            : "bg-white text-slate-400 border-slate-100 hover:border-slate-200 hover:text-slate-600 hover:bg-slate-50"
                                     )}
                                 >
-                                    {cat.label}
+                                    <span className="text-xl shrink-0">{cat.icon}</span>
+                                    <span className="truncate">{cat.label}</span>
                                 </button>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Separator Line */}
+                    {!inputValue && (
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="h-px flex-grow bg-slate-100"></div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
+                            <div className="h-px flex-grow bg-slate-100"></div>
                         </div>
                     )}
 

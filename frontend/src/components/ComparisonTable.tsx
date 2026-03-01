@@ -193,6 +193,14 @@ export function ComparisonTable({ candidates, requestedItems, isMapVisible, onTo
                                     const bestStorePrice = bestStoreItem ? bestStoreItem.totalPrice : Infinity;
                                     const rowLabel = rowItem.originalQueryName || rowItem.englishName || rowItem.name;
 
+                                    // Find the absolute minimum price for this row across all displayed candidates
+                                    const rowMinPrice = Math.min(...displayCandidates.map(c => {
+                                        const item = c.items.find(i =>
+                                            (i.originalQueryName || i.name).toLowerCase().trim() === (rowItem.originalQueryName || rowItem.name).toLowerCase().trim()
+                                        );
+                                        return item?.totalPrice || Infinity;
+                                    }));
+
                                     return (
                                         <tr key={rowItem.originalQueryName || rowItem.name} className="group hover:bg-blue-50/30 transition-colors border-b border-gray-50/50 last:border-0 text-sm">
                                             <td className="py-3 px-4 md:px-6 sticky left-0 bg-white group-hover:bg-blue-50 transition-colors z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-r border-gray-100/30">
@@ -221,7 +229,8 @@ export function ComparisonTable({ candidates, requestedItems, isMapVisible, onTo
 
                                                 const isSmartRoute = candidate.store.id === 'smart-route';
                                                 const isBestValue = candidate.store.id === bestValueId;
-                                                const isCheaperThanBest = !isBestValue && price < bestStorePrice && price < Infinity;
+                                                // Highlight only if it's the absolute minimum for this row AND cheaper than the Best Value store
+                                                const isCheaperThanBest = !isBestValue && price === rowMinPrice && price < bestStorePrice && price < Infinity;
 
                                                 return (
                                                     <td key={candidate.store.id} className={clsx(

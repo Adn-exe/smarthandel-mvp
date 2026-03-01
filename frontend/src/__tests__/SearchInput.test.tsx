@@ -26,6 +26,15 @@ vi.mock('react-i18next', () => ({
 describe('SearchInput Hybrid Logic', () => {
     afterEach(cleanup);
 
+    it('renders open by default with initialOpen prop', () => {
+        const onSearch = vi.fn();
+        render(<SearchInput onSearch={onSearch} initialOpen={true} />);
+        // The header text is "Select items" (from t('common.describe_need', 'Select items'))
+        expect(screen.getByText('common.describe_need')).toBeDefined();
+        expect(screen.getByText('common.describe_need')).toBeInTheDocument();
+        expect(screen.getByText('Melk')).toBeInTheDocument();
+    });
+
     it('filters dropdown based on input', () => {
         render(<SearchInput onSearch={vi.fn()} />);
         const input = screen.getByRole('textbox');

@@ -71,7 +71,7 @@ router.post(
  */
 router.get(
     '/:productId',
-    generalLimiter,
+    generalLimiter, // M2: Apply rate limiter to protect Kassal API
     [param('productId').notEmpty()],
     asyncHandler(async (req: Request, res: Response) => {
         const { productId } = req.params;

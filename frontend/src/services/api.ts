@@ -17,11 +17,13 @@ const apiClient: AxiosInstance = axios.create({
     },
 });
 
+const isDev = import.meta.env.DEV;
+
 
 // Request Interceptor (Logging)
 apiClient.interceptors.request.use(
     (config) => {
-        console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
+        if (isDev) console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
         return config;
     },
     (error) => {
@@ -33,7 +35,7 @@ apiClient.interceptors.request.use(
 // Response Interceptor (Logging & Formatting)
 apiClient.interceptors.response.use(
     (response: AxiosResponse) => {
-        console.log(`[API Response] ${response.status} ${response.config.url}`);
+        if (isDev) console.log(`[API Response] ${response.status} ${response.config.url}`);
         return response;
     },
     (error) => {
