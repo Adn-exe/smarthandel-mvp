@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, TrendingUp, ShoppingBag, ArrowRight, Users, Sparkles, Check } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
@@ -7,11 +7,34 @@ import SEO from '../components/SEO';
 import { trackEvent } from '../utils/analytics';
 import type { Location } from '../types';
 
+const GROCERY_EMOJIS = [
+    '🥛', '🍞', '🧀', '🥕', '🍗', '🥚', '🍎', '🥦', '🥩', '🥝', '🥑', '🍌',
+    '🍇', '🍓', '🍋', '🧅', '🐟', '🍣', '🍫', '🧃', '🍅', '🥔', '🥐', '🌶️',
+    '🍉', '🍍', '🍒', '🍔', '🌯', '🌭', '🌮', '🍿', '🍩', '🥤'
+];
+
 export function Home() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [location, setLocation] = useState<Location | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
+
+    // Generate dynamic floating emojis once on mount
+    const floatingEmojis = useMemo(() => {
+        const shuffled = [...GROCERY_EMOJIS].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 15).map((emoji, i) => ({
+            id: i,
+            emoji,
+            // 5% to 95% width
+            left: `${Math.floor(Math.random() * 90) + 5}%`,
+            // 12s to 24s duration
+            animationDuration: `${12 + Math.floor(Math.random() * 12)}s`,
+            // 0s to 5s delay
+            animationDelay: `${Math.floor(Math.random() * 5)}s`,
+            // 1.25rem to 2.75rem size
+            fontSize: `${1.25 + Math.random() * 1.5}rem`,
+        }));
+    }, []);
 
     // Get user location on mount
     useEffect(() => {
@@ -68,6 +91,24 @@ export function Home() {
 
                 {/* Subtle Dot Grid Pattern */}
                 <div className="absolute inset-0 -z-10 bg-[radial-gradient(#d1d5db_0.8px,transparent_0.8px)] [background-size:24px_24px] opacity-[0.25] pointer-events-none"></div>
+
+                {/* Dynamic Floating Grocery Emojis */}
+                <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none opacity-20 md:opacity-60">
+                    {floatingEmojis.map((item) => (
+                        <span
+                            key={item.id}
+                            className="absolute select-none opacity-0 drop-shadow-sm"
+                            style={{
+                                left: item.left,
+                                bottom: '-60px', /* Start slightly lower */
+                                fontSize: item.fontSize,
+                                animation: `drift ${item.animationDuration} linear infinite ${item.animationDelay}`,
+                            }}
+                        >
+                            {item.emoji}
+                        </span>
+                    ))}
+                </div>
 
                 <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
                     <h1 className="text-4xl sm:text-6xl md:text-[5rem] font-heading font-black text-dark mb-6 animate-reveal [animation-delay:200ms] [animation-fill-mode:forwards] leading-[1.05] tracking-tighter">
