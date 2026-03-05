@@ -101,6 +101,9 @@ export const QUERY_MAPPINGS: Record<string, string> = {
     'eggs': 'egg', 'egg': 'egg',
     'kneipp': 'kneippbrød',
     'chicken': 'kylling',
+    'chicken fillet': 'kyllingfilet',
+    'chicken breast': 'kyllingbryst',
+    'chicken thigh': 'kyllinglår',
     'minced meat': 'kjøttdeig', 'ground meat': 'kjøttdeig',
     'minced beef': 'karbonadedeig',
     'salmon': 'laks',
@@ -159,8 +162,11 @@ export function isStrictWordMatch(productName: string, query: string): boolean {
     const mappedQuery = QUERY_MAPPINGS[normalizedQuery] || normalizedQuery;
 
     // Word boundary regex: \bquery\b
-    // We also allow the word to be followed by numbers (e.g. "egg 12pk") or spaces
-    const strictRegex = new RegExp(`\\b${mappedQuery}(\\b|\\d|\\s|-)`, 'i');
+    // In Norwegian, compound words are extremely common (e.g., "Grovbrød", "Kyllingfilet")
+    // We allow the match if it's at a word boundary on EITHER side.
+    // This allows "Kylling" to match "Kyllingfilet" (starts with) and "brød" to match "Grovbrød" (ends with),
+    // while still preventing "egg" from matching "Mellomleggspapir" (middle).
+    const strictRegex = new RegExp(`(\\b${mappedQuery})|(${mappedQuery}\\b)`, 'i');
     return strictRegex.test(normalizedName);
 }
 

@@ -9,7 +9,8 @@ import {
     Lock,
     Check,
     Store,
-    Info
+    Info,
+    Tag
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -25,6 +26,8 @@ interface RegionalProduct {
     imageUrl?: string;
     ingredients?: string;
     allergens?: { display_name: string; contains: boolean }[];
+    isPromotional?: boolean;
+    promotions?: { chain: string; label: string; discount_type: string; product_name: string; final_price?: number; }[];
     // The original fields like minPrice, maxPrice, storeCount, chains are no longer directly used in the rendering loop
     // as the list now shows individual product offers.
     // If the backend still returns aggregated brand data, the mapping in fetchProducts needs to adapt.
@@ -39,10 +42,18 @@ interface ItemCardProps {
         quantity: number;
         category?: string;
         lockedBrand?: string;
+        lockedProductDetails?: any;
+        lockedOffer?: {
+            chain: string;
+            label: string;
+            discount_type: string;
+            product_name: string;
+            final_price?: number;
+        };
     };
     onUpdateQuantity: (delta: number) => void;
     onRemove: () => void;
-    onLockBrand: (brandName: string | undefined, productId?: string, productDetails?: any, lockedStore?: string) => void;
+    onLockBrand: (brandName: string | undefined, productId?: string, productDetails?: any, lockedStore?: string, offer?: any) => void;
 }
 
 export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: ItemCardProps) {
@@ -52,7 +63,19 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
     const [products, setProducts] = useState<RegionalProduct[]>([]);
     const [loadingProducts, setLoadingProducts] = useState(false);
     const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
-    const [expandedIngredients, setExpandedIngredients] = useState<Set<string>>(new Set()); // Changed to string for product IDs
+    const [expandedIngredients, setExpandedIngredients] = useState<Set<string>>(new Set());
+    const [expandedOffers, setExpandedOffers] = useState<Set<string>>(new Set());
+    const [selectedOffer, setSelectedOffer] = useState<any>(item.lockedOffer || null);
+
+    const toggleOffers = (productId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setExpandedOffers(prev => {
+            const next = new Set(prev);
+            if (next.has(productId)) next.delete(productId);
+            else next.add(productId);
+            return next;
+        });
+    };
 
     const toggleIngredients = (productId: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -71,7 +94,9 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
     useEffect(() => {
         setProducts([]);
         setHasAttemptedFetch(false);
-        setExpandedIngredients(new Set()); // Reset expanded ingredients too
+        setExpandedIngredients(new Set());
+        setExpandedOffers(new Set());
+        setSelectedOffer(item.lockedOffer || null);
     }, [item.name, item.englishName]);
 
     // Fetch products when expanded or when location/item becomes available
@@ -101,7 +126,9 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                 price: p.minPrice,
                 imageUrl: p.imageUrl,
                 ingredients: p.ingredients,
-                allergens: p.allergens
+                allergens: p.allergens,
+                isPromotional: p.isPromotional,
+                promotions: p.promotions
             }));
 
             setProducts(mapped);
@@ -118,24 +145,35 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
             {/* Main Item Row */}
             <div className="p-5 sm:p-6 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="w-12 h-12 bg-indigo-50/50 rounded-xl flex items-center justify-center shrink-0 border border-indigo-100/50 transition-colors group-hover:bg-indigo-50">
-                        <ShoppingBag className="w-6 h-6 text-indigo-500" />
+                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shrink-0 border border-slate-100 shadow-sm transition-all group-hover:bg-indigo-50/50 overflow-hidden">
+                        {item.lockedProductDetails?.image_url ? (
+                            <img
+                                src={item.lockedProductDetails.image_url}
+                                alt={item.lockedBrand}
+                                className="w-full h-full object-contain p-1 animate-in fade-in duration-500"
+                            />
+                        ) : (
+                            <ShoppingBag className="w-6 h-6 text-indigo-400 group-hover:text-indigo-600 transition-colors" />
+                        )}
                     </div>
                     <div className="truncate">
                         <h3 className="font-heading font-bold text-lg text-slate-900 truncate tracking-tight">
                             {item.originalName || item.name}
                         </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                                {item.category || 'Essentials'}
-                            </span>
+                        <div className="flex flex-wrap items-center gap-2 mt-1.5">
                             {item.lockedBrand && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                                    <Lock className="w-2.5 h-2.5" />
-                                    {item.lockedBrand}
+                                <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black text-indigo-700 uppercase tracking-[0.15em] bg-indigo-50/80 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-indigo-200 shadow-sm animate-in slide-in-from-left-2 duration-300">
+                                    <Lock className="w-2.5 h-2.5 fill-indigo-700/10" />
+                                    <span className="truncate max-w-[120px] sm:max-w-none">{item.lockedBrand}</span>
                                 </span>
                             )}
                         </div>
+                        {selectedOffer && (
+                            <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-black text-red-600 uppercase tracking-[0.1em] bg-red-50/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-red-200 shadow-sm animate-in slide-in-from-left-2 duration-300">
+                                <Tag className="w-2.5 h-2.5" />
+                                <span className="truncate max-w-[100px] sm:max-w-none">{selectedOffer.label}</span>
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -208,7 +246,8 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                         {/* "Best Optimization" Option */}
                                         <button
                                             onClick={() => {
-                                                onLockBrand(undefined, undefined, undefined, undefined);
+                                                setSelectedOffer(null);
+                                                onLockBrand(undefined, undefined, undefined, undefined, undefined);
                                                 setIsExpanded(false);
                                             }}
                                             className={clsx(
@@ -235,20 +274,24 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                 const isLocked = item.lockedBrand === product.name;
                                                 return (
                                                     <div key={bIdx} className="overflow-hidden bg-white border border-slate-50 rounded-xl hover:border-indigo-100 hover:shadow-sm transition-all group">
-                                                        <button
-                                                            onClick={() => {
-                                                                // When unlocking/locking, pass specific product details
-                                                                // If unlocking (isLocked=true), pass undefined
-                                                                // If locking (isLocked=false), pass product.name (as brand), String(product.id) (as productId), and the full product object
+                                                        <div
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            onClick={(e) => {
+                                                                // Only fire lock if the click target is NOT a nested button
+                                                                if ((e.target as HTMLElement).closest('button')) return;
+                                                                setSelectedOffer(null); // Clear offer when brand changes
                                                                 onLockBrand(
                                                                     isLocked ? undefined : product.name,
                                                                     isLocked ? undefined : String(product.id),
-                                                                    isLocked ? undefined : product
+                                                                    isLocked ? undefined : product,
+                                                                    undefined,
+                                                                    undefined
                                                                 );
                                                                 setIsExpanded(false);
                                                             }}
                                                             className={clsx(
-                                                                "w-full p-3 sm:p-4 flex items-center gap-3 sm:gap-4 text-left",
+                                                                "w-full p-3 sm:p-4 flex items-center gap-3 sm:gap-4 text-left cursor-pointer",
                                                                 isLocked && "bg-indigo-50 border-indigo-200 text-indigo-900 shadow-sm"
                                                             )}
                                                         >
@@ -261,7 +304,7 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                                         className="w-full h-full object-contain p-1"
                                                                         onError={(e) => {
                                                                             (e.target as HTMLImageElement).src = '';
-                                                                            (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="text-gray-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg></div>';
+                                                                            (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="text-gray-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg></div>';
                                                                         }}
                                                                     />
                                                                 ) : (
@@ -269,13 +312,27 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                                 )}
                                                             </div>
 
-                                                            <div className="flex flex-col flex-1 min-w-0 mr-2 sm:mr-3">
-                                                                <span className={clsx(
-                                                                    "text-sm font-medium line-clamp-2 transition-colors",
-                                                                    isLocked ? "text-indigo-900" : "text-dark"
-                                                                )}>
-                                                                    {product.name}
-                                                                </span>
+                                                            <div className="flex-1 min-w-0 pr-2">
+                                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                                    <span className={clsx(
+                                                                        "text-[13px] sm:text-sm font-semibold truncate",
+                                                                        isLocked ? "text-indigo-900" : "text-dark"
+                                                                    )}>
+                                                                        {product.name}
+                                                                    </span>
+                                                                    {product.isPromotional && product.promotions && product.promotions.length > 0 && (
+                                                                        <div className="flex flex-col gap-1 mt-1">
+                                                                            <button
+                                                                                onClick={(e) => toggleOffers(String(product.id), e)}
+                                                                                className="flex items-center gap-1.5 px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-black uppercase rounded border border-red-100 shadow-sm transition-colors w-fit"
+                                                                            >
+                                                                                <Tag className="w-2.5 h-2.5" />
+                                                                                {expandedOffers.has(String(product.id)) ? t('itemCard.hide_offers', 'Hide Offers') : t('itemCard.show_offers', 'Offers')}
+                                                                                <span className="bg-red-200/50 px-1.5 py-0.5 rounded text-[8px]">{product.promotions.length}</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                                 <div className="flex items-center gap-1.5 sm:gap-2 mt-1 flex-wrap">
                                                                     <span className={clsx(
                                                                         "text-[11px] sm:text-xs font-medium",
@@ -289,7 +346,14 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                                             ? "bg-indigo-100 text-indigo-700"
                                                                             : "bg-slate-50 text-slate-700 group-hover:bg-indigo-50 group-hover:text-indigo-600"
                                                                     )}>
-                                                                        {product.price.toFixed(2)} kr
+                                                                        {selectedOffer?.final_price && isLocked ? (
+                                                                            <span className="flex items-center gap-1.5">
+                                                                                <span className="line-through text-slate-400 font-medium">{product.price.toFixed(2)}</span>
+                                                                                <span className="text-red-600 font-black">{selectedOffer.final_price} kr</span>
+                                                                            </span>
+                                                                        ) : (
+                                                                            <>{product.price.toFixed(2)} kr</>
+                                                                        )}
                                                                     </span>
                                                                 </div>
                                                             </div>
@@ -307,7 +371,7 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                                 )}
                                                                 {isLocked ? <Lock className="w-3.5 h-3.5 text-indigo-500 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-300 -rotate-90 group-hover:text-indigo-600 transition-transform shrink-0" />}
                                                             </div>
-                                                        </button>
+                                                        </div>
 
                                                         {/* Ingredients Expansion */}
                                                         <AnimatePresence>
@@ -338,6 +402,74 @@ export function ItemCard({ item, onUpdateQuantity, onRemove, onLockBrand }: Item
                                                                                 </div>
                                                                             </div>
                                                                         )}
+                                                                    </div>
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+
+                                                        {/* Offers Expansion */}
+                                                        <AnimatePresence>
+                                                            {expandedOffers.has(String(product.id)) && product.promotions && (
+                                                                <motion.div
+                                                                    initial={{ height: 0, opacity: 0 }}
+                                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                                    exit={{ height: 0, opacity: 0 }}
+                                                                    className="overflow-hidden bg-red-50/10 border-t border-red-50"
+                                                                >
+                                                                    <div className="px-4 pb-4 pt-3 flex flex-col gap-2">
+                                                                        {product.promotions.map((promo: any, idx: number) => {
+                                                                            const isOfferSelected = selectedOffer?.product_name === promo.product_name && selectedOffer?.chain === promo.chain && selectedOffer?.label === promo.label;
+                                                                            return (
+                                                                                <button
+                                                                                    key={idx}
+                                                                                    onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        e.stopPropagation();
+                                                                                        e.nativeEvent.stopImmediatePropagation();
+                                                                                        // Toggle offer selection
+                                                                                        const newOffer = isOfferSelected ? null : {
+                                                                                            chain: promo.chain,
+                                                                                            label: promo.label,
+                                                                                            discount_type: promo.discount_type,
+                                                                                            product_name: promo.product_name,
+                                                                                            final_price: promo.final_price
+                                                                                        };
+                                                                                        // Update local state immediately for instant UI
+                                                                                        setSelectedOffer(newOffer);
+                                                                                        // Sync to context
+                                                                                        onLockBrand(
+                                                                                            product.name,
+                                                                                            String(product.id),
+                                                                                            product,
+                                                                                            undefined,
+                                                                                            newOffer || undefined
+                                                                                        );
+                                                                                    }}
+                                                                                    className={clsx(
+                                                                                        "w-full p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between shadow-sm gap-2 text-left transition-all",
+                                                                                        isOfferSelected
+                                                                                            ? "bg-red-50 border-red-300 ring-2 ring-red-200"
+                                                                                            : "bg-white border-red-100 hover:border-red-200 hover:bg-red-50/30"
+                                                                                    )}
+                                                                                >
+                                                                                    <div>
+                                                                                        <p className="text-xs font-bold text-dark">{promo.product_name}</p>
+                                                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{promo.chain}</span>
+                                                                                    </div>
+                                                                                    <div className="flex items-center gap-2">
+                                                                                        <div className={clsx(
+                                                                                            "px-2.5 py-1.5 rounded-lg font-black text-xs border whitespace-nowrap text-center sm:text-right",
+                                                                                            isOfferSelected
+                                                                                                ? "bg-red-600 text-white border-red-600"
+                                                                                                : "bg-red-50 text-red-600 border-red-100"
+                                                                                        )}>
+                                                                                            {promo.label}
+                                                                                        </div>
+                                                                                        {isOfferSelected && <Check className="w-4 h-4 text-red-600 shrink-0" />}
+                                                                                    </div>
+                                                                                </button>
+                                                                            );
+                                                                        })}
                                                                     </div>
                                                                 </motion.div>
                                                             )}

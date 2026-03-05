@@ -18,14 +18,18 @@ import priceIndexService from './services/PriceIndexService.js';
 
 // Ensure critical data directories and seed files exist before starting
 async function initDataDirectory() {
-    const dataDir = path.join(process.cwd(), 'data');
-    await fs.mkdir(dataDir, { recursive: true });
-    const reportsFile = path.join(dataDir, 'item_mismatch_reports.json');
-    // Create the reports file if it doesn't exist (wx = exclusive create, no overwrite)
-    await fs.writeFile(reportsFile, '[]', { flag: 'wx' }).catch(() => {
-        // File already exists, nothing to do
-    });
-    console.log('[Server] Data directory initialized.');
+    try {
+        const dataDir = path.join(process.cwd(), 'data');
+        await fs.mkdir(dataDir, { recursive: true });
+        const reportsFile = path.join(dataDir, 'item_mismatch_reports.json');
+        // Create the reports file if it doesn't exist (wx = exclusive create, no overwrite)
+        await fs.writeFile(reportsFile, '[]', { flag: 'wx' }).catch(() => {
+            // File already exists, nothing to do
+        });
+        console.log('[Server] Data directory initialized.');
+    } catch (err) {
+        console.warn('⚠️ [Server] WARNING: Could not initialize data directory. If deployed to a read-only filesystem, local file storage (like reports) will not work.', err);
+    }
 }
 
 // Load environment variables

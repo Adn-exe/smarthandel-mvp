@@ -445,6 +445,11 @@ export const StoreCard = memo(function StoreCard({
                                                 <p className="text-sm font-medium text-gray-900 truncate">
                                                     {item.name}
                                                 </p>
+                                                {item.promotions && item.promotions.length > 0 && (
+                                                    <div className="bg-orange-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-tighter shrink-0 animate-pulse">
+                                                        OFFER
+                                                    </div>
+                                                )}
                                                 {!reportedItems.has(`${store.id}_${String(item.id)}`) ? (
                                                     <button
                                                         onClick={(e) => {

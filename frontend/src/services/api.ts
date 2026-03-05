@@ -8,6 +8,9 @@ import type {
     ComparisonResult
 } from '../types';
 
+// Extend the import to include an ad-hoc interface if necessary, or let typescript infer it
+// since the ts error earlier indicated that the implicit return type of `typeof api` was heavily restricted in another place. 
+
 // Create Axios instance
 const apiClient: AxiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
@@ -182,6 +185,19 @@ export const api = {
             return response.data.brands || [];
         } catch (error: any) {
             console.error('[API Brands Error]', error.response?.data || error.message);
+            return [];
+        }
+    },
+
+    /**
+     * Get current promotional offers
+     */
+    getOffers: async (): Promise<any[]> => {
+        try {
+            const response = await apiClient.get<any>('/api/products/offers');
+            return response.data.offers || [];
+        } catch (error: any) {
+            console.error('[API Offers Error]', error.response?.data || error.message);
             return [];
         }
     }

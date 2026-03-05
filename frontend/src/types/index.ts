@@ -15,6 +15,13 @@ export interface Product {
     priceHistory?: Array<{ price: number; date: string }>;
     ingredients?: string;
     allergens?: Array<{ display_name: string; contains: boolean }>;
+    promotions?: Array<{
+        chain: string;
+        label: string;
+        discount_type: string;
+        product_name: string;
+        final_price?: number;
+    }>;
 }
 
 export interface Store {
@@ -42,6 +49,13 @@ export interface ShoppingItem {
     lockedProductId?: string; // Specific product ID (or name) the user wants
     lockedProductDetails?: Product; // Snapshot of the locked product
     lockedStore?: string; // The store where this specific product was found
+    lockedOffer?: {
+        chain: string;
+        label: string;
+        discount_type: string;
+        product_name: string;
+        final_price?: number;
+    };
 }
 
 // --- Comparison Service Types ---
@@ -149,4 +163,20 @@ export interface ApiErrorResponse {
     statusCode?: number;
     isOperational?: boolean;
 }
+export interface Offer {
+    product_name: string;
+    product_name_en: string;
+    discount_type: 'percentage' | 'fixed_price' | 'multi_buy';
+    discount_percent?: number;
+    discount_value?: string;
+    final_price?: number;
+    currency?: string;
+    label: string;
+    unit_info?: string;
+    unit?: string;
+    brand?: string;
+    chain: string;
+    additional_cost?: string;
+}
+
 // --- End of Types ---

@@ -11,7 +11,7 @@ type ShoppingListAction =
     | { type: 'ADD_ITEMS'; items: ShoppingItem[] }
     | { type: 'UPDATE_QUANTITY'; index: number; delta: number }
     | { type: 'REMOVE_ITEM'; index: number }
-    | { type: 'LOCK_BRAND'; index: number; brand: string | undefined; productId?: string; productDetails?: any }
+    | { type: 'LOCK_BRAND'; index: number; brand: string | undefined; productId?: string; productDetails?: any; offer?: any }
     | { type: 'SET_LOCATION'; location: Location | null };
 
 interface ShoppingListContextType extends ShoppingListState {
@@ -19,7 +19,7 @@ interface ShoppingListContextType extends ShoppingListState {
     addItems: (items: ShoppingItem[]) => void;
     updateQuantity: (index: number, delta: number) => void;
     removeItem: (index: number) => void;
-    lockBrand: (index: number, brand: string | undefined, productId?: string, productDetails?: any) => void;
+    lockBrand: (index: number, brand: string | undefined, productId?: string, productDetails?: any, offer?: any) => void;
     setLocation: (location: Location | null) => void;
 }
 
@@ -74,7 +74,8 @@ function shoppingListReducer(state: ShoppingListState, action: ShoppingListActio
                             ...item,
                             lockedBrand: action.brand,
                             lockedProductId: action.productId,
-                            lockedProductDetails: action.productDetails
+                            lockedProductDetails: action.productDetails,
+                            lockedOffer: action.offer
                         }
                         : item
                 )
@@ -98,7 +99,7 @@ export function ShoppingListProvider({ children }: { children: ReactNode }) {
     const addItems = useCallback((items: ShoppingItem[]) => dispatch({ type: 'ADD_ITEMS', items }), []);
     const updateQuantity = useCallback((index: number, delta: number) => dispatch({ type: 'UPDATE_QUANTITY', index, delta }), []);
     const removeItem = useCallback((index: number) => dispatch({ type: 'REMOVE_ITEM', index }), []);
-    const lockBrand = useCallback((index: number, brand: string | undefined, productId?: string, productDetails?: any) => dispatch({ type: 'LOCK_BRAND', index, brand, productId, productDetails }), []);
+    const lockBrand = useCallback((index: number, brand: string | undefined, productId?: string, productDetails?: any, offer?: any) => dispatch({ type: 'LOCK_BRAND', index, brand, productId, productDetails, offer }), []);
     const setLocation = useCallback((location: Location | null) => dispatch({ type: 'SET_LOCATION', location }), []);
 
     return (

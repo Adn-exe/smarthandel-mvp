@@ -299,13 +299,18 @@ export const SearchInput = memo(function SearchInput({
                                 }}
                                 disabled={(selectedItems.size === 0 && !inputValue.trim()) || loading}
                                 className={clsx(
-                                    "p-2 rounded-xl transition-all duration-300 disabled:opacity-30",
+                                    "px-4 py-2 rounded-xl transition-all duration-300 disabled:opacity-30 flex items-center gap-2",
                                     (selectedItems.size > 0 || inputValue.trim()) && !loading
                                         ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
                                         : "bg-slate-50 text-slate-400"
                                 )}
                             >
-                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                    <>
+                                        <Plus className="w-4 h-4" />
+                                        <span className="text-xs font-bold uppercase tracking-widest">{t('common.add', 'Add')}</span>
+                                    </>
+                                )}
                             </button>
                         )}
                     </div>
@@ -383,14 +388,14 @@ export const SearchInput = memo(function SearchInput({
                         )}
                     </div>
 
-                    {/* Category Selection (2-row Grid) */}
+                    {/* Category Selection (5-column Grid) */}
                     {!inputValue && (
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 mb-8">
+                        <div className="grid grid-cols-5 gap-2 md:gap-3 mb-8">
                             {[
                                 { id: 'groceries', icon: '🛒', label: 'Groceries', color: 'bg-orange-50 text-orange-600 border-orange-100' },
                                 { id: 'fruit', icon: '🍎', label: 'Fruit', color: 'bg-red-50 text-red-600 border-red-100' },
                                 { id: 'vegetable', icon: '🥕', label: 'Veggies', color: 'bg-green-50 text-green-600 border-green-100' },
-                                { id: 'meat', icon: '🥩', label: 'Meat', color: 'bg-rose-50 text-rose-600 border-rose-100' },
+                                { id: 'meat', icon: '🥩', label: 'Meat', color: 'bg-rose-50 text-rose-600 border-red-100' },
                                 { id: 'dairy', icon: '🥛', label: 'Dairy', color: 'bg-blue-50 text-blue-600 border-blue-100' },
                                 { id: 'bakery', icon: '🍞', label: 'Bakery', color: 'bg-amber-50 text-amber-600 border-amber-100' },
                                 { id: 'pantry', icon: '🍝', label: 'Pantry', color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
@@ -406,14 +411,14 @@ export const SearchInput = memo(function SearchInput({
                                         setSelectedCategory(cat.id);
                                     }}
                                     className={clsx(
-                                        "flex items-center gap-2.5 p-2.5 rounded-xl text-[11px] font-bold transition-all border duration-300",
+                                        "flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl text-[9px] sm:text-[11px] font-bold transition-all border duration-300",
                                         selectedCategory === cat.id
                                             ? `${cat.color} shadow-sm border-transparent transform scale-[1.02] ring-1 ring-current/10`
                                             : "bg-white text-slate-400 border-slate-100 hover:border-slate-200 hover:text-slate-600 hover:bg-slate-50"
                                     )}
                                 >
-                                    <span className="text-xl shrink-0">{cat.icon}</span>
-                                    <span className="truncate">{cat.label}</span>
+                                    <span className="text-xl sm:text-2xl shrink-0">{cat.icon}</span>
+                                    <span className="truncate w-full text-center">{cat.label}</span>
                                 </button>
                             ))}
                         </div>

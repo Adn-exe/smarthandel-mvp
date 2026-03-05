@@ -243,7 +243,7 @@ export function Selection() {
                                     item={item}
                                     onUpdateQuantity={(delta: number) => updateQuantity(idx, delta)}
                                     onRemove={() => handleRemoveItem(idx)}
-                                    onLockBrand={(brandName: string | undefined) => lockBrand(idx, brandName)}
+                                    onLockBrand={(brandName, productId, productDetails, _lockedStore, offer) => lockBrand(idx, brandName, productId, productDetails, offer)}
                                 />
                             </div>
                         ))}

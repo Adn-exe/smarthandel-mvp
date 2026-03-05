@@ -15,6 +15,7 @@ import { trackPageView } from './utils/analytics';
 const Selection = lazy(() => import('./pages/Selection').then(m => ({ default: m.Selection })));
 const Results = lazy(() => import('./pages/Results'));
 const About = lazy(() => import('./pages/About').then(m => ({ default: m.About })));
+const Offers = lazy(() => import('./pages/Offers').then(m => ({ default: m.Offers })));
 const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 
 function AnalyticsTracker() {
@@ -46,6 +47,7 @@ function App() {
                     <Route index element={<Home />} />
                     <Route path="selection" element={<Selection />} />
                     <Route path="results" element={<Results />} />
+                    <Route path="offers" element={<Offers />} />
                     <Route path="about" element={<About />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>

@@ -12,6 +12,8 @@
         "search": "Søk",
         "cheapest": "💰 Billigst",
         "closest": "📍 Nærmest",
+        "viewAll": "Se mer",
+        "seeAll": "Se alle",
         "share": "Del",
         "back": "Tilbake",
         "retry": "Prøv igjen",
@@ -104,6 +106,30 @@
             "produce": "🥬 Frukt og grønt",
             "breakfast": "☀️ Frokost til uken"
         }
+    },
+    "offers": {
+        "title": "Trendende tilbud",
+        "subtitle": "Knallpriser akkurat nå",
+        "trendingTitle": "Aktive Kampanjer",
+        "trendingSubtitle": "Sanntidsoppdaterte tilbud fra dine butikker",
+        "bentoExclusive": "Eksklusive Tilbud",
+        "bentoCoop": "COOP Marked",
+        "bentoDeals": "Bunpris-kupp",
+        "bentoJoker": "Joker Tilbud",
+        "seeAll": "Se alle",
+        "searchPlaceholder": "Søk etter tilbud...",
+        "noResults": "Ingen tilbud funnet",
+        "noResultsDesc": "Prøv et annet søkeord eller sjekk stavingen.",
+        "exclusiveBadge": "Eksklusive Tilbud",
+        "heroTitle1": "Alle",
+        "heroTitle2": "Kuponger",
+        "heroTitle3": "Tilbud",
+        "heroSubtitle": "Oppdag de nyeste kampanjene fra alle dine favorittbutikker. Vi samler de mest visuelle tilbudene i en oversiktlig tidslinje for deg.",
+        "activeCount": "{{count}} stk",
+        "activeLabel": "Aktive Kuponger",
+        "realtimeCount": "Sanntid",
+        "realtimeLabel": "Oppdateringsfrekvens",
+        "allStores": "Alle Butikker"
     },
     "results": {
         "title": "Resultater for",
@@ -211,7 +237,8 @@
         "ingredients": "Ingredienser",
         "allergens": "Allergener",
         "contains": "Inneholder",
-        "viewIngredients": "Se Ingredienser"
+        "viewIngredients": "Se Ingredienser",
+        "offerBadge": "Tilbud"
     },
     "thinking": {
         "scanning_stores": "Skanner lokale butikker...",

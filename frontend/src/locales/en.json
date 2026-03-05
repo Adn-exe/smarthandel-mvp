@@ -12,6 +12,8 @@
         "search": "Search",
         "cheapest": "💰 Cheapest",
         "closest": "📍 Closest",
+        "viewAll": "View All",
+        "seeAll": "See All",
         "share": "Share",
         "back": "Back",
         "retry": "Retry",
@@ -23,6 +25,7 @@
         "startOver": "Start Over",
         "total": "Total",
         "shop": "Shop",
+        "add": "Add",
         "thinking": "Thinking...",
         "store": "Store",
         "describe_need": "Quick Select Products",
@@ -104,6 +107,30 @@
             "produce": "🥬 Fruits & veggies",
             "breakfast": "☀️ Weekly breakfast"
         }
+    },
+    "offers": {
+        "title": "Trending Offers",
+        "subtitle": "Exclusive Deals",
+        "trendingTitle": "Active Campaigns",
+        "trendingSubtitle": "Real-time updated offers from your favorite stores",
+        "bentoExclusive": "Exclusive Offers",
+        "bentoCoop": "COOP Marked",
+        "bentoDeals": "Bunpris Deals",
+        "bentoJoker": "Joker Offers",
+        "seeAll": "Offers",
+        "searchPlaceholder": "Search for offers...",
+        "noResults": "No offers found",
+        "noResultsDesc": "Try a different keyword or check the spelling.",
+        "exclusiveBadge": "Exclusive Offers",
+        "heroTitle1": "All",
+        "heroTitle2": "Coupons",
+        "heroTitle3": "Offers",
+        "heroSubtitle": "Discover the latest campaigns from all your favorite stores. We collect the most visual offers in a clear timeline for you.",
+        "activeCount": "{{count}} pcs",
+        "activeLabel": "Active Coupons",
+        "realtimeCount": "Real-time",
+        "realtimeLabel": "Update Frequency",
+        "allStores": "All Stores"
     },
     "results": {
         "title": "Results for",
@@ -211,7 +238,8 @@
         "ingredients": "Ingredients",
         "allergens": "Allergens",
         "contains": "Contains",
-        "viewIngredients": "View Ingredients"
+        "viewIngredients": "View Ingredients",
+        "offerBadge": "Offer"
     },
     "thinking": {
         "scanning_stores": "Scanning local stores...",

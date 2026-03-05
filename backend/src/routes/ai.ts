@@ -15,7 +15,8 @@ const router = Router();
  */
 router.post(
     '/parse',
-    [body('query').isString().notEmpty().withMessage('Query is required')],
+    strictLimiter,
+    [body('query').isString().notEmpty().trim().escape().withMessage('Query is required')],
     asyncHandler(async (req: Request, res: Response) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -29,14 +30,7 @@ router.post(
         const cached = cache.get(cacheKey);
         if (cached) return res.json(cached);
 
-        // Apply rate limiter only for actual AI generation (cache miss)
-        await new Promise((resolve, reject) => {
-            strictLimiter(req, res, (err: any) => {
-                if (err) return reject(err);
-                resolve(true);
-            });
-        });
-
+        // Ensure unescaped query is used for AI generation but sanitized for db/cache if needed
         const parsed = await aiService.parseShoppingQuery(query);
 
         const response = {
@@ -62,7 +56,7 @@ router.post(
     strictLimiter,
     [
         body('items').isArray().notEmpty().withMessage('Items array is required'),
-        body('context').optional().isString()
+        body('context').optional().isString().trim().escape()
     ],
     asyncHandler(async (req: Request, res: Response) => {
         const { items, context } = req.body;

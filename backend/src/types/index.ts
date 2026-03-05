@@ -18,6 +18,12 @@ export interface Product {
     priceHistory?: Array<{ price: number; date: string }>;
     ingredients?: string;
     allergens?: Array<{ display_name: string; contains: boolean }>;
+    promotions?: Array<{
+        chain: string;
+        label: string;
+        discount_type: string;
+        product_name: string;
+    }>;
 }
 
 

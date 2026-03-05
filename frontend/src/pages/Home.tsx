@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, TrendingUp, ShoppingBag, ArrowRight, Users, Sparkles, Check } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
 import { SearchInput } from '../components/SearchInput';
+import { TrendingOffers } from '../components/TrendingOffers';
 import SEO from '../components/SEO';
 import { trackEvent } from '../utils/analytics';
 import type { Location } from '../types';
@@ -149,6 +150,8 @@ export function Home() {
                             </p>
                         )}
                     </div>
+
+                    <TrendingOffers />
                 </div>
             </section>
 

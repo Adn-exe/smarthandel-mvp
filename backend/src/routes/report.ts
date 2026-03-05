@@ -22,6 +22,11 @@ router.post('/mismatch', [
 
     const { store_id, matched_item_id, matched_item_name, session_id } = req.body;
 
+    // ⚠️ WARNING: Mismatch reports are written to a local file (data/item_mismatch_reports.json).
+    // In ephemeral deployment environments (Railway, Heroku, Docker without persistent volumes),
+    // this file will be wiped out on every deploy or server restart.
+    // TODO: Migrate this to a real database (e.g., PostgreSQL/MongoDB) before production launch.
+
     // Anti-abuse check before processing
     const identifier = matched_item_id || matched_item_name;
     if (!ReportService.canReport(session_id, store_id, identifier)) {

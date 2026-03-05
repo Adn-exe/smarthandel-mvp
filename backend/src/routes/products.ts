@@ -8,6 +8,23 @@ import comparisonService from '../services/comparisonService.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import { ensureInRegion } from '../utils/locationUtils.js';
 import { Store } from '../types/index.js';
+import { allOffers, getDiscountLabel, findMatchingOffers } from '../data/allOffersData.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const offerPricesPath = path.join(__dirname, '../data/offerPrices.json');
+let offerPrices: Record<string, number> = {};
+
+try {
+    if (fs.existsSync(offerPricesPath)) {
+        offerPrices = JSON.parse(fs.readFileSync(offerPricesPath, 'utf-8'));
+    }
+} catch (e) {
+    console.error("Failed to load offerPrices.json", e);
+}
 
 const router = Router();
 
@@ -20,7 +37,7 @@ router.post(
     '/search',
     generalLimiter,
     [
-        body('query').isString().notEmpty().withMessage('Query is required'),
+        body('query').isString().notEmpty().trim().escape().withMessage('Query is required'),
         body('location.lat').isFloat({ min: -90, max: 90 }).withMessage('Valid latitude is required'),
         body('location.lng').isFloat({ min: -180, max: 180 }).withMessage('Valid longitude is required'),
     ],
@@ -60,6 +77,37 @@ router.post(
             budget: parsedQuery.budget,
             comparison,
             timestamp: new Date(),
+        });
+    })
+);
+
+/**
+ * @route   GET /api/products/offers
+ * @desc    Get all current promotional offers
+ * @access  Public
+ */
+router.get(
+    '/offers',
+    generalLimiter,
+    asyncHandler(async (_req: Request, res: Response) => {
+        const mappedOffers = allOffers.map(offer => {
+            let original_price = offerPrices[offer.product_name] || null;
+
+            // Heuristic fallback if price missing but we know discount% and final price
+            if (!original_price && offer.final_price && offer.discount_percent) {
+                original_price = Number((offer.final_price / (1 - (offer.discount_percent / 100))).toFixed(2));
+            }
+
+            return {
+                ...offer,
+                label: getDiscountLabel(offer),
+                original_price
+            };
+        });
+
+        res.json({
+            success: true,
+            offers: mappedOffers
         });
     })
 );
@@ -213,15 +261,60 @@ router.get(
         });
 
         const brandList = Array.from(productMap.values())
-            .map(b => ({
-                ...b,
-                chains: Array.from(b.chains)
-            }))
+            .map(b => {
+                // Only apply promo badge if product is available at Bunpris
+                const chainsArray = Array.from(b.chains) as string[];
+                const isPromoChain = chainsArray.some(c =>
+                    c.toLowerCase().includes('bunpris') ||
+                    c.toLowerCase().includes('coop marked') ||
+                    c.toLowerCase().includes('joker')
+                );
+
+                let matchedOffers = findMatchingOffers(b.name);
+
+                // Filter by nearby chains if location provided (radius is 10-15km from query)
+                if (lat !== null && lng !== null && nearbyChains.size > 0) {
+                    matchedOffers = matchedOffers.filter(o => {
+                        const offerChain = o.chain.toLowerCase();
+                        const isNearbyChain = Array.from(nearbyChains).some(c => c.includes(offerChain) || offerChain.includes(c));
+
+                        // NEW: Price-based Relevance Filter
+                        // If the offer has a final_price, and our current item's regional price (b.minPrice) 
+                        // is already LOWER than that offer, we don't show the offer. It's irrelevant.
+                        const isBetterPrice = !o.final_price || b.minPrice >= o.final_price;
+
+                        return isNearbyChain && isBetterPrice;
+                    });
+                } else if (matchedOffers.length > 0) {
+                    // Even without location context, if we have a final price, prune if it's worse than what we found
+                    matchedOffers = matchedOffers.filter(o => !o.final_price || b.minPrice >= o.final_price);
+                }
+
+                // Limit to top 5 relevant offers
+                const activePromos = matchedOffers.slice(0, 5).map(o => ({
+                    chain: o.chain,
+                    label: getDiscountLabel(o),
+                    discount_type: o.discount_type,
+                    product_name: o.product_name,
+                    final_price: o.final_price
+                }));
+
+                return {
+                    ...b,
+                    chains: chainsArray,
+                    isPromotional: activePromos.length > 0,
+                    promotions: activePromos
+                };
+            })
             // Sort by:
-            // 1. Has Ingredients (High Priority)
-            // 2. Relevance Score (Desc)
-            // 3. Store Count (Desc)
+            // 1. Promotional Status (High Priority)
+            // 2. Has Ingredients (Quality Priority)
+            // 3. Relevance Score (Desc)
+            // 4. Store Count (Desc)
             .sort((a, b) => {
+                if (b.isPromotional && !a.isPromotional) return 1;
+                if (!b.isPromotional && a.isPromotional) return -1;
+
                 const hasIngredientsA = a.ingredients && a.ingredients.length > 0;
                 const hasIngredientsB = b.ingredients && b.ingredients.length > 0;
 
@@ -233,7 +326,7 @@ router.get(
                 }
                 return b.storeCount - a.storeCount;
             })
-            .slice(0, 5); // Limit to top 5
+            .slice(0, 8); // Show more variants to improve coverage
 
         res.json({
             success: true,

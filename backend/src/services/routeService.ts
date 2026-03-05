@@ -4,6 +4,7 @@ import { calculateDistance } from '../utils/distance.js';
 import { Product, Store, ShoppingItem, Location } from '../types/index.js';
 import { ApiError } from '../middleware/errorHandler.js';
 import { selectBestProductForStore, selectBestProductForStoreWithQuery, getProductMatchLevel, MatchLevel } from '../utils/matching.js';
+import { findMatchingOffers, getDiscountLabel } from '../data/allOffersData.js';
 
 
 interface ProductWithPrice extends Product {
@@ -304,6 +305,23 @@ class RouteService {
                         if (!enrichedProduct.image_url && bestContent.image_url) {
                             enrichedProduct.image_url = bestContent.image_url;
                         }
+                    }
+
+                    // PROMOTION ENRICHMENT: Check for regional offers
+                    const matchedPromos = findMatchingOffers(enrichedProduct.name);
+                    const storeChain = store.chain.toLowerCase();
+
+                    const activePromotions = matchedPromos
+                        .filter(o => o.chain.toLowerCase().includes(storeChain) || storeChain.includes(o.chain.toLowerCase()))
+                        .map(o => ({
+                            chain: o.chain,
+                            label: getDiscountLabel(o),
+                            discount_type: o.discount_type,
+                            product_name: o.product_name
+                        }));
+
+                    if (activePromotions.length > 0) {
+                        (enrichedProduct as any).promotions = activePromotions;
                     }
 
                     // Check if we missed a preference (double check logic)
