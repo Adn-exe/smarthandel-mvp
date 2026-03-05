@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>SmartHandel MVP �✨</h1>
+  <h1>SmartHandel MVP ✨</h1>
   <p><strong>Your Ultimate AI-Powered Grocery Shopping Assistant</strong></p>
   <p>Find the best prices, compare stores, and optimize your grocery routes in Trondheim.</p>
 
