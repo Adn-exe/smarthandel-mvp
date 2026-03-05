@@ -1,51 +1,77 @@
-# SmartHandel MVP 🛍️
+<div align="center">
+  <h1>SmartHandel MVP �✨</h1>
+  <p><strong>Your Ultimate AI-Powered Grocery Shopping Assistant</strong></p>
+  <p>Find the best prices, compare stores, and optimize your grocery routes in Trondheim.</p>
 
-SmartHandel is an AI-powered shopping assistant that helps users find the best prices for their grocery lists across multiple stores in Trondheim, Norway. It uses intelligent optimization to recommend whether to shop at a single store or split the trip between multiple locations for maximum savings.
+  [![React](https://img.shields.io/badge/React-18-blue?logo=react)](https://react.dev)
+  [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite)](https://vitejs.dev/)
+  [![Tailwind](https://img.shields.io/badge/Tailwind-v4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
+  [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=nodedotjs)](https://nodejs.org/)
+  [![Express](https://img.shields.io/badge/Express-4x-000000?logo=express)](https://expressjs.com/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+  [![PWA Support](https://img.shields.io/badge/PWA-Ready-purple?logo=pwa)](https://web.dev/explore/progressive-web-apps)
 
-## ✨ Features
+</div>
 
-- **AI-Powered Search**: Natural language processing via **Google Gemini 2.0 Flash** to understand your shopping list.
-- **Price Comparison**: Real-time integration with Norwegian grocery data (Kassalapp API).
-- **Route Optimization**: Intelligent logic to find the cheapest single-store or multi-store options.
-- **Interactive Maps**: Leaflet-powered store locations and optimized road-following routes.
-- **Mobile-First Experience**: Tab-based List/Map toggle, sticky price footer, and touch-optimized interactions.
-- **Multilingual Support**: Fully localized in English and Norwegian (Bokmål).
-- **Price Mismatch Reporting**: Community-driven data accuracy with a built-in reporting system.
-- **Smart Distance Logic**: Automatic switching between meters (m) and kilometers (km) based on proximity.
-- **Performance Optimized**: Lazily loaded components, code splitting, and memoization.
-- **Trondheim Region**: All store searches are geographically constrained to the Trondheim area.
+---
+
+SmartHandel uses **Google Gemini 2.0 Flash** to instantly parse your natural language shopping lists and the **Kassalapp API** to scan the entire grocery market in Trondheim, Norway. It intelligent routing engine tells you exactly where to shop to save the most money—whether that means a quick trip to one store, or splitting your list across multiple.
+
+## 🌟 Key Features
+
+### 🤖 Intelligent AI Parsing & Matching
+- **Natural Language Parsing**: Just type *"2 liters of milk, a load of bread, and some eggs"* and Gemini AI instantly structures your cart.
+- **Strict Prefix Pattern Matching**: Our enhanced algorithm strictly filters irrelevant recommendations, ensuring high-accuracy brand matching so you aren't recommended "Chocolate with Sea Salt" when you just asked for "Salt."
+
+### 💰 Real-Time Savings & Selectable Offers
+- **Price Comparison & Offers**: Integrates direct promotional data from stores like Joker, Coop Marked, and Bunpris.
+- **Interactive Selectable Offers**: Instantly select active promotional campaigns right from the Item Card. Automatically applies "30% OFF" or fixed-price discounts, instantly updating your cart budget.
+- **"Leave Flexible" Mode**: Unsure what brand to get? Click *Leave Flexible* and let the routing engine find the absolute cheapest substitute available.
+
+### 🗺️ Route Optimization Engine
+- **Single vs. Multi-Store Maps**: Instantly compares the convenience of visiting the cheapest single store vs. the savings of splitting your trip across multiple stores.
+- **Dynamic Proximity**: Automatically toggles between meters (m) and kilometers (km) based on your real-time GPS location compared to the store.
+- **Interactive Leaflet Maps**: View store locations with optimized road-following routes.
+
+### 📱 Premium Mobile-First PWA Experience
+- **Progressive Web App (PWA)**: Install SmartHandel directly to your home screen. Fully configured with high-res icons and up to 5MB offline caching limits.
+- **Dynamic Bento Grid**: A polished, 6-item "Magic Bento" home screen featuring global spotlight mouse tracking and rich promotional imagery.
+- **App-Like Interactions**: Sticky price footers, horizontal category scroll-rows, and touch-optimized bottom sheet modals.
+
+### 🔒 Enterprise-Grade Security
+- **Hardened API Routes**: Comprehensive `.trim().escape()` XSS sanitization across all AI and Search endpoints.
+- **Strict Rate Limiting**: Intelligent traffic throttling via Express Middleware chained limits.
+- **Ephemeral Storage Safe**: Designed to boot safely even if deployed to read-only containerized environments like Vercel or Railway.
+
+---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **React 18** (Vite)
-- **TypeScript**
-- **Tailwind CSS** (v4.0)
-- **TanStack Query** (React Query)
-- **React Leaflet** (Interactive Maps)
-- **Lucide React** (Icons)
-- **React Router**
-- **i18next** (Multilingual Support)
+- **Framework**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS v4.0, Framer Motion
+- **State & Data**: TanStack Query (React Query), Context API
+- **Maps**: React Leaflet
+- **Localization**: i18next (English & Norwegian Bokmål)
 
 ### Backend
-- **Node.js** & **Express**
-- **TypeScript**
-- **Google Gemini 2.0 Flash** for AI list parsing
-- **Kassalapp API** for grocery pricing and store data
-- **Node-Cache** for in-memory performance caching
-- **Helmet & HPP** for security
-- **express-rate-limit** for abuse prevention
+- **Server**: Node.js & Express, TypeScript
+- **AI Core**: Google Gemini 2.0 Flash (for parsing & suggestions)
+- **Data Source**: Kassalapp API
+- **Performance**: Node-Cache (In-memory TTL)
+- **Security**: Helmet, HPP (HTTP Parameter Pollution), express-rate-limit
+
+---
 
 ## 🚀 Getting Started
 
 ### 🌍 International Usage
-**Important:** If you are outside Norway, you **must** connect to a VPN server located in **Norway** to access Kassalapp API data.
-- **Recommended:** [Urban VPN](https://www.urban-vpn.com/) (Browser Extension or App)
+**Important:** If you are outside Norway, you **must** connect to a VPN server located in **Norway** (e.g., via [Urban VPN](https://www.urban-vpn.com/)) to successfully proxy requests to the localized Kassalapp grocery data API.
 
 ### Prerequisites
 - Node.js 18+
 - NPM 9+
-- API Keys:
+- API Keys: 
   - Kassalapp API Key
   - Google Gemini API Key
 
@@ -65,7 +91,7 @@ SmartHandel is an AI-powered shopping assistant that helps users find the best p
 ### Environment Setup
 
 #### Backend (`backend/.env`)
-```bash
+```env
 PORT=3001
 NODE_ENV=development
 KASSAL_API_KEY=your_kassal_api_key_here
@@ -75,87 +101,34 @@ ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 #### Frontend (`frontend/.env.local`)
-```bash
+```env
 VITE_API_URL=http://localhost:3001
 VITE_ENV=development
 ```
 
 ### Run the Application
-
+Start the backend and frontend development servers concurrently:
 ```bash
-# Backend
+# Backend Terminal
 npm run dev --prefix backend
 
-# Frontend (in a separate terminal)
+# Frontend Terminal
 npm run dev --prefix frontend
 ```
 
-### 📱 Mobile Testing
-To test on a mobile device on the same network:
-1. Find your computer's local IP (e.g. `192.168.1.14`).
-2. Set `VITE_API_URL=http://192.168.1.14:3001` in `frontend/.env.local`.
-3. Access the app at `http://<YOUR_LOCAL_IP>:5173`.
+---
 
-## 📁 Project Structure
-
-```text
-smarthandel-mvp/
-├── backend/                # Express API
-│   ├── src/
-│   │   ├── routes/         # API Endpoints (ai, route, report, health)
-│   │   ├── services/       # AI, Pricing, Comparison, Report logic
-│   │   ├── middleware/     # Error handling, rate limiting
-│   │   └── server.ts       # Entry point
-│   ├── data/               # Persisted report data (item_mismatch_reports.json)
-│   ├── Dockerfile          # Multi-stage production build
-│   └── ecosystem.config.js # PM2 configuration
-├── frontend/               # React Application
-│   ├── src/
-│   │   ├── components/     # UI Components (StoreMap, ResultsDisplay, etc.)
-│   │   ├── pages/          # Views (Home, Selection, Results)
-│   │   ├── locales/        # i18n translations (en.json, no.json)
-│   │   └── hooks/          # useLocation and other custom hooks
-│   └── vercel.json         # Vercel SPA configuration
-├── docker-compose.yml      # Orchestration for local development
-└── railway.json            # Railway deployment configuration
-```
-
-## 🔌 API Documentation
-
-### Key Endpoints
+## 🔌 Core API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/health` | Basic system check |
-| `GET` | `/api/health/ready` | Full readiness check (Kassal, Gemini, Cache) |
-| `POST` | `/api/ai/parse` | Convert natural language to a product list |
-| `GET` | `/api/products/search` | Search for specific items |
-| `POST` | `/api/route/optimize` | Main store comparison & route engine |
-| `POST` | `/api/report` | Submit a product mismatch report |
+| `GET` | `/api/health` | Basic system uptime check |
+| `POST` | `/api/ai/parse` | Parse natural language to a structured shopping cart |
+| `GET` | `/api/products/search` | Exact-match query for specific items or brands |
+| `POST` | `/api/route/optimize` | Main Store Comparison & Route Engine (Calculates Single vs Multi-Store paths) |
+| `POST` | `/api/report` | User-driven system to submit product mismatch reports |
 
-### Example Optimization Request
-```json
-POST /api/route/optimize
-{
-  "items": [{ "name": "Melk", "quantity": 1 }, { "name": "Brød", "quantity": 1 }],
-  "userLocation": { "lat": 63.4305, "lng": 10.3951 },
-  "preferences": { "maxStores": 3, "maxDistance": 10000, "sortBy": "cheapest" }
-}
-```
-
-## 🧪 Development
-
-### Available Scripts
-```bash
-npm run dev      # Start development server
-npm run build    # Create production build
-npm run test     # Run test suites
-npm run lint     # Check code quality
-```
-
-### Testing
-- **Backend**: Jest (`cd backend && npm test`)
-- **Frontend**: Vitest (`cd frontend && npm test`)
+---
 
 ## 🚢 Deployment
 
@@ -165,25 +138,20 @@ cd frontend && npm run build
 cd backend && npm run build
 ```
 
-### Hosting
-- **Backend**: Docker, PM2, or Railway
-- **Frontend**: Vercel, Netlify, or static hosting
+### Hosting Recommendations
+- **Backend**: Railway, Render, or Docker (Note: If using ephemeral local storage for reports, ensure a persistent volume is attached, or expect reports to wipe on restart).
+- **Frontend**: Vercel, Netlify, or static S3 hosting.
 
-> **Note:** Ensure the `backend/data/` directory exists in production for the mismatch report storage. It is created automatically on first run.
+---
 
 ## 🔧 Troubleshooting
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| **API Connection Failed** | Missing env vars | Check `KASSAL_API_KEY` and `GEMINI_API_KEY` in `backend/.env` |
-| **AI Parse Error (500)** | Gemini quota or key | Verify `GEMINI_API_KEY` is valid; check Gemini API quota |
-| **Map blank/grey on mobile** | Leaflet init issue | Fixed in latest version — ensure you are on the latest commit |
-| **"Too Many Requests"** | Rate limiting | Wait 1 minute; strict limits prevent abuse |
-| **CORS Errors** | Mismatched origins | Ensure `ALLOWED_ORIGINS` in backend matches the frontend URL |
-| **No stores found** | Outside Trondheim region | All searches are geo-constrained to Trondheim; use a Norway VPN |
-
-## 📄 License
-This project is licensed under the MIT License.
+| **AI Parse Error (500)** | Gemini Quota | Verify `GEMINI_API_KEY` is valid and review your Google Cloud quota. |
+| **"Too Many Requests"** | Rate Limiting | The backend actively enforces strict limits on AI routes to prevent abuse. Wait 1 minute. |
+| **No Stores Found** | Geo-Constraint | All searches are constrained to **Trondheim**. Ensure your provided GPS coordinates match the region, and that you are using a Norway VPN. |
+| **Vercel Build Fails** | PWA Caching | Fixed! If you see Workbox size limit errors, check `vite.config.ts` to ensure `maximumFileSizeToCacheInBytes` is set high enough for your image assets. |
 
 ---
-Created with ❤️ by the SmartHandel Team.
+*Created with ❤️ by the SmartHandel Team.*
