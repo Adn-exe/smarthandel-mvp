@@ -19,13 +19,20 @@ interface Product {
     nameKey: string;
     emoji: string;
     keywords: string[];
-    category: 'groceries' | 'fruit' | 'vegetable' | 'meat' | 'dairy' | 'bakery' | 'pantry' | 'snack' | 'beverage' | 'frozen';
+    category: 'trending' | 'groceries' | 'fruit' | 'vegetable' | 'meat' | 'dairy' | 'bakery' | 'pantry' | 'snack' | 'beverage';
 }
 
 // Predefined products with translation keys and keywords for strict matching
 const PRODUCTS: Product[] = [
-    // GROCERIES (Essentials - 12 items)
-    { id: 'milk', nameKey: 'products.milk', emoji: '🥛', keywords: ['melk', 'milk', 'tine', 'lettmelk'], category: 'groceries' },
+    // TRENDING (Popular items moved here)
+    { id: 'frozen_pizza', nameKey: 'products.frozen_pizza', emoji: '🍕', keywords: ['pizza', 'grandiosa', 'frossen pizza'], category: 'trending' },
+    { id: 'milk', nameKey: 'products.milk', emoji: '🥛', keywords: ['melk', 'milk', 'tine', 'lettmelk'], category: 'trending' },
+    { id: 'minced_meat', nameKey: 'products.minced_meat', emoji: '🥩', keywords: ['kjøttdeig', 'minced meat', 'karbonadedeig'], category: 'trending' },
+    { id: 'taco', nameKey: 'products.taco', emoji: '🌮', keywords: ['taco', 'lefser', 'skjell'], category: 'trending' },
+    { id: 'chips', nameKey: 'products.chips', emoji: '🍟', keywords: ['chips', 'potetgull', 'snacks'], category: 'trending' },
+    { id: 'soda', nameKey: 'products.soda', emoji: '🥤', keywords: ['brus', 'soda', 'cola', 'pepsi'], category: 'trending' },
+
+    // GROCERIES (Essentials)
     { id: 'bread', nameKey: 'products.bread', emoji: '🍞', keywords: ['brød', 'bread', 'grovbrød', 'kneipp'], category: 'groceries' },
     { id: 'eggs', nameKey: 'products.eggs', emoji: '🥚', keywords: ['egg', 'eggs', 'prior'], category: 'groceries' },
     { id: 'cheese', nameKey: 'products.cheese', emoji: '🧀', keywords: ['ost', 'cheese', 'norvegia', 'hvitost'], category: 'groceries' },
@@ -64,7 +71,6 @@ const PRODUCTS: Product[] = [
 
     // MEAT
     { id: 'chicken', nameKey: 'products.chicken', emoji: '🍗', keywords: ['kylling', 'chicken', 'filet'], category: 'meat' },
-    { id: 'minced_meat', nameKey: 'products.minced_meat', emoji: '🥩', keywords: ['kjøttdeig', 'minced meat', 'karbonadedeig'], category: 'meat' },
     { id: 'salmon', nameKey: 'products.salmon', emoji: '🐟', keywords: ['laks', 'salmon', 'filet'], category: 'meat' },
     { id: 'pork', nameKey: 'products.pork', emoji: '🐖', keywords: ['svinekjøtt', 'pork', 'koteletter'], category: 'meat' },
     { id: 'beef', nameKey: 'products.beef', emoji: '🍖', keywords: ['storfekjøtt', 'beef', 'biff'], category: 'meat' },
@@ -84,28 +90,21 @@ const PRODUCTS: Product[] = [
     { id: 'cinnamon_roll', nameKey: 'products.cinnamon_roll', emoji: '🌀', keywords: ['kanelbolle', 'skillingsbolle'], category: 'bakery' },
 
     // PANTRY
-    { id: 'taco', nameKey: 'products.taco', emoji: '🌮', keywords: ['taco', 'lefser', 'skjell'], category: 'pantry' },
     { id: 'jam', nameKey: 'products.jam', emoji: '🍓', keywords: ['syltetøy', 'nora'], category: 'pantry' },
     { id: 'pasta', nameKey: 'products.pasta', emoji: '🍝', keywords: ['pasta', 'spaghetti', 'makaroni'], category: 'pantry' },
     { id: 'pizza', nameKey: 'products.pizza', emoji: '🍕', keywords: ['pizza', 'grandiosa'], category: 'pantry' },
 
     // SNACKS
-    { id: 'chips', nameKey: 'products.chips', emoji: '🍟', keywords: ['chips', 'potetgull', 'snacks'], category: 'snack' },
     { id: 'chocolate', nameKey: 'products.chocolate', emoji: '🍫', keywords: ['sjokolade', 'chocolate', 'kvikk lunsj'], category: 'snack' },
     { id: 'nuts', nameKey: 'products.nuts', emoji: '🥜', keywords: ['nøtter', 'nuts', 'peanøtter'], category: 'snack' },
     { id: 'cookies', nameKey: 'products.cookies', emoji: '🍪', keywords: ['kjeks', 'cookies', 'safari'], category: 'snack' },
 
     // BEVERAGE
-    { id: 'soda', nameKey: 'products.soda', emoji: '🥤', keywords: ['brus', 'soda', 'cola', 'pepsi'], category: 'beverage' },
     { id: 'orange_juice', nameKey: 'products.orange_juice', emoji: '🧃', keywords: ['appelsinjuice', 'juice'], category: 'beverage' },
     { id: 'water', nameKey: 'products.water', emoji: '💧', keywords: ['vann', 'water', 'farris'], category: 'beverage' },
     { id: 'energy_drink', nameKey: 'products.energy_drink', emoji: '⚡', keywords: ['energidrikk', 'energy drink', 'red bull'], category: 'beverage' },
 
-    // FROZEN FOOD
-    { id: 'frozen_pizza', nameKey: 'products.frozen_pizza', emoji: '🍕', keywords: ['pizza', 'grandiosa', 'frossen pizza'], category: 'frozen' },
-    { id: 'frozen_peas', nameKey: 'products.frozen_peas', emoji: '🫛', keywords: ['erter', 'peas', 'frosne erter'], category: 'frozen' },
-    { id: 'frozen_berries', nameKey: 'products.frozen_berries', emoji: '🫐', keywords: ['bær', 'berries', 'frosne bær'], category: 'frozen' },
-    { id: 'fish_sticks', nameKey: 'products.fish_sticks', emoji: '🐟', keywords: ['fiskepinner', 'fish sticks', 'findus'], category: 'frozen' }
+    { id: 'energy_drink', nameKey: 'products.energy_drink', emoji: '⚡', keywords: ['energidrikk', 'energy drink', 'red bull'], category: 'beverage' }
 ];
 
 export const SearchInput = memo(function SearchInput({
@@ -119,7 +118,7 @@ export const SearchInput = memo(function SearchInput({
 }: SearchInputProps) {
     const { t } = useTranslation();
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-    const [selectedCategory, setSelectedCategory] = useState<string>('groceries');
+    const [selectedCategory, setSelectedCategory] = useState<string>('trending');
     const [isDropdownOpen, setIsDropdownOpen] = useState(initialOpen);
     const [inputValue, setInputValue] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
@@ -392,6 +391,7 @@ export const SearchInput = memo(function SearchInput({
                     {!inputValue && (
                         <div className="grid grid-cols-5 gap-2 md:gap-3 mb-8">
                             {[
+                                { id: 'trending', icon: '🔥', label: 'Trending', color: 'bg-rose-50 text-rose-600 border-rose-100' },
                                 { id: 'groceries', icon: '🛒', label: 'Groceries', color: 'bg-orange-50 text-orange-600 border-orange-100' },
                                 { id: 'fruit', icon: '🍎', label: 'Fruit', color: 'bg-red-50 text-red-600 border-red-100' },
                                 { id: 'vegetable', icon: '🥕', label: 'Veggies', color: 'bg-green-50 text-green-600 border-green-100' },
@@ -401,7 +401,6 @@ export const SearchInput = memo(function SearchInput({
                                 { id: 'pantry', icon: '🍝', label: 'Pantry', color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
                                 { id: 'snack', icon: '🍫', label: 'Snack', color: 'bg-purple-50 text-purple-600 border-purple-100' },
                                 { id: 'beverage', icon: '🥤', label: 'Drinks', color: 'bg-cyan-50 text-cyan-600 border-cyan-100' },
-                                { id: 'frozen', icon: '❄️', label: 'Frozen', color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
                             ].map((cat) => (
                                 <button
                                     key={cat.id}
