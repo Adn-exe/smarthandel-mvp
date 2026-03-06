@@ -224,7 +224,7 @@ export function Offers() {
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="relative max-w-5xl max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl bg-black"
+                            className="relative max-w-5xl max-h-[90vh] rounded-lg overflow-hidden shadow-2xl bg-black"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <img
@@ -253,7 +253,7 @@ export function Offers() {
                                 initial={{ scale: 0.9, y: 100, opacity: 0 }}
                                 animate={{ scale: 1, y: 0, opacity: 1 }}
                                 exit={{ scale: 0.9, y: 100, opacity: 0 }}
-                                className="bg-white w-full max-w-lg rounded-t-[2rem] sm:rounded-3xl overflow-hidden shadow-2xl relative p-6 sm:p-8 flex flex-col mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto"
+                                className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl relative p-6 sm:p-8 flex flex-col mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {/* Mobile Handle */}
@@ -291,7 +291,7 @@ export function Offers() {
                                     </div>
 
                                     <div className="space-y-4 mb-8">
-                                        <div className={`p-4 ${colors.bg} rounded-2xl border ${colors.border}`}>
+                                        <div className={`p-4 ${colors.bg} rounded-xl border ${colors.border}`}>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                                                 {selectedOfferForQuickView.final_price ? 'Current Price' : 'Offer Deal'}
                                             </p>
@@ -351,13 +351,13 @@ export function Offers() {
                                                 }]);
                                                 setSelectedOfferForQuickView(null);
                                             }}
-                                            className={`w-full py-4 ${colors.fill} hover:opacity-90 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2`}
+                                            className={`w-full py-4 ${colors.fill} hover:opacity-90 text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2`}
                                         >
                                             <ShoppingCart className="w-4 h-4" />
                                             Add to Shopping List
                                         </button>
                                         <button
-                                            className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-sm transition-colors"
+                                            className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold text-sm transition-colors"
                                             onClick={() => setSelectedOfferForQuickView(null)}
                                         >
                                             Close Details
@@ -386,7 +386,7 @@ export function Offers() {
                             {POSTERS.map((poster, idx) => (
                                 <motion.div
                                     key={idx}
-                                    className="break-inside-avoid rounded-[0.75rem] sm:rounded-[1.5rem] overflow-hidden shadow-sm hover:shadow-lg bg-slate-50 border border-slate-200/60 relative group/card cursor-pointer"
+                                    className="break-inside-avoid rounded-lg overflow-hidden shadow-sm hover:shadow-lg bg-slate-50 border border-slate-200/60 relative group/card cursor-pointer"
                                     whileHover={{ scale: 1.02, zIndex: 10 }}
                                     transition={{ duration: 0.3 }}
                                     onClick={() => setSelectedPoster(poster)}
@@ -432,7 +432,7 @@ export function Offers() {
                                 </div>
                                 <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-slate-400 shrink-0 transition-transform ${isStoreDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
-                            <div className={`absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl transition-all z-50 py-2 max-h-[300px] overflow-y-auto ${isStoreDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+                            <div className={`absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl transition-all z-50 py-2 max-h-[300px] overflow-y-auto ${isStoreDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
                                 {(() => {
                                     const sortedChains = [...CHAINS].sort((a, b) => {
                                         if (a === 'All Stores') return -1;
@@ -515,7 +515,7 @@ export function Offers() {
                         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Loading Offers...</p>
                     </div>
                 ) : filteredOffers.length === 0 ? (
-                    <div className="py-32 flex flex-col items-center justify-center text-center bg-white rounded-[2rem] border border-slate-200 border-dashed">
+                    <div className="py-32 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-slate-200 border-dashed">
                         <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                             <Search className="w-8 h-8 text-slate-300" />
                         </div>
@@ -523,7 +523,7 @@ export function Offers() {
                         <p className="text-slate-500 font-medium max-w-sm">We couldn't find any current offers matching your specific filters and search criteria.</p>
                         <button
                             onClick={() => { setSearchQuery(''); setFilterChain('All Stores'); setFilterCategory('All'); }}
-                            className="mt-8 px-6 py-3 bg-[#ea580c] text-white rounded-xl font-bold hover:bg-[#c2410c] transition-colors"
+                            className="mt-8 px-6 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors shadow-lg shadow-orange-200"
                         >
                             Clear All Filters
                         </button>
@@ -545,7 +545,7 @@ export function Offers() {
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.95 }}
                                         transition={{ duration: 0.3, delay: Math.min(idx * 0.05, 0.5) }} // Cap delay
-                                        className={`break-inside-avoid ${colors.bg} rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border ${colors.border} ${colors.hover} flex flex-col group cursor-pointer`}
+                                        className={`break-inside-avoid ${colors.bg} rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border ${colors.border} ${colors.hover} flex flex-col group cursor-pointer`}
                                         onClick={() => setSelectedOfferForQuickView(offer)}
                                     >
                                         {/* Top Section / Image Area Placeholder */}

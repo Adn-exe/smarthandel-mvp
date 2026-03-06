@@ -224,8 +224,8 @@ export const SearchInput = memo(function SearchInput({
                 onSubmit={handleSubmit}
                 className={clsx(
                     "relative group transition-all duration-300 ease-in-out",
-                    "bg-white rounded-2xl shadow-sm border",
-                    isDropdownOpen ? "border-indigo-300 ring-4 ring-indigo-50/50" : "border-slate-200",
+                    "bg-white rounded-lg shadow-sm border focus-within:outline-none",
+                    isDropdownOpen ? "border-orange-300 ring-4 ring-orange-50/50" : "border-slate-200",
                     variant === 'compact' ? "shadow-none" : "shadow-slate-100"
                 )}
             >
@@ -241,7 +241,7 @@ export const SearchInput = memo(function SearchInput({
                         <Search className={clsx(
                             "transition-colors duration-300 shrink-0",
                             variant === 'compact' ? "w-5 h-5 mt-0.5" : "w-6 h-6 mt-1",
-                            isDropdownOpen ? "text-indigo-400" : "text-slate-300"
+                            isDropdownOpen ? "text-orange-500" : "text-slate-300"
                         )} />
 
                         <div className="flex-grow min-w-0">
@@ -253,7 +253,7 @@ export const SearchInput = memo(function SearchInput({
                                         <span
                                             key={id}
                                             className={clsx(
-                                                "inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 rounded-lg font-bold animate-in zoom-in-95 duration-200 border border-indigo-100 shadow-sm whitespace-nowrap",
+                                                "inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 rounded-lg font-bold animate-in zoom-in-95 duration-200 border border-orange-100 shadow-sm whitespace-nowrap",
                                                 variant === 'compact' ? "px-2 py-1 text-[10px] uppercase tracking-wider" : "px-3 py-1.5 text-sm"
                                             )}
                                             onClick={(e) => {
@@ -301,7 +301,7 @@ export const SearchInput = memo(function SearchInput({
                                 className={clsx(
                                     "px-4 py-2 rounded-xl transition-all duration-300 disabled:opacity-30 flex items-center gap-2",
                                     (selectedItems.size > 0 || inputValue.trim()) && !loading
-                                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                                        ? "bg-orange-600 text-white shadow-md shadow-orange-200"
                                         : "bg-slate-50 text-slate-400"
                                 )}
                             >
@@ -322,7 +322,7 @@ export const SearchInput = memo(function SearchInput({
                 {variant !== 'compact' && (
                     <div className="mt-4 flex items-end justify-between gap-4">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <span className="w-1 h-1 rounded-full bg-indigo-400"></span>
+                            <span className="w-1 h-1 rounded-full bg-orange-400"></span>
                             {selectedItems.size} {t('storeCard.items', 'items')} selected
                         </span>
 
@@ -345,7 +345,7 @@ export const SearchInput = memo(function SearchInput({
                                     "flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all duration-300 text-sm",
                                     "disabled:opacity-30 disabled:cursor-not-allowed",
                                     (selectedItems.size > 0 || inputValue.trim()) && !loading
-                                        ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200 transform active:scale-95"
+                                        ? "bg-orange-600 text-white hover:bg-orange-700 shadow-md shadow-orange-200 transform active:scale-95"
                                         : "bg-slate-50 text-slate-400"
                                 )}
                             >
@@ -368,7 +368,7 @@ export const SearchInput = memo(function SearchInput({
             {/* Dropdown Panel */}
             {isDropdownOpen && (
                 <div className={clsx(
-                    "bg-white rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 animate-in fade-in slide-in-from-top-4 duration-200 z-50 overflow-y-auto custom-scrollbar",
+                    "bg-white rounded-lg shadow-xl border border-gray-100 p-4 sm:p-6 animate-in fade-in slide-in-from-top-4 duration-200 z-50 overflow-y-auto custom-scrollbar",
                     isStatic ? "mt-6 relative shadow-sm border-slate-200" : "absolute top-full left-0 right-0 mt-4 max-h-[400px]"
                 )}>
                     <div className="flex items-center justify-between mb-4">
@@ -445,7 +445,7 @@ export const SearchInput = memo(function SearchInput({
                                         className={clsx(
                                             "flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left border",
                                             isSelected
-                                                ? "bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm"
+                                                ? "bg-orange-50 border-orange-200 text-orange-700 shadow-sm"
                                                 : "bg-slate-50 border-transparent text-slate-600 hover:bg-white hover:shadow-sm hover:border-slate-100"
                                         )}
                                     >
@@ -476,7 +476,7 @@ export const SearchInput = memo(function SearchInput({
 
             {/* Hint Text */}
             {!isDropdownOpen && (
-                <p className="mt-3 text-center text-[10px] font-bold text-slate-300 uppercase tracking-widest animate-in fade-in duration-700">
+                <p className="mt-3 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-in fade-in duration-700">
                     <Trans i18nKey="common.press_enter">
                         Click to select items or type what you need
                     </Trans>

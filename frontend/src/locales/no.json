@@ -50,7 +50,10 @@
         "map": "Kart",
         "installApp": "Installer App",
         "installAppDesc": "Legg til på startskjermen",
-        "offline": "Du er frakoblet — bufret innhold kan være utdatert"
+        "offline": "Du er frakoblet — bufret innhold kan være utdatert",
+        "readyToFind": "Klar for å finne ruter?",
+        "navGuidance": "Fortell oss hva du trenger i søkefeltet på hjemsiden først, så hjelper vi deg å finne den beste ruten!",
+        "goToHome": "Gå til forsiden"
     },
     "home": {
         "title": "Handle <1>smartere</1>, ikke dyrere",

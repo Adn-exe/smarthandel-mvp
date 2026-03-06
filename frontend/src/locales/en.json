@@ -51,7 +51,10 @@
         "map": "Map",
         "installApp": "Install App",
         "installAppDesc": "Add to home screen",
-        "offline": "You're offline — cached content may be outdated"
+        "offline": "You're offline — cached content may be outdated",
+        "readyToFind": "Ready to find routes?",
+        "navGuidance": "Tell us what you need in the search bar on the home page first, and we'll help you find the best route!",
+        "goToHome": "Go to Home"
     },
     "home": {
         "title": "Shop <1>smarter</1>, not harder",

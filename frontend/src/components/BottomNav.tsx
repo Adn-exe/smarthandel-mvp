@@ -1,7 +1,7 @@
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Map, Tag, Info, Search, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { useShoppingList } from '../context/ShoppingListContext';
 import { useState, useEffect } from 'react';
 
@@ -24,7 +24,27 @@ export function BottomNav() {
         if (path === '/results' && items.length === 0) {
             e.preventDefault();
             setShowGuidance(true);
+
+            if (location.pathname === '/') {
+                // If already on home, scroll to top where search bar is
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // If not on home, navigate there and it will naturally be at top
+                navigate('/');
+                // Ensure scroll to top after navigation
+                setTimeout(() => window.scrollTo({ top: 0 }), 10);
+            }
             return;
+        }
+
+        if (path === '/') {
+            if (location.pathname === '/') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // If navigating to home from another page, ensure we land at top
+                navigate('/');
+                setTimeout(() => window.scrollTo({ top: 0 }), 10);
+            }
         }
     };
 
@@ -67,16 +87,25 @@ export function BottomNav() {
                                 key={tab.path}
                                 to={tab.path}
                                 onClick={(e) => handleNavClick(e, tab.path)}
-                                className={`relative flex flex-col items-center justify-center w-14 h-12 sm:w-16 sm:h-14 rounded-2xl transition-all duration-300 active:scale-95 ${isActive ? 'text-[#e53935]' : 'text-slate-400 hover:text-slate-600'
+                                className={`relative flex flex-col items-center justify-center w-14 h-12 sm:w-16 sm:h-14 transition-all duration-300 active:scale-95 ${isActive ? 'text-[#e53935]' : 'text-slate-400 hover:text-slate-600'
                                     }`}
                             >
-                                {/* Active State Background Bubble */}
+                                {/* Active State Indicator - Modern Sharp 'Stealth' Style */}
                                 {isActive && (
-                                    <motion.div
-                                        layoutId="bottomNavBubble"
-                                        className="absolute inset-0 bg-[#e53935]/10 rounded-2xl -z-10"
-                                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                                    />
+                                    <>
+                                        {/* Main Background Box (Sharp) */}
+                                        <motion.div
+                                            layoutId="bottomNavActiveBg"
+                                            className="absolute inset-0 bg-slate-900/[0.03] border-x border-slate-200/50 -z-10"
+                                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                        />
+                                        {/* High-Contrast Bottom Accent Bar */}
+                                        <motion.div
+                                            layoutId="bottomNavAccent"
+                                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#e53935] shadow-[0_-2px_8px_rgba(229,57,53,0.3)]"
+                                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                        />
+                                    </>
                                 )}
 
                                 <Icon className={`w-4 h-4 sm:w-5 sm:h-5 mb-0.5 transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100'}`} />
@@ -93,32 +122,23 @@ export function BottomNav() {
             <AnimatePresence>
                 {showGuidance && (
                     <motion.div
-                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                        initial={{ opacity: 0, y: 50, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed bottom-20 left-4 right-4 z-[60] pointer-events-auto"
+                        exit={{ opacity: 0, y: 20, scale: 0.98 }}
+                        className="fixed bottom-24 left-4 right-4 z-[60] pointer-events-auto max-w-lg mx-auto"
                     >
-                        <div className="bg-slate-900/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 flex gap-4 items-start">
-                            <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center shrink-0">
-                                <Search className="w-5 h-5 text-orange-500" />
+                        <div className="bg-[#0f172a] text-white p-5 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-700/50 flex gap-5 items-center ring-1 ring-white/10">
+                            <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0 border border-orange-500/20">
+                                <Search className="w-6 h-6 text-orange-500" />
                             </div>
                             <div className="flex-1">
-                                <h4 className="font-bold text-sm mb-1 flex items-center gap-2">
-                                    {t('common.readyToFind', 'Klar for å finne ruter?')}
-                                    <AlertCircle className="w-3.5 h-3.5 text-orange-400" />
+                                <h4 className="font-heading font-black text-xs sm:text-sm uppercase tracking-[0.15em] text-white mb-1.5 flex items-center gap-2">
+                                    {t('common.readyToFind')}
+                                    <AlertCircle className="w-3.5 h-3.5 text-orange-500" />
                                 </h4>
-                                <p className="text-xs text-slate-300 leading-relaxed">
-                                    {t('common.navGuidance', 'Fortell oss hva du trenger i søkefeltet på hjemsiden først, så hjelper vi deg å finne den beste ruten!')}
+                                <p className="text-[11px] sm:text-xs text-slate-200 font-medium leading-[1.6] antialiased">
+                                    {t('common.navGuidance')}
                                 </p>
-                                <button
-                                    onClick={() => {
-                                        setShowGuidance(false);
-                                        navigate('/');
-                                    }}
-                                    className="mt-3 text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors"
-                                >
-                                    {t('common.goToHome', 'Gå til forsiden')}
-                                </button>
                             </div>
                         </div>
                     </motion.div>
