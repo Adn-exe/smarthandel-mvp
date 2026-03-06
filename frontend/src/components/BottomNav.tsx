@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Map, Tag, Info, Search, AlertCircle } from 'lucide-react';
+import { Home, Map, Tag, Info, Search, AlertCircle, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useShoppingList } from '../context/ShoppingListContext';
@@ -125,18 +125,27 @@ export function BottomNav() {
                         initial={{ opacity: 0, y: 50, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.98 }}
-                        className="fixed bottom-24 left-4 right-4 z-[60] pointer-events-auto max-w-lg mx-auto"
+                        className="fixed bottom-20 left-4 right-4 z-[60] pointer-events-auto max-w-md mx-auto"
                     >
-                        <div className="bg-[#0f172a] text-white p-5 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-700/50 flex gap-5 items-center ring-1 ring-white/10">
-                            <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0 border border-orange-500/20">
-                                <Search className="w-6 h-6 text-orange-500" />
+                        <div className="bg-[#fa5d5e] text-white p-4 rounded-xl shadow-[0_15px_40px_rgba(250,93,94,0.4)] border border-white/20 flex gap-4 items-center relative ring-1 ring-white/10">
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setShowGuidance(false)}
+                                className="absolute top-2 right-2 p-1 hover:bg-white/10 rounded-full transition-colors active:scale-90"
+                                aria-label="Dismiss"
+                            >
+                                <X className="w-3.5 h-3.5 text-white/80" />
+                            </button>
+
+                            <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0 border border-white/30">
+                                <Search className="w-5 h-5 text-white" />
                             </div>
-                            <div className="flex-1">
-                                <h4 className="font-heading font-black text-xs sm:text-sm uppercase tracking-[0.15em] text-white mb-1.5 flex items-center gap-2">
+                            <div className="flex-1 pr-4">
+                                <h4 className="font-heading font-black text-[10px] sm:text-xs uppercase tracking-[0.15em] text-white/95 mb-0.5 flex items-center gap-2">
                                     {t('common.readyToFind')}
-                                    <AlertCircle className="w-3.5 h-3.5 text-orange-500" />
+                                    <AlertCircle className="w-3 h-3 text-white/80" />
                                 </h4>
-                                <p className="text-[11px] sm:text-xs text-slate-200 font-medium leading-[1.6] antialiased">
+                                <p className="text-[10px] sm:text-[11px] text-white font-bold leading-tight antialiased">
                                     {t('common.navGuidance')}
                                 </p>
                             </div>
