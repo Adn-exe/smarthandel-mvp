@@ -1,47 +1,31 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Menu, X, Sparkles } from 'lucide-react';
-import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InstallButton } from './InstallButton';
+import { BottomNav } from './BottomNav';
 
 export function Layout() {
     const { t, i18n } = useTranslation();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
-
-    const closeMenu = () => setIsMenuOpen(false);
-
-    // Scroll lock when menu is open
-    useEffect(() => {
-        if (isMenuOpen) {
-            document.body.classList.add('no-scroll');
-        } else {
-            document.body.classList.remove('no-scroll');
-        }
-    }, [isMenuOpen]);
 
     const currentLang = i18n.language.split('-')[0];
 
     return (
         <div className="flex flex-col min-h-screen">
             {/* Header */}
-            <header className={`
-                fixed top-0 inset-x-0 z-50 border-b border-gray-100 transition-all duration-300
-                ${isMenuOpen ? 'bg-white' : 'bg-white/80 backdrop-blur-md'}
-            `}>
+            <header className="fixed top-0 inset-x-0 z-50 border-b border-gray-100 transition-all duration-300 bg-white/80 backdrop-blur-md">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
+                    <div className="flex justify-between items-center h-14 sm:h-16">
 
                         {/* Logo */}
-                        <Link to="/" className="flex items-center gap-2.5 group" onClick={closeMenu}>
-                            <div className="w-9 h-9 transform group-hover:scale-110 group-active:scale-95 transition-all duration-300 drop-shadow-sm">
+                        <Link to="/" className="flex items-center gap-2 group">
+                            <div className="w-8 h-8 sm:w-9 sm:h-9 transform group-hover:scale-110 group-active:scale-95 transition-all duration-300 drop-shadow-sm">
                                 <img
                                     src="/icons/icon.svg"
                                     alt="SmartHandel Logo"
                                     className="w-full h-full object-contain"
                                 />
                             </div>
-                            <span className="font-heading font-bold text-xl text-dark tracking-tight">
+                            <span className="font-heading font-bold text-lg sm:text-xl text-dark tracking-tight">
                                 Smart<span className="text-primary">Handel</span>
                             </span>
                         </Link>
@@ -97,60 +81,8 @@ export function Layout() {
                                 </button>
                             </div>
 
-                            {/* Mobile Menu Button */}
-                            <button
-                                className="p-2 text-dark focus:outline-none bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-100 transition-colors"
-                                aria-label="Toggle menu"
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            >
-                                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Mobile Menu Overlay */}
-                <div className={`
-                    fixed inset-0 top-16 bg-white z-40 md:hidden transition-all duration-300 ease-in-out
-                    ${isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full pointer-events-none'}
-                `}>
-                    <div className="px-6 py-8 space-y-6 h-full flex flex-col overflow-y-auto pb-24">
-                        <div className="space-y-2">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Menu</p>
-                            <Link
-                                to="/"
-                                className={`flex items-center justify-between p-4 rounded-2xl transition-all ${location.pathname === '/' ? 'bg-primary/5 text-primary font-bold' : 'text-dark font-semibold hover:bg-gray-50'}`}
-                                onClick={closeMenu}
-                            >
-                                <span className="text-xl">{t('common.home')}</span>
-                                {location.pathname === '/' && <div className="w-2 h-2 rounded-full bg-primary" />}
-                            </Link>
-                            <Link
-                                to="/about"
-                                className={`flex items-center justify-between p-4 rounded-2xl transition-all ${location.pathname === '/about' ? 'bg-primary/5 text-primary font-bold' : 'text-dark font-semibold hover:bg-gray-50'}`}
-                                onClick={closeMenu}
-                            >
-                                <span className="text-xl">{t('common.about')}</span>
-                                {location.pathname === '/about' && <div className="w-2 h-2 rounded-full bg-primary" />}
-                            </Link>
-                        </div>
-
-                        {/* Install App Button */}
-                        <div className="px-1">
-                            <InstallButton variant="mobile" />
-                        </div>
-
-                        {/* Mobile Menu Footer */}
-                        <div className="mt-auto pt-8 border-t border-gray-100">
-                            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl">
-                                <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-primary">
-                                    <Sparkles className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-dark text-sm">SmartHandel</p>
-                                    <p className="text-xs text-gray-500">Din smarte handleassistent</p>
-                                </div>
-                            </div>
+                            {/* Download PWA App Button */}
+                            <InstallButton />
                         </div>
                     </div>
                 </div>
@@ -162,7 +94,7 @@ export function Layout() {
             </main>
 
             {/* Footer */}
-            <footer className="bg-white/40 backdrop-blur-md border-t border-white/20 pt-12 pb-8">
+            <footer className="bg-white/40 backdrop-blur-md border-t border-white/20 pt-12 pb-24 md:pb-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8">
                         <div className="col-span-1 md:col-span-1">
@@ -219,6 +151,9 @@ export function Layout() {
                     </div>
                 </div>
             </footer>
+
+            {/* Mobile Bottom Navigation Bar */}
+            <BottomNav />
         </div>
     );
 }

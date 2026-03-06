@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense, lazy, useMemo } from 'react';
 import { useLocation as useRouterLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { MapPin, List, Search } from 'lucide-react';
+import { MapPin, List } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { StoreMap } from '../components/StoreMap';
@@ -384,40 +384,24 @@ export default function Results() {
                     </div>
                 </div>
 
-                {/* Mobile Floating Navigation Bar */}
                 <div
-                    className="fixed bottom-6 left-1/2 -translate-x-1/2 lg:hidden z-[60] flex items-center bg-white/30 backdrop-blur-xl p-1.5 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] border border-white/20 animate-in slide-in-from-bottom-8 duration-700"
+                    className="fixed bottom-16 sm:bottom-28 left-1/2 -translate-x-1/2 lg:hidden z-[60] flex items-center bg-primary text-white p-1 rounded-full shadow-[0_8px_32px_rgba(229,57,53,0.3)] animate-in slide-in-from-bottom-8 duration-700"
                 >
                     <button
-                        onClick={() => navigate('/')}
-                        className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-dark transition-all flex items-center gap-2"
+                        onClick={() => setMobileActiveTab(mobileActiveTab === 'list' ? 'map' : 'list')}
+                        className="px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 hover:bg-white/10"
                     >
-                        <Search className="w-4 h-4" />
-                        {t('common.new', 'New')}
-                    </button>
-
-                    <div className="w-px h-6 bg-gray-900/5 mx-1"></div>
-
-                    <button
-                        onClick={() => setMobileActiveTab('list')}
-                        className={clsx(
-                            "px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
-                            mobileActiveTab === 'list' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-500 hover:text-gray-700"
+                        {mobileActiveTab === 'list' ? (
+                            <>
+                                <MapPin className="w-4 h-4" />
+                                {t('common.map', 'Show Map')}
+                            </>
+                        ) : (
+                            <>
+                                <List className="w-4 h-4" />
+                                {t('common.list', 'Show List')}
+                            </>
                         )}
-                    >
-                        <List className="w-4 h-4" />
-                        {t('common.list')}
-                    </button>
-
-                    <button
-                        onClick={() => setMobileActiveTab('map')}
-                        className={clsx(
-                            "px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2",
-                            mobileActiveTab === 'map' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-500 hover:text-gray-700"
-                        )}
-                    >
-                        <MapPin className="w-4 h-4" />
-                        {t('common.map')}
                     </button>
                 </div>
             </main>

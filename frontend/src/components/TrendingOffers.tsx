@@ -203,12 +203,12 @@ export function TrendingOffers() {
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20">
                         <Flame className="w-5 h-5 text-white" />
                     </div>
-                    <div>
-                        <h2 className="text-xl font-black text-dark tracking-tight uppercase leading-none">
+                    <div className="text-left flex flex-col justify-center">
+                        <h2 className="text-xl font-black text-dark tracking-tight uppercase leading-[0.9] -mb-0.5">
                             {t('offers.trendingTitle', 'Aktive Kampanjer')}
                         </h2>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">
-                            {t('offers.trendingSubtitle', 'Sanntidsoppdaterte tilbud fra dine butikker')}
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0">
+                            {t('offers.trendingSubtitle', 'Live nå')}
                         </p>
                     </div>
                 </div>

@@ -145,7 +145,7 @@ export function Offers() {
 
     // Scroll listener for sticky filter
     useEffect(() => {
-        const handleScroll = () => setIsFilterSticky(window.scrollY > 400);
+        const handleScroll = () => setIsFilterSticky(window.scrollY > 300);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -405,57 +405,64 @@ export function Offers() {
             </div>
 
             {/* ─── Sticky Filter & Categories Bar ─── */}
-            <div className={`sticky top-0 z-40 transition-all duration-300 ${isFilterSticky ? 'bg-white/80 backdrop-blur-md border-b border-slate-200 py-3 shadow-sm' : 'py-6 sm:py-8'}`}>
+            <div className={`sticky top-14 sm:top-16 z-40 transition-all duration-300 ${isFilterSticky ? 'bg-white border-b border-orange-200 py-3 shadow-md' : 'py-6 sm:py-8'}`}>
                 <div className="max-w-7xl mx-auto px-4 space-y-4">
 
                     {/* Top Row: Search & Store Dropdown */}
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+                    <div className="flex flex-row gap-2 sm:gap-3">
+                        <div className="relative flex-[2] sm:flex-1">
+                            <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 focus-within:text-orange-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search all offers..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 sm:pl-12 pr-4 sm:pr-6 py-2.5 sm:py-3.5 bg-white border border-slate-200 rounded-xl sm:rounded-2xl focus:border-[#ea580c] focus:ring-2 focus:ring-[#ea580c]/20 transition-all text-xs sm:text-sm font-bold text-slate-700 shadow-sm"
+                                className="w-full pl-10 sm:pl-12 pr-4 sm:pr-6 py-2.5 sm:py-3.5 bg-white border border-slate-200 rounded-xl sm:rounded-2xl focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all text-sm font-bold text-slate-700 shadow-sm outline-none"
                             />
                         </div>
 
-                        <div className="relative sm:min-w-[200px]" ref={storeDropdownRef}>
+                        <div className="relative flex-[1] sm:min-w-[200px]" ref={storeDropdownRef}>
                             <button
                                 onClick={() => setIsStoreDropdownOpen(!isStoreDropdownOpen)}
-                                className="w-full flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3.5 bg-white border border-slate-200 rounded-xl sm:rounded-2xl hover:border-[#ea580c] transition-all font-bold text-slate-700 text-xs sm:text-sm shadow-sm"
+                                className={`w-full h-full flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 bg-white border ${isStoreDropdownOpen ? 'border-orange-500 ring-2 ring-orange-500/20' : 'border-slate-200'} rounded-xl sm:rounded-2xl hover:border-orange-500 transition-all font-bold text-slate-700 text-sm shadow-sm`}
                             >
-                                <div className="flex items-center gap-2">
-                                    <StoreIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[#ea580c]" />
-                                    <span>{filterChain}</span>
+                                <div className="flex items-center gap-2 overflow-hidden">
+                                    <StoreIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#ea580c] shrink-0" />
+                                    <span className="truncate">{filterChain === 'All Stores' ? (window.innerWidth < 640 ? 'All' : 'All Stores') : filterChain}</span>
                                 </div>
-                                <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-slate-400 transition-transform ${isStoreDropdownOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-slate-400 shrink-0 transition-transform ${isStoreDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
                             <div className={`absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl transition-all z-50 py-2 max-h-[300px] overflow-y-auto ${isStoreDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
-                                {CHAINS.map(c => {
-                                    const count = c === 'All Stores' ? offers.length : chainCounts[c] || 0;
-                                    return (
-                                        <button
-                                            key={c}
-                                            onClick={() => {
-                                                setFilterChain(c);
-                                                setIsStoreDropdownOpen(false);
-                                            }}
-                                            className={`w-full flex items-center justify-between px-5 py-2.5 text-sm font-bold transition-colors ${filterChain === c ? 'bg-[#fff7ed] text-[#ea580c]' : 'text-slate-600 hover:bg-slate-50'}`}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                {filterChain === c && <div className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />}
-                                                <span>{c}</span>
-                                            </div>
-                                            {count > 0 && (
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${filterChain === c ? 'bg-[#ea580c] text-white' : 'bg-slate-100 text-slate-400'}`}>
-                                                    {count}
-                                                </span>
-                                            )}
-                                        </button>
-                                    );
-                                })}
+                                {(() => {
+                                    const sortedChains = [...CHAINS].sort((a, b) => {
+                                        if (a === 'All Stores') return -1;
+                                        if (b === 'All Stores') return 1;
+                                        return (chainCounts[b] || 0) - (chainCounts[a] || 0);
+                                    });
+                                    return sortedChains.map(c => {
+                                        const count = c === 'All Stores' ? offers.length : chainCounts[c] || 0;
+                                        return (
+                                            <button
+                                                key={c}
+                                                onClick={() => {
+                                                    setFilterChain(c);
+                                                    setIsStoreDropdownOpen(false);
+                                                }}
+                                                className={`w-full flex items-center justify-between px-5 py-2.5 text-sm font-bold transition-colors ${filterChain === c ? 'bg-[#fff7ed] text-[#ea580c]' : 'text-slate-600 hover:bg-slate-50'}`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    {filterChain === c && <div className="w-1.5 h-1.5 rounded-full bg-[#ea580c]" />}
+                                                    <span>{c}</span>
+                                                </div>
+                                                {count > 0 && (
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${filterChain === c ? 'bg-[#ea580c] text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                                        {count}
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    });
+                                })()}
                             </div>
                         </div>
                     </div>
@@ -522,12 +529,12 @@ export function Offers() {
                         </button>
                     </div>
                 ) : (
-                    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+                    <div className="columns-2 sm:columns-2 lg:columns-3 xl:columns-4 gap-3 sm:gap-6 space-y-3 sm:space-y-6">
                         <AnimatePresence mode="popLayout">
                             {filteredOffers.map((offer, idx) => {
                                 const colors = getStoreColors(offer.chain);
                                 // Determine a "random" height for the placeholder area based on index
-                                const heights = ['h-32', 'h-40', 'h-48', 'h-56'];
+                                const heights = ['h-24 sm:h-32', 'h-28 sm:h-40', 'h-32 sm:h-48', 'h-36 sm:h-56'];
                                 const randomHeight = heights[idx % heights.length];
 
                                 return (
@@ -538,59 +545,59 @@ export function Offers() {
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.95 }}
                                         transition={{ duration: 0.3, delay: Math.min(idx * 0.05, 0.5) }} // Cap delay
-                                        className={`break-inside-avoid ${colors.bg} rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border ${colors.border} ${colors.hover} flex flex-col group cursor-pointer`}
+                                        className={`break-inside-avoid ${colors.bg} rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border ${colors.border} ${colors.hover} flex flex-col group cursor-pointer`}
                                         onClick={() => setSelectedOfferForQuickView(offer)}
                                     >
                                         {/* Top Section / Image Area Placeholder */}
-                                        <div className={`${randomHeight} ${colors.bg} relative flex items-center justify-center p-6 transition-colors`}>
+                                        <div className={`${randomHeight} ${colors.bg} relative flex items-center justify-center p-4 sm:p-6 transition-colors`}>
                                             {/* Fallback pattern for when we don't have images */}
-                                            <Tag className={`w-16 h-16 ${colors.accent} opacity-5 group-hover:opacity-10 transition-opacity`} />
+                                            <Tag className={`w-10 h-10 sm:w-16 sm:h-16 ${colors.accent} opacity-5 group-hover:opacity-10 transition-opacity`} />
 
                                             {/* Promo Badge */}
-                                            <div className="absolute top-4 left-4">
-                                                <span className={`inline-flex items-center justify-center px-3 py-1.5 ${colors.fill} text-white font-black text-xs uppercase tracking-wider rounded-lg shadow-sm`}>
+                                            <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
+                                                <span className={`inline-flex items-center justify-center px-2 py-0.5 sm:px-3 sm:py-1.5 ${colors.fill} text-white font-black text-[8px] sm:text-xs uppercase tracking-wider rounded-md sm:rounded-lg shadow-sm`}>
                                                     {offer.label}
                                                 </span>
                                             </div>
                                         </div>
 
                                         {/* Content Section */}
-                                        <div className="p-4 sm:p-5 flex flex-col flex-1 bg-white">
-                                            <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                                                <div className={`px-2 py-0.5 sm:px-2.5 sm:py-1 ${colors.bg} rounded-md text-[9px] sm:text-[10px] font-bold ${colors.accent} uppercase tracking-widest border ${colors.border}`}>
+                                        <div className="p-3 sm:p-5 flex flex-col flex-1 bg-white">
+                                            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-3">
+                                                <div className={`px-1.5 py-0.5 sm:px-2.5 sm:py-1 ${colors.bg} rounded-md text-[8px] sm:text-[10px] font-bold ${colors.accent} uppercase tracking-widest border ${colors.border}`}>
                                                     {offer.chain}
                                                 </div>
                                                 {(offer.category !== "Category" && offer.category) && (
-                                                    <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 capitalize">
+                                                    <div className="text-[8px] sm:text-[10px] font-bold text-slate-400 capitalize">
                                                         • {offer.category}
                                                     </div>
                                                 )}
                                             </div>
 
-                                            <h3 className="font-bold text-slate-800 leading-tight mb-1 sm:mb-2 line-clamp-2 text-sm sm:text-base">
+                                            <h3 className="font-bold text-slate-800 leading-tight mb-1 sm:mb-2 line-clamp-2 text-xs sm:text-base">
                                                 {offer.product_name}
                                             </h3>
 
                                             {offer.brand && (
-                                                <p className="text-[10px] sm:text-xs text-slate-400 font-medium mb-3 sm:mb-4">{offer.brand}</p>
+                                                <p className="text-[9px] sm:text-xs text-slate-400 font-medium mb-2 sm:mb-4">{offer.brand}</p>
                                             )}
 
                                             {/* Verification Tag */}
                                             {offer.original_price && (
-                                                <div className={`flex items-center gap-1.5 mb-4 text-[10px] font-bold ${colors.accent} ${colors.bg} px-2 py-1 rounded-md w-fit`}>
-                                                    <AlertCircle className="w-3 h-3" />
-                                                    <span>Verified KassalApp Price</span>
+                                                <div className={`flex items-center gap-1 sm:gap-1.5 mb-3 sm:mb-4 text-[7px] sm:text-[10px] font-bold ${colors.accent} ${colors.bg} px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md w-fit`}>
+                                                    <AlertCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                                    <span>Verified Price</span>
                                                 </div>
                                             )}
 
-                                            <div className="mt-auto pt-4 border-t border-slate-100 flex items-end justify-between">
+                                            <div className="mt-auto pt-3 sm:pt-4 border-t border-slate-100 flex items-end justify-between">
                                                 {offer.final_price ? (
                                                     <div>
-                                                        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Price</p>
-                                                        <div className="flex items-baseline gap-1.5 sm:gap-2">
-                                                            <p className={`text-xl sm:text-2xl font-black ${colors.accent}`}>{offer.final_price}<span className="text-xs sm:text-sm ml-0.5 sm:ml-1 text-slate-500 font-bold">{offer.currency || 'kr'}</span></p>
+                                                        <p className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Price</p>
+                                                        <div className="flex items-baseline gap-1 sm:gap-2">
+                                                            <p className={`text-base sm:text-2xl font-black ${colors.accent}`}>{offer.final_price}<span className="text-[10px] sm:text-sm ml-0.5 sm:ml-1 text-slate-500 font-bold">{offer.currency || 'kr'}</span></p>
                                                             {offer.original_price && (
-                                                                <p className="text-xs sm:text-sm font-bold text-slate-300 line-through decoration-slate-300 decoration-1 sm:decoration-2">
+                                                                <p className="text-[10px] sm:text-sm font-bold text-slate-300 line-through decoration-slate-300 decoration-1 sm:decoration-2">
                                                                     {offer.original_price}
                                                                 </p>
                                                             )}
@@ -598,13 +605,13 @@ export function Offers() {
                                                     </div>
                                                 ) : (
                                                     <div>
-                                                        <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Offer Type</p>
-                                                        <p className={`text-base sm:text-lg font-black ${colors.accent} capitalize`}>{offer.discount_type.replace('_', ' ')}</p>
+                                                        <p className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Offer Type</p>
+                                                        <p className={`text-xs sm:text-lg font-black ${colors.accent} capitalize`}>{offer.discount_type.replace('_', ' ')}</p>
                                                     </div>
                                                 )}
 
-                                                <div className={`w-10 h-10 rounded-full bg-slate-50 ${colors.ghBg} flex items-center justify-center transition-colors shadow-sm`}>
-                                                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-white" />
+                                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 ${colors.ghBg} flex items-center justify-center transition-colors shadow-sm`}>
+                                                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-slate-400 group-hover:text-white" />
                                                 </div>
                                             </div>
                                         </div>

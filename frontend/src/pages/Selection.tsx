@@ -268,7 +268,7 @@ export function Selection() {
 
             {/* Bottom Sticky Action */}
             {items.length > 0 && (
-                <div className="fixed bottom-6 left-4 right-4 z-30 pointer-events-none safe-area-bottom">
+                <div className="fixed bottom-16 sm:bottom-6 left-4 right-4 z-30 pointer-events-none safe-area-bottom">
                     <div className="max-w-xl mx-auto pointer-events-auto">
                         <div className="bg-slate-900/95 backdrop-blur-xl p-2 pr-3 rounded-2xl shadow-xl shadow-slate-900/20 flex items-center gap-3 sm:gap-4 border border-white/10 ring-1 ring-white/5 animate-slideUp">
                             <div className="pl-4 sm:pl-6 flex flex-col justify-center shrink-0">
