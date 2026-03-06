@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
         injectRegister: 'auto',
         includeAssets: ['icons/icon.svg', 'icons/icon-192x192.png', 'icons/icon-512x512.png', 'images/**/*'],
         manifest: {
-          id: '/?v=1',
+          id: '/?v=2',
           name: 'SmartHandel — Din Smarteste Handleliste',
           short_name: 'SmartHandel',
           description: 'Prissammenligning og ruteplanlegger for dagligvarer.',
@@ -60,6 +60,10 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          // Ensure new service worker takes over immediately
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
           // Precache the app shell
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
           // Increase cache limit to 10MB to support high-res offer screenshots
