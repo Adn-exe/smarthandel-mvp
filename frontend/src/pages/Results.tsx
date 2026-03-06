@@ -245,8 +245,8 @@ export default function Results() {
                 title={query ? `${t('seo.resultsTitle')}: ${query}` : t('seo.resultsTitle')}
                 description={t('results.foundBestOptions')}
             />
-            {/* Header - Sticky below the main navbar (h-16) */}
-            <header className="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-16 z-20 shadow-sm">
+            {/* Header - Sticky below the main navbar (h-14 mobile, h-16 desktop) */}
+            <header className="bg-white border-b border-gray-200 sticky top-14 sm:top-16 z-20 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                     {/* Main View Switching Bar */}
@@ -385,22 +385,23 @@ export default function Results() {
                 </div>
 
                 <div
-                    className="fixed bottom-16 sm:bottom-28 left-1/2 -translate-x-1/2 lg:hidden z-[60] flex items-center bg-primary text-white p-1 rounded-full shadow-[0_8px_32px_rgba(229,57,53,0.3)] animate-in slide-in-from-bottom-8 duration-700"
+                    className="fixed bottom-22 right-4 lg:hidden z-[60] animate-in slide-in-from-right-8 duration-700"
                 >
                     <button
                         onClick={() => setMobileActiveTab(mobileActiveTab === 'list' ? 'map' : 'list')}
-                        className="px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 hover:bg-white/10"
+                        className="p-3 bg-white/10 backdrop-blur-xl text-slate-800 rounded-lg shadow-xl border border-white/20 flex items-center justify-center transition-all duration-300 active:scale-95 group ring-1 ring-black/5"
+                        aria-label={mobileActiveTab === 'list' ? t('common.map') : t('common.list')}
                     >
                         {mobileActiveTab === 'list' ? (
-                            <>
-                                <MapPin className="w-4 h-4" />
-                                {t('common.map', 'Show Map')}
-                            </>
+                            <div className="flex flex-col items-center gap-1">
+                                <MapPin className="w-5 h-5 text-orange-500 group-hover:scale-110 transition-transform" />
+                                <span className="text-[8px] font-black uppercase tracking-tighter text-slate-600">{t('common.map', 'Map')}</span>
+                            </div>
                         ) : (
-                            <>
-                                <List className="w-4 h-4" />
-                                {t('common.list', 'Show List')}
-                            </>
+                            <div className="flex flex-col items-center gap-1">
+                                <List className="w-5 h-5 text-orange-500 group-hover:scale-110 transition-transform" />
+                                <span className="text-[8px] font-black uppercase tracking-tighter text-slate-600">{t('common.list', 'List')}</span>
+                            </div>
                         )}
                     </button>
                 </div>
