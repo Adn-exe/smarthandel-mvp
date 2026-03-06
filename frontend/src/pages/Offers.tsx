@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -89,6 +89,18 @@ export function Offers() {
     const [filterChain, setFilterChain] = useState<string>("All Stores");
     const [searchQuery, setSearchQuery] = useState('');
     const [isFilterSticky, setIsFilterSticky] = useState(false);
+    const [isStoreDropdownOpen, setIsStoreDropdownOpen] = useState(false);
+    const storeDropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (storeDropdownRef.current && !storeDropdownRef.current.contains(event.target as Node)) {
+                setIsStoreDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Poster Modal State
     const [selectedPoster, setSelectedPoster] = useState<{ src: string; alt: string } | null>(null);
@@ -409,21 +421,27 @@ export function Offers() {
                             />
                         </div>
 
-                        <div className="relative group sm:min-w-[200px]">
-                            <button className="w-full flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3.5 bg-white border border-slate-200 rounded-xl sm:rounded-2xl hover:border-[#ea580c] transition-all font-bold text-slate-700 text-xs sm:text-sm shadow-sm">
+                        <div className="relative sm:min-w-[200px]" ref={storeDropdownRef}>
+                            <button
+                                onClick={() => setIsStoreDropdownOpen(!isStoreDropdownOpen)}
+                                className="w-full flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3.5 bg-white border border-slate-200 rounded-xl sm:rounded-2xl hover:border-[#ea580c] transition-all font-bold text-slate-700 text-xs sm:text-sm shadow-sm"
+                            >
                                 <div className="flex items-center gap-2">
                                     <StoreIcon className="w-3 h-3 sm:w-4 sm:h-4 text-[#ea580c]" />
                                     <span>{filterChain}</span>
                                 </div>
-                                <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-slate-400 group-hover:rotate-180 transition-transform" />
+                                <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-slate-400 transition-transform ${isStoreDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-2 max-h-[300px] overflow-y-auto">
+                            <div className={`absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl transition-all z-50 py-2 max-h-[300px] overflow-y-auto ${isStoreDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
                                 {CHAINS.map(c => {
                                     const count = c === 'All Stores' ? offers.length : chainCounts[c] || 0;
                                     return (
                                         <button
                                             key={c}
-                                            onClick={() => setFilterChain(c)}
+                                            onClick={() => {
+                                                setFilterChain(c);
+                                                setIsStoreDropdownOpen(false);
+                                            }}
                                             className={`w-full flex items-center justify-between px-5 py-2.5 text-sm font-bold transition-colors ${filterChain === c ? 'bg-[#fff7ed] text-[#ea580c]' : 'text-slate-600 hover:bg-slate-50'}`}
                                         >
                                             <div className="flex items-center gap-2">
