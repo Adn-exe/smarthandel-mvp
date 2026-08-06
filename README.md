@@ -15,7 +15,7 @@
 
 ---
 
-SmartHandel uses **Google Gemini 2.0 Flash** to instantly parse your natural language shopping lists and the **Kassalapp API** to scan the entire grocery market in Trondheim, Norway. It intelligent routing engine tells you exactly where to shop to save the most money—whether that means a quick trip to one store, or splitting your list across multiple.
+SmartHandel uses **Google Gemini (configurable model support, defaults to Gemini 3.6 Flash)** to instantly parse your natural language shopping lists and the **Kassalapp API** to scan the entire grocery market in Trondheim, Norway. It intelligent routing engine tells you exactly where to shop to save the most money—whether that means a quick trip to one store, or splitting your list across multiple.
 
 ## 🌟 Key Features
 
@@ -56,7 +56,7 @@ SmartHandel uses **Google Gemini 2.0 Flash** to instantly parse your natural lan
 
 ### Backend
 - **Server**: Node.js & Express, TypeScript
-- **AI Core**: Google Gemini 2.0 Flash (for parsing & suggestions)
+- **AI Core**: Google Gemini (configurable model support, e.g. Gemini 3.6 Flash) (for parsing & suggestions)
 - **Data Source**: Kassalapp API
 - **Performance**: Node-Cache (In-memory TTL)
 - **Security**: Helmet, HPP (HTTP Parameter Pollution), express-rate-limit
@@ -96,6 +96,7 @@ PORT=3001
 NODE_ENV=development
 KASSAL_API_KEY=your_kassal_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-3.6-flash
 CACHE_TTL=3600
 ALLOWED_ORIGINS=http://localhost:5173
 ```

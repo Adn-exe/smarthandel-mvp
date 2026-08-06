@@ -91,7 +91,7 @@ const PRODUCTS: Product[] = [
 
     // PANTRY
     { id: 'jam', nameKey: 'products.jam', emoji: '🍓', keywords: ['syltetøy', 'nora'], category: 'pantry' },
-    { id: 'pasta', nameKey: 'products.pasta', emoji: '🍝', keywords: ['pasta', 'spaghetti', 'makaroni'], category: 'pantry' },
+    { id: 'pasta_pantry', nameKey: 'products.pasta', emoji: '🍝', keywords: ['pasta', 'spaghetti', 'makaroni'], category: 'pantry' },
     { id: 'pizza', nameKey: 'products.pizza', emoji: '🍕', keywords: ['pizza', 'grandiosa'], category: 'pantry' },
 
     // SNACKS
@@ -102,8 +102,6 @@ const PRODUCTS: Product[] = [
     // BEVERAGE
     { id: 'orange_juice', nameKey: 'products.orange_juice', emoji: '🧃', keywords: ['appelsinjuice', 'juice'], category: 'beverage' },
     { id: 'water', nameKey: 'products.water', emoji: '💧', keywords: ['vann', 'water', 'farris'], category: 'beverage' },
-    { id: 'energy_drink', nameKey: 'products.energy_drink', emoji: '⚡', keywords: ['energidrikk', 'energy drink', 'red bull'], category: 'beverage' },
-
     { id: 'energy_drink', nameKey: 'products.energy_drink', emoji: '⚡', keywords: ['energidrikk', 'energy drink', 'red bull'], category: 'beverage' }
 ];
 

@@ -13,6 +13,8 @@ interface Config {
     kassalApiKey: string;
     /** API key for Google Gemini AI */
     geminiApiKey: string;
+    /** Model to use for Google Gemini AI */
+    geminiModel: string;
     /** Current environment (development/production) */
     nodeEnv: string;
     /** Cache time-to-live in seconds */
@@ -47,6 +49,7 @@ export const config: Config = {
         console.warn('⚠️  WARNING: GEMINI_API_KEY is not set. AI features will be unavailable.');
         return '';
     })(),
+    geminiModel: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
 
     nodeEnv: process.env.NODE_ENV || 'development',
 
